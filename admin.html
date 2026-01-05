@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Postos Credenciados Guarulhos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        header h1 span {
+            font-size: 2rem;
+        }
+
+        .status-badge {
+            background: #10b981;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tab.active {
+            background: #3b82f6;
+        }
+
+        .panel {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .upload-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            transition: all 0.3s;
+        }
+
+        .upload-card:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .upload-card.dragover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .upload-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .upload-card p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border-radius: 10px;
+        }
+
+        .price-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: #fff;
+            width: 100px;
+            text-align: right;
+        }
+
+        .price-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .badge-inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 12px 20px;
+            color: #fff;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+        }
+
+        .preview-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .preview-section h4 {
+            margin-bottom: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: #10b981;
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(24px);
+        }
+
+        .json-output {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: #58a6ff;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span>⛽</span> Admin - Postos Credenciados</h1>
+            <div class="status-badge">Sistema Online</div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="dashboard">📊 Dashboard</button>
+            <button class="tab" data-tab="postos">🏪 Postos</button>
+            <button class="tab" data-tab="precos">💰 Preços</button>
+            <button class="tab" data-tab="upload">📤 Upload Planilhas</button>
+            <button class="tab" data-tab="exportar">💾 Exportar JSON</button>
+        </div>
+
+        <!-- Dashboard Panel -->
+        <div class="panel active" id="dashboard">
+            <h2 style="margin-bottom: 20px;">📊 Visão Geral</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="totalPostos">38</h3>
+                    <p>Postos Credenciados</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="postosAtivos">38</h3>
+                    <p>Postos Ativos</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalAbastecimentos">186</h3>
+                    <p>Abastecimentos</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="ultimaAtualizacao">--</h3>
+                    <p>Última Atualização</p>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                ℹ️ Faça upload das planilhas para atualizar os dados de postos e abastecimentos.
+            </div>
+
+            <h3 style="margin: 20px 0;">🏆 Top 5 Postos - Menor Preço Gasolina</h3>
+            <div class="table-container">
+                <table class="data-table" id="topPostosTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Posto</th>
+                            <th>Bandeira</th>
+                            <th>Gasolina</th>
+                            <th>Etanol</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Postos Panel -->
+        <div class="panel" id="postos">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <h2>🏪 Gerenciar Postos</h2>
+                <button class="btn" onclick="openAddPostoModal()">➕ Adicionar Posto</button>
+            </div>
+
+            <input type="text" class="search-box" id="searchPostos" placeholder="🔍 Buscar postos..." onkeyup="filterPostos()">
+
+            <div class="table-container">
+                <table class="data-table" id="postosTable">
+                    <thead>
+                        <tr>
+                            <th>Terminal</th>
+                            <th>Nome</th>
+                            <th>Endereço</th>
+                            <th>Bandeira</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Preços Panel -->
+        <div class="panel" id="precos">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <h2>💰 Editar Preços</h2>
+                <button class="btn btn-success" onclick="salvarPrecos()">💾 Salvar Alterações</button>
+            </div>
+
+            <div class="alert alert-info">
+                ℹ️ Edite os preços diretamente na tabela. Clique em "Salvar Alterações" para gerar o JSON atualizado.
+            </div>
+
+            <input type="text" class="search-box" id="searchPrecos" placeholder="🔍 Buscar postos..." onkeyup="filterPrecos()">
+
+            <div class="table-container">
+                <table class="data-table" id="precosTable">
+                    <thead>
+                        <tr>
+                            <th>Posto</th>
+                            <th>Bandeira</th>
+                            <th>Gasolina (R$)</th>
+                            <th>Etanol (R$)</th>
+                            <th>Diesel (R$)</th>
+                            <th>GNV (R$)</th>
+                            <th>Última Atualização</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Upload Panel -->
+        <div class="panel" id="upload">
+            <h2 style="margin-bottom: 20px;">📤 Upload de Planilhas</h2>
+
+            <div class="upload-section">
+                <div class="upload-card" id="dropZoneEstabelecimentos">
+                    <div class="upload-icon">🏪</div>
+                    <h3>Estabelecimentos</h3>
+                    <p>Arraste a planilha "Consulta_Estabelecimentos.xlsx" ou clique para selecionar</p>
+                    <input type="file" id="fileEstabelecimentos" accept=".xlsx,.xls" onchange="handleFileUpload(this, 'estabelecimentos')">
+                    <button class="btn" onclick="document.getElementById('fileEstabelecimentos').click()">
+                        📁 Selecionar Arquivo
+                    </button>
+                </div>
+
+                <div class="upload-card" id="dropZoneAbastecimentos">
+                    <div class="upload-icon">⛽</div>
+                    <h3>Abastecimentos</h3>
+                    <p>Arraste a planilha "Tabela_Abastecimentos.xlsx" ou clique para selecionar</p>
+                    <input type="file" id="fileAbastecimentos" accept=".xlsx,.xls" onchange="handleFileUpload(this, 'abastecimentos')">
+                    <button class="btn" onclick="document.getElementById('fileAbastecimentos').click()">
+                        📁 Selecionar Arquivo
+                    </button>
+                </div>
+            </div>
+
+            <div id="uploadPreview" class="preview-section" style="display: none;">
+                <h4>📋 Pré-visualização dos Dados</h4>
+                <div id="previewContent"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="processUpload()">✅ Confirmar e Processar</button>
+                    <button class="btn btn-secondary" onclick="cancelUpload()">❌ Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exportar Panel -->
+        <div class="panel" id="exportar">
+            <h2 style="margin-bottom: 20px;">💾 Exportar JSON</h2>
+
+            <div class="stats-grid">
+                <div class="upload-card" style="border-style: solid; cursor: pointer;" onclick="exportJSON('postos')">
+                    <div class="upload-icon">🏪</div>
+                    <h3>postos.json</h3>
+                    <p>Lista completa de postos credenciados</p>
+                    <button class="btn">⬇️ Download</button>
+                </div>
+
+                <div class="upload-card" style="border-style: solid; cursor: pointer;" onclick="exportJSON('precos')">
+                    <div class="upload-icon">💰</div>
+                    <h3>precos-postos.json</h3>
+                    <p>Preços atualizados de cada posto</p>
+                    <button class="btn">⬇️ Download</button>
+                </div>
+
+                <div class="upload-card" style="border-style: solid; cursor: pointer;" onclick="exportJSON('prices')">
+                    <div class="upload-icon">📊</div>
+                    <h3>prices.json</h3>
+                    <p>Preços médios ANP (compatível com site atual)</p>
+                    <button class="btn">⬇️ Download</button>
+                </div>
+            </div>
+
+            <h3 style="margin: 30px 0 15px;">📝 Pré-visualização JSON</h3>
+            <select class="search-box" style="max-width: 300px;" onchange="previewJSON(this.value)">
+                <option value="">Selecione um arquivo...</option>
+                <option value="postos">postos.json</option>
+                <option value="precos">precos-postos.json</option>
+                <option value="prices">prices.json</option>
+            </select>
+            <div class="json-output" id="jsonPreview" style="margin-top: 15px;">
+                // Selecione um arquivo para visualizar
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar/Editar Posto -->
+    <div class="modal" id="postoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Adicionar Posto</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="postoForm">
+                <input type="hidden" id="postoId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Terminal</label>
+                        <input type="text" id="postoTerminal" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CNPJ</label>
+                        <input type="text" id="postoCnpj" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nome Fantasia</label>
+                    <input type="text" id="postoNome" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Razão Social</label>
+                    <input type="text" id="postoRazaoSocial">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Logradouro</label>
+                        <input type="text" id="postoLogradouro">
+                    </div>
+                    <div class="form-group">
+                        <label>Rua</label>
+                        <input type="text" id="postoRua">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Número</label>
+                        <input type="text" id="postoNumero">
+                    </div>
+                    <div class="form-group">
+                        <label>Bairro</label>
+                        <input type="text" id="postoBairro">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>CEP</label>
+                        <input type="text" id="postoCep">
+                    </div>
+                    <div class="form-group">
+                        <label>Bandeira</label>
+                        <select id="postoBandeira">
+                            <option value="PETROBRAS">PETROBRAS</option>
+                            <option value="IPIRANGA">IPIRANGA</option>
+                            <option value="SHELL">SHELL</option>
+                            <option value="BR">BR</option>
+                            <option value="RAIZEN">RAIZEN</option>
+                            <option value="BANDEIRA BRANCA">BANDEIRA BRANCA</option>
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Horário de Funcionamento</label>
+                    <input type="text" id="postoHorario" placeholder="Ex: 24 horas">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Contato</label>
+                        <input type="text" id="postoContato">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" id="postoTelefone">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="postoEmail">
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-success">💾 Salvar</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Dados em memória
+        let postosData = [];
+        let precosData = [];
+        let abastecimentosData = [];
+        let uploadedData = null;
+        let uploadType = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            initTabs();
+            initDragDrop();
+            loadInitialData();
+        });
+
+        // Navegação por tabs
+        function initTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab).classList.add('active');
+                });
+            });
+        }
+
+        // Drag and Drop
+        function initDragDrop() {
+            ['dropZoneEstabelecimentos', 'dropZoneAbastecimentos'].forEach(id => {
+                const zone = document.getElementById(id);
+                
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('dragover');
+                });
+
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('dragover');
+                });
+
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('dragover');
+                    const file = e.dataTransfer.files[0];
+                    const type = id.includes('Estabelecimentos') ? 'estabelecimentos' : 'abastecimentos';
+                    processFile(file, type);
+                });
+            });
+        }
+
+        // Carregar dados iniciais (simulado - em produção viria do servidor)
+        function loadInitialData() {
+            // Dados de exemplo para demonstração
+            postosData = [
+                {
+                    terminal: "4101130",
+                    nomeFantasia: "AUTO POSTO COCAIA",
+                    razaoSocial: "AUTO POSTO COCAIA LTDA",
+                    cnpj: "44.261.766/0001-03",
+                    endereco: {
+                        logradouro: "AVENIDA",
+                        rua: "Tiradentes",
+                        numero: "2595",
+                        bairro: "Cocaia",
+                        cidade: "GUARULHOS",
+                        uf: "SP",
+                        cep: "07113001"
+                    },
+                    contato: {
+                        nome: "João Batista",
+                        telefone: "(11) 44195175",
+                        email: "autopostococaia@gmail.com"
+                    },
+                    bandeira: "IPIRANGA",
+                    horarioFuncionamento: "24 horas",
+                    ativo: true
+                },
+                {
+                    terminal: "1105682",
+                    nomeFantasia: "LUIZ XII",
+                    razaoSocial: "CENTRO AUTOMOTIVO LUIZ XII LTDA",
+                    cnpj: "05.794.555/0001-76",
+                    endereco: {
+                        logradouro: "AVENIDA",
+                        rua: "Salgado Filho",
+                        numero: "1595",
+                        bairro: "Centro",
+                        cidade: "GUARULHOS",
+                        uf: "SP",
+                        cep: "07115000"
+                    },
+                    contato: {
+                        nome: "Ricardo",
+                        telefone: "(11) 24614589",
+                        email: "postoluiz12@terra.com.br"
+                    },
+                    bandeira: "PETROBRAS",
+                    horarioFuncionamento: "2ª a Sáb 06:00-00:00",
+                    ativo: true
+                },
+                {
+                    terminal: "1302311815",
+                    nomeFantasia: "AUTO POSTO R66",
+                    razaoSocial: "AUTO POSTO R66 LTDA",
+                    cnpj: "17.688.784/0001-95",
+                    endereco: {
+                        logradouro: "AVENIDA",
+                        rua: "Guarulhos",
+                        numero: "2316",
+                        bairro: "Vila Augusta",
+                        cidade: "GUARULHOS",
+                        uf: "SP",
+                        cep: "07025000"
+                    },
+                    contato: {
+                        nome: "Marcos Paulo",
+                        telefone: "(11) 970373067",
+                        email: "r66adm@hotmail.com.br"
+                    },
+                    bandeira: "BANDEIRA BRANCA",
+                    horarioFuncionamento: "24 horas",
+                    ativo: true
+                },
+                {
+                    terminal: "1105975",
+                    nomeFantasia: "AUTO POSTO VILA BARROS",
+                    razaoSocial: "AUTO POSTO VILA BARROS LTDA",
+                    cnpj: "44.270.999/0001-64",
+                    endereco: {
+                        logradouro: "AVENIDA",
+                        rua: "Otávio Braga de Mesquita",
+                        numero: "1838",
+                        bairro: "Vila Barros",
+                        cidade: "GUARULHOS",
+                        uf: "SP",
+                        cep: "07191000"
+                    },
+                    contato: {
+                        nome: "Rogério",
+                        telefone: "(11) 2402-2684",
+                        email: "vilabarros.1838@gmail.com"
+                    },
+                    bandeira: "BANDEIRA BRANCA",
+                    horarioFuncionamento: "04:00-00:30",
+                    ativo: true
+                },
+                {
+                    terminal: "110595",
+                    nomeFantasia: "AUTO POSTO FERRARI",
+                    razaoSocial: "AUTO POSTO FERRARI LTDA",
+                    cnpj: "49.093.156/0001-53",
+                    endereco: {
+                        logradouro: "AVENIDA",
+                        rua: "Otávio Braga de Mesquita",
+                        numero: "3723",
+                        bairro: "Jardim Nova Taboão",
+                        cidade: "GUARULHOS",
+                        uf: "SP",
+                        cep: "07140230"
+                    },
+                    contato: {
+                        nome: "Lucas",
+                        telefone: "(11) 24020199",
+                        email: "cartoes.suporte@postossetee.com.br"
+                    },
+                    bandeira: "SHELL",
+                    horarioFuncionamento: "2ª a Sáb 06:00-22:00",
+                    ativo: true
+                }
+            ];
+
+            precosData = [
+                { terminal: "4101130", nome: "AUTO POSTO COCAIA", bandeira: "IPIRANGA", precos: { gasolina: 6.89, etanol: 4.19, diesel: null, gnv: null }, dataAtualizacao: "2025-12-31" },
+                { terminal: "1105682", nome: "LUIZ XII", bandeira: "PETROBRAS", precos: { gasolina: 6.29, etanol: null, diesel: null, gnv: null }, dataAtualizacao: "2025-12-31" },
+                { terminal: "1302311815", nome: "AUTO POSTO R66", bandeira: "BANDEIRA BRANCA", precos: { gasolina: 5.79, etanol: 4.15, diesel: null, gnv: null }, dataAtualizacao: "2025-12-30" },
+                { terminal: "1105975", nome: "AUTO POSTO VILA BARROS", bandeira: "BANDEIRA BRANCA", precos: { gasolina: 5.54, etanol: 3.84, diesel: null, gnv: null }, dataAtualizacao: "2025-12-30" },
+                { terminal: "110595", nome: "AUTO POSTO FERRARI", bandeira: "SHELL", precos: { gasolina: 5.59, etanol: 3.99, diesel: null, gnv: null }, dataAtualizacao: "2025-12-26" }
+            ];
+
+            updateDashboard();
+            renderPostosTable();
+            renderPrecosTable();
+            renderTopPostos();
+        }
+
+        // Atualizar Dashboard
+        function updateDashboard() {
+            document.getElementById('totalPostos').textContent = postosData.length;
+            document.getElementById('postosAtivos').textContent = postosData.filter(p => p.ativo).length;
+            document.getElementById('totalAbastecimentos').textContent = abastecimentosData.length || 186;
+            document.getElementById('ultimaAtualizacao').textContent = new Date().toLocaleDateString('pt-BR');
+        }
+
+        // Renderizar tabela de postos
+        function renderPostosTable() {
+            const tbody = document.querySelector('#postosTable tbody');
+            tbody.innerHTML = postosData.map(posto => `
+                <tr>
+                    <td>${posto.terminal}</td>
+                    <td>${posto.nomeFantasia}</td>
+                    <td>${posto.endereco.rua}, ${posto.endereco.numero} - ${posto.endereco.bairro}</td>
+                    <td>${posto.bandeira}</td>
+                    <td>
+                        <span class="badge ${posto.ativo ? 'badge-active' : 'badge-inactive'}">
+                            ${posto.ativo ? 'Ativo' : 'Inativo'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="editPosto('${posto.terminal}')">✏️</button>
+                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.85rem;" onclick="togglePosto('${posto.terminal}')">
+                            ${posto.ativo ? '🚫' : '✅'}
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Renderizar tabela de preços
+        function renderPrecosTable() {
+            const tbody = document.querySelector('#precosTable tbody');
+            tbody.innerHTML = precosData.map(posto => `
+                <tr data-terminal="${posto.terminal}">
+                    <td>${posto.nome}</td>
+                    <td>${posto.bandeira}</td>
+                    <td><input type="number" step="0.01" class="price-input" value="${posto.precos.gasolina || ''}" data-fuel="gasolina"></td>
+                    <td><input type="number" step="0.01" class="price-input" value="${posto.precos.etanol || ''}" data-fuel="etanol"></td>
+                    <td><input type="number" step="0.01" class="price-input" value="${posto.precos.diesel || ''}" data-fuel="diesel"></td>
+                    <td><input type="number" step="0.01" class="price-input" value="${posto.precos.gnv || ''}" data-fuel="gnv"></td>
+                    <td>${posto.dataAtualizacao}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Renderizar top postos
+        function renderTopPostos() {
+            const sorted = [...precosData]
+                .filter(p => p.precos.gasolina)
+                .sort((a, b) => a.precos.gasolina - b.precos.gasolina)
+                .slice(0, 5);
+
+            const tbody = document.querySelector('#topPostosTable tbody');
+            tbody.innerHTML = sorted.map((posto, i) => `
+                <tr>
+                    <td>${i + 1}º</td>
+                    <td>${posto.nome}</td>
+                    <td>${posto.bandeira}</td>
+                    <td style="color: #10b981; font-weight: bold;">R$ ${posto.precos.gasolina.toFixed(2)}</td>
+                    <td>${posto.precos.etanol ? 'R$ ' + posto.precos.etanol.toFixed(2) : '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Filtrar postos
+        function filterPostos() {
+            const search = document.getElementById('searchPostos').value.toLowerCase();
+            document.querySelectorAll('#postosTable tbody tr').forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        }
+
+        // Filtrar preços
+        function filterPrecos() {
+            const search = document.getElementById('searchPrecos').value.toLowerCase();
+            document.querySelectorAll('#precosTable tbody tr').forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        }
+
+        // Salvar preços
+        function salvarPrecos() {
+            document.querySelectorAll('#precosTable tbody tr').forEach(row => {
+                const terminal = row.dataset.terminal;
+                const posto = precosData.find(p => p.terminal === terminal);
+                if (posto) {
+                    row.querySelectorAll('.price-input').forEach(input => {
+                        const fuel = input.dataset.fuel;
+                        posto.precos[fuel] = input.value ? parseFloat(input.value) : null;
+                    });
+                    posto.dataAtualizacao = new Date().toISOString().split('T')[0];
+                }
+            });
+
+            alert('✅ Preços atualizados! Vá em "Exportar JSON" para baixar o arquivo atualizado.');
+            renderTopPostos();
+        }
+
+        // Upload de arquivos
+        function handleFileUpload(input, type) {
+            const file = input.files[0];
+            if (file) {
+                processFile(file, type);
+            }
+        }
+
+        function processFile(file, type) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                uploadedData = json;
+                uploadType = type;
+                showPreview(json, type);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function showPreview(data, type) {
+            const preview = document.getElementById('uploadPreview');
+            const content = document.getElementById('previewContent');
+
+            // Pegar primeiras 10 linhas
+            const rows = data.slice(0, 10);
+            let html = `<p><strong>Tipo:</strong> ${type === 'estabelecimentos' ? 'Estabelecimentos' : 'Abastecimentos'}</p>`;
+            html += `<p><strong>Total de linhas:</strong> ${data.length}</p>`;
+            html += '<div class="table-container" style="max-height: 300px;"><table class="data-table"><thead><tr>';
+
+            if (rows[0]) {
+                rows[0].forEach((cell, i) => {
+                    if (i < 6) html += `<th>${cell || `Col ${i}`}</th>`;
+                });
+            }
+            html += '</tr></thead><tbody>';
+
+            rows.slice(1, 8).forEach(row => {
+                html += '<tr>';
+                row.forEach((cell, i) => {
+                    if (i < 6) html += `<td>${cell || ''}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            content.innerHTML = html;
+            preview.style.display = 'block';
+        }
+
+        function processUpload() {
+            if (!uploadedData || !uploadType) return;
+
+            if (uploadType === 'estabelecimentos') {
+                processEstabelecimentos(uploadedData);
+            } else {
+                processAbastecimentos(uploadedData);
+            }
+
+            cancelUpload();
+            alert('✅ Dados processados com sucesso!');
+        }
+
+        function processEstabelecimentos(data) {
+            // Encontrar linha de cabeçalho
+            const headerIndex = data.findIndex(row => 
+                row.some(cell => String(cell).includes('Terminal'))
+            );
+
+            if (headerIndex === -1) return;
+
+            const headers = data[headerIndex];
+            const newPostos = [];
+
+            for (let i = headerIndex + 1; i < data.length; i++) {
+                const row = data[i];
+                if (!row[0]) continue;
+
+                newPostos.push({
+                    terminal: String(row[0]),
+                    nomeFantasia: row[1] || '',
+                    razaoSocial: row[2] || '',
+                    cnpj: row[3] || '',
+                    endereco: {
+                        logradouro: row[5] || '',
+                        rua: row[6] || '',
+                        numero: row[7] || '',
+                        bairro: row[8] || '',
+                        cidade: row[10] || 'GUARULHOS',
+                        uf: row[9] || 'SP',
+                        cep: row[4] || ''
+                    },
+                    contato: {
+                        nome: row[11] || '',
+                        telefone: row[12] || '',
+                        email: row[13] || ''
+                    },
+                    bandeira: row[15] || 'N/A',
+                    horarioFuncionamento: row[17] || '',
+                    ativo: true
+                });
+            }
+
+            postosData = newPostos;
+            updateDashboard();
+            renderPostosTable();
+        }
+
+        function processAbastecimentos(data) {
+            // Encontrar linha de cabeçalho
+            const headerIndex = data.findIndex(row => 
+                row.some(cell => String(cell).includes('Combustível'))
+            );
+
+            if (headerIndex === -1) return;
+
+            const precosMap = {};
+
+            for (let i = headerIndex + 1; i < data.length; i++) {
+                const row = data[i];
+                if (!row[14]) continue; // Nome posto
+
+                const nomePosto = row[14];
+                const combustivel = String(row[9] || '').toLowerCase();
+                const quantidade = parseFloat(row[10]) || 0;
+                const valor = parseFloat(row[11]) || 0;
+
+                if (quantidade <= 0) continue;
+                const precoLitro = valor / quantidade;
+
+                if (!precosMap[nomePosto]) {
+                    precosMap[nomePosto] = {
+                        terminal: '',
+                        nome: nomePosto,
+                        bandeira: 'N/A',
+                        endereco: row[15] || '',
+                        precos: {},
+                        dataAtualizacao: ''
+                    };
+                }
+
+                const tipoCombus = combustivel.includes('gasol') ? 'gasolina' :
+                                   combustivel.includes('lcool') || combustivel.includes('etanol') ? 'etanol' :
+                                   combustivel.includes('diesel') ? 'diesel' :
+                                   combustivel.includes('gnv') ? 'gnv' : null;
+
+                if (tipoCombus) {
+                    precosMap[nomePosto].precos[tipoCombus] = Math.round(precoLitro * 100) / 100;
+                    precosMap[nomePosto].dataAtualizacao = new Date().toISOString().split('T')[0];
+                }
+            }
+
+            precosData = Object.values(precosMap);
+            renderPrecosTable();
+            renderTopPostos();
+        }
+
+        function cancelUpload() {
+            document.getElementById('uploadPreview').style.display = 'none';
+            uploadedData = null;
+            uploadType = null;
+        }
+
+        // Modal funções
+        function openAddPostoModal() {
+            document.getElementById('modalTitle').textContent = 'Adicionar Posto';
+            document.getElementById('postoForm').reset();
+            document.getElementById('postoId').value = '';
+            document.getElementById('postoModal').classList.add('active');
+        }
+
+        function editPosto(terminal) {
+            const posto = postosData.find(p => p.terminal === terminal);
+            if (!posto) return;
+
+            document.getElementById('modalTitle').textContent = 'Editar Posto';
+            document.getElementById('postoId').value = terminal;
+            document.getElementById('postoTerminal').value = posto.terminal;
+            document.getElementById('postoCnpj').value = posto.cnpj;
+            document.getElementById('postoNome').value = posto.nomeFantasia;
+            document.getElementById('postoRazaoSocial').value = posto.razaoSocial;
+            document.getElementById('postoLogradouro').value = posto.endereco.logradouro;
+            document.getElementById('postoRua').value = posto.endereco.rua;
+            document.getElementById('postoNumero').value = posto.endereco.numero;
+            document.getElementById('postoBairro').value = posto.endereco.bairro;
+            document.getElementById('postoCep').value = posto.endereco.cep;
+            document.getElementById('postoBandeira').value = posto.bandeira;
+            document.getElementById('postoHorario').value = posto.horarioFuncionamento;
+            document.getElementById('postoContato').value = posto.contato?.nome || '';
+            document.getElementById('postoTelefone').value = posto.contato?.telefone || '';
+            document.getElementById('postoEmail').value = posto.contato?.email || '';
+
+            document.getElementById('postoModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('postoModal').classList.remove('active');
+        }
+
+        function togglePosto(terminal) {
+            const posto = postosData.find(p => p.terminal === terminal);
+            if (posto) {
+                posto.ativo = !posto.ativo;
+                renderPostosTable();
+                updateDashboard();
+            }
+        }
+
+        // Form submit
+        document.getElementById('postoForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('postoId').value;
+            const newPosto = {
+                terminal: document.getElementById('postoTerminal').value,
+                nomeFantasia: document.getElementById('postoNome').value,
+                razaoSocial: document.getElementById('postoRazaoSocial').value,
+                cnpj: document.getElementById('postoCnpj').value,
+                endereco: {
+                    logradouro: document.getElementById('postoLogradouro').value,
+                    rua: document.getElementById('postoRua').value,
+                    numero: document.getElementById('postoNumero').value,
+                    bairro: document.getElementById('postoBairro').value,
+                    cidade: 'GUARULHOS',
+                    uf: 'SP',
+                    cep: document.getElementById('postoCep').value
+                },
+                contato: {
+                    nome: document.getElementById('postoContato').value,
+                    telefone: document.getElementById('postoTelefone').value,
+                    email: document.getElementById('postoEmail').value
+                },
+                bandeira: document.getElementById('postoBandeira').value,
+                horarioFuncionamento: document.getElementById('postoHorario').value,
+                ativo: true
+            };
+
+            if (id) {
+                const index = postosData.findIndex(p => p.terminal === id);
+                if (index !== -1) {
+                    postosData[index] = newPosto;
+                }
+            } else {
+                postosData.push(newPosto);
+            }
+
+            renderPostosTable();
+            updateDashboard();
+            closeModal();
+        });
+
+        // Exportar JSON
+        function exportJSON(type) {
+            let data, filename;
+
+            if (type === 'postos') {
+                data = {
+                    success: true,
+                    updatedAt: new Date().toISOString(),
+                    total: postosData.length,
+                    data: postosData
+                };
+                filename = 'postos.json';
+            } else if (type === 'precos') {
+                data = {
+                    success: true,
+                    updatedAt: new Date().toISOString(),
+                    fonte: "Abastecimentos da Câmara Municipal de Guarulhos",
+                    totalPostos: precosData.length,
+                    data: precosData
+                };
+                filename = 'precos-postos.json';
+            } else if (type === 'prices') {
+                // Calcular médias
+                const gasolinaPrecos = precosData.filter(p => p.precos.gasolina).map(p => p.precos.gasolina);
+                const etanolPrecos = precosData.filter(p => p.precos.etanol).map(p => p.precos.etanol);
+                
+                data = {
+                    success: true,
+                    data: {
+                        gasolinaComum: gasolinaPrecos.length ? (gasolinaPrecos.reduce((a,b) => a+b, 0) / gasolinaPrecos.length).toFixed(2) * 1 : 6.00,
+                        etanol: etanolPrecos.length ? (etanolPrecos.reduce((a,b) => a+b, 0) / etanolPrecos.length).toFixed(2) * 1 : 4.29,
+                        diesel: 6.06,
+                        gnv: 3.96
+                    },
+                    periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    periodEnd: new Date().toISOString().split('T')[0],
+                    sourceUrl: "https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-concorrencia/precos/precos-revenda-e-de-distribuicao-combustiveis/shlp/semanal/semanal-municipio-2024-2025.xlsx",
+                    updatedAt: new Date().toISOString()
+                };
+                filename = 'prices.json';
+            }
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function previewJSON(type) {
+            const preview = document.getElementById('jsonPreview');
+            
+            if (!type) {
+                preview.textContent = '// Selecione um arquivo para visualizar';
+                return;
+            }
+
+            let data;
+            if (type === 'postos') {
+                data = {
+                    success: true,
+                    updatedAt: new Date().toISOString(),
+                    total: postosData.length,
+                    data: postosData.slice(0, 3)
+                };
+            } else if (type === 'precos') {
+                data = {
+                    success: true,
+                    updatedAt: new Date().toISOString(),
+                    totalPostos: precosData.length,
+                    data: precosData.slice(0, 3)
+                };
+            } else if (type === 'prices') {
+                const gasolinaPrecos = precosData.filter(p => p.precos.gasolina).map(p => p.precos.gasolina);
+                const etanolPrecos = precosData.filter(p => p.precos.etanol).map(p => p.precos.etanol);
+                
+                data = {
+                    success: true,
+                    data: {
+                        gasolinaComum: gasolinaPrecos.length ? (gasolinaPrecos.reduce((a,b) => a+b, 0) / gasolinaPrecos.length).toFixed(2) * 1 : 6.00,
+                        etanol: etanolPrecos.length ? (etanolPrecos.reduce((a,b) => a+b, 0) / etanolPrecos.length).toFixed(2) * 1 : 4.29,
+                        diesel: 6.06,
+                        gnv: 3.96
+                    },
+                    periodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    periodEnd: new Date().toISOString().split('T')[0],
+                    updatedAt: new Date().toISOString()
+                };
+            }
+
+            preview.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Fechar modal clicando fora
+        document.getElementById('postoModal').addEventListener('click', (e) => {
+            if (e.target.id === 'postoModal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
