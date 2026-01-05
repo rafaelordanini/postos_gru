@@ -2007,84 +2007,81 @@ function formatEnderecoCard(posto) {
         // ==========================================
         // RENDERIZAÇÃO
         // ==========================================
-        function renderPosts() {
-            const container = document.getElementById('postsList');
-            
-            if (!Array.isArray(postosData) || postosData.length === 0) {
-                container.innerHTML = `const endereco = formatEnderecoCard(posto);
-                    <div class="empty-state">
-                        <div class="empty-icon">🔍</div>
-                        <p>Nenhum posto encontrado</p>
+   function renderPosts() {
+    const container = document.getElementById('postsList');
+    
+    if (!Array.isArray(postosData) || postosData.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <p>Nenhum posto encontrado</p>
+            </div>
+        `;
+        return;
+    }
+
+    let filteredPosts = filterAndSortPosts();
+
+    if (filteredPosts.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <p>Nenhum posto com os filtros atuais</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filteredPosts.map(posto => {
+        const endereco = formatEnderecoCard(posto);
+        const badgeClass = getBadgeClass(posto.bandeira);
+        
+        const gasolina = posto.precos?.gasolina;
+        const etanol = posto.precos?.etanol;
+        
+        const gasolinaStatus = getPriceStatus(gasolina, 'gasolina');
+        const etanolStatus = getPriceStatus(etanol, 'etanol');
+        
+        const hasImages = postoImages[posto.terminal] && postoImages[posto.terminal].length > 0;
+
+        return `
+            <div class="post-card status-${gasolinaStatus}" data-terminal="${posto.terminal}" onclick="selectPosto('${posto.terminal}')">
+                <div class="post-header">
+                    <div class="post-name">${posto.nomeFantasia || 'Posto sem nome'}</div>
+                    <span class="post-badge ${badgeClass}">${posto.bandeira || 'Branca'}</span>
+                </div>
+                <div class="post-address">
+                    <span class="post-address-icon">📍</span>
+                    <span>${endereco}</span>
+                </div>
+                <div class="post-prices">
+                    <div class="price-item ${gasolinaStatus !== 'no-data' ? gasolinaStatus : ''}">
+                        <div class="price-type">Gasolina</div>
+                        ${gasolina && gasolina > 0 ? 
+                            `<div class="price-value ${gasolinaStatus}">R$ ${gasolina.toFixed(2)}</div>
+                             <div class="price-source">Último abast.</div>` :
+                            `<div class="price-value no-data">--</div>`
+                        }
                     </div>
-                `;
-                return;
-            }
-
-            let filteredPosts = filterAndSortPosts();
-
-            if (filteredPosts.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">🔍</div>
-                        <p>Nenhum posto com os filtros atuais</p>
+                    <div class="price-item ${etanolStatus !== 'no-data' ? etanolStatus : ''}">
+                        <div class="price-type">Etanol</div>
+                        ${etanol && etanol > 0 ? 
+                            `<div class="price-value ${etanolStatus}">R$ ${etanol.toFixed(2)}</div>
+                             <div class="price-source">Último abast.</div>` :
+                            `<div class="price-value no-data">--</div>`
+                        }
                     </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = filteredPosts.map(posto => {
-                    const endereco = formatEnderecoCard(posto);
-                    `${posto.endereco.logradouro || posto.endereco.rua || ''}, ${posto.endereco.numero || ''} - ${posto.endereco.bairro || ''}` : 
-                    'Endereço não disponível';
-
-                const badgeClass = getBadgeClass(posto.bandeira);
-                
-                const gasolina = posto.precos?.gasolina;
-                const etanol = posto.precos?.etanol;
-                
-                const gasolinaStatus = getPriceStatus(gasolina, 'gasolina');
-                const etanolStatus = getPriceStatus(etanol, 'etanol');
-                
-                const hasImages = postoImages[posto.terminal] && postoImages[posto.terminal].length > 0;
-
-                return `
-                    <div class="post-card status-${gasolinaStatus}" data-terminal="${posto.terminal}" onclick="selectPosto('${posto.terminal}')">
-                        <div class="post-header">
-                            <div class="post-name">${posto.nomeFantasia || 'Posto sem nome'}</div>
-                            <span class="post-badge ${badgeClass}">${posto.bandeira || 'Branca'}</span>
-                        </div>
-                        <div class="post-address">
-                            <span class="post-address-icon">📍</span>
-                            <span>${endereco}</span>
-                        </div>
-                        <div class="post-prices">
-                            <div class="price-item ${gasolinaStatus !== 'no-data' ? gasolinaStatus : ''}">
-                                <div class="price-type">Gasolina</div>
-                                ${gasolina && gasolina > 0 ? 
-                                    `<div class="price-value ${gasolinaStatus}">R$ ${gasolina.toFixed(2)}</div>
-                                     <div class="price-source">Último abast.</div>` :
-                                    `<div class="price-value no-data">--</div>`
-                                }
-                            </div>
-                            <div class="price-item ${etanolStatus !== 'no-data' ? etanolStatus : ''}">
-                                <div class="price-type">Etanol</div>
-                                ${etanol && etanol > 0 ? 
-                                    `<div class="price-value ${etanolStatus}">R$ ${etanol.toFixed(2)}</div>
-                                     <div class="price-source">Último abast.</div>` :
-                                    `<div class="price-value no-data">--</div>`
-                                }
-                            </div>
-                        </div>
-                        <div class="post-footer">
-                            <div class="post-hours ${is24Hours(posto) ? 'open' : ''}">
-                                🕐 ${posto.horarioFuncionamento || 'Não informado'}
-                            </div>
-                            ${hasImages ? `<div class="post-image-indicator">📷 ${postoImages[posto.terminal].length}</div>` : ''}
-                        </div>
+                </div>
+                <div class="post-footer">
+                    <div class="post-hours ${is24Hours(posto) ? 'open' : ''}">
+                        🕐 ${posto.horarioFuncionamento || 'Não informado'}
                     </div>
-                `;
-            }).join('');
-        }
+                    ${hasImages ? `<div class="post-image-indicator">📷 ${postoImages[posto.terminal].length}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
 
         function filterAndSortPosts() {
             if (!Array.isArray(postosData)) return [];
@@ -2092,15 +2089,14 @@ function formatEnderecoCard(posto) {
             let filtered = [...postosData];
             const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
 
-            // Filtro de busca
-            if (searchTerm) {
-                filtered = filtered.filter(posto => {
-                    const nome = (posto.nomeFantasia || '').toLowerCase();
-                    const endereco = posto.endereco ? 
-                        `${posto.endereco.rua || ''} ${posto.endereco.bairro || ''}`.toLowerCase() : '';
-                    return nome.includes(searchTerm) || endereco.includes(searchTerm);
-                });
-            }
+ // Filtro de busca
+if (searchTerm) {
+    filtered = filtered.filter(posto => {
+        const nome = (posto.nomeFantasia || '').toLowerCase();
+        const endereco = formatEnderecoCard(posto).toLowerCase();
+        return nome.includes(searchTerm) || endereco.includes(searchTerm);
+    });
+}
 
             // Filtro de bandeira
             if (currentBandeira) {
