@@ -1,0 +1,353 @@
+{
+  "success": true,
+  "updatedAt": "2026-01-05T12:30:00.000Z",
+  "fonte": "Abastecimentos da Câmara Municipal de Guarulhos",
+  "totalPostos": 32,
+  "data": [
+    {
+      "terminal": "4101130",
+      "nome": "AUTO POSTO COCAIA",
+      "endereco": "Av. Tiradentes, 2595 - Cocaia",
+      "bandeira": "IPIRANGA",
+      "precos": {
+        "gasolina": 6.89,
+        "etanol": 4.19,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-31",
+      "totalAbastecimentos": 28,
+      "ativo": true
+    },
+    {
+      "terminal": "1105682",
+      "nome": "LUIZ XII",
+      "endereco": "Av. Salgado Filho, 1595 - Centro",
+      "bandeira": "PETROBRAS",
+      "precos": {
+        "gasolina": 6.29,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-31",
+      "totalAbastecimentos": 3,
+      "ativo": true
+    },
+    {
+      "terminal": "1302327274",
+      "nome": "AUTO POSTO CRUZEIRO DO SUL",
+      "endereco": "Av. Santos Dumont, 2302 - Cidade Industrial",
+      "bandeira": "BR",
+      "precos": {
+        "gasolina": 6.99,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-31",
+      "totalAbastecimentos": 2,
+      "ativo": true
+    },
+    {
+      "terminal": "1302160397",
+      "nome": "LAGO DE COMO",
+      "endereco": "Av. Papa João Paulo I, 2339 - Jd. Presidente Dutra",
+      "bandeira": "IPIRANGA",
+      "precos": {
+        "gasolina": 5.88,
+        "etanol": 4.29,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-31",
+      "totalAbastecimentos": 5,
+      "ativo": true
+    },
+    {
+      "terminal": "1302311815",
+      "nome": "AUTO POSTO R66",
+      "endereco": "Av. Guarulhos, 2316 - Vila Augusta",
+      "bandeira": "BANDEIRA BRANCA",
+      "precos": {
+        "gasolina": 5.79,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-30",
+      "totalAbastecimentos": 22,
+      "ativo": true
+    },
+    {
+      "terminal": "1302151558",
+      "nome": "POSTO SAKAMOTO I",
+      "endereco": "Rod. Presidente Dutra, km 210,5",
+      "bandeira": "PETROBRAS",
+      "precos": {
+        "gasolina": 6.29,
+        "etanol": 5.09,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-30",
+      "totalAbastecimentos": 6,
+      "ativo": true
+    },
+    {
+      "terminal": "1302322824",
+      "nome": "AUTO POSTO GUARULHOS",
+      "endereco": "Av. Rotary, 710 - Vila das Bandeiras",
+      "bandeira": "IPIRANGA",
+      "precos": {
+        "gasolina": 9.19,
+        "etanol": 5.99,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-30",
+      "totalAbastecimentos": 25,
+      "ativo": true
+    },
+    {
+      "terminal": "1105975",
+      "nome": "AUTO POSTO VILA BARROS",
+      "endereco": "Av. Otávio Braga de Mesquita, 1838 - Vila Barros",
+      "bandeira": "BANDEIRA BRANCA",
+      "precos": {
+        "gasolina": 5.54,
+        "etanol": 3.84,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-30",
+      "totalAbastecimentos": 18,
+      "ativo": true
+    },
+    {
+      "terminal": "1302287009",
+      "nome": "AUTO POSTO BEQUIA",
+      "endereco": "Av. Monteiro Lobato, 1341 - Macedo",
+      "bandeira": "BANDEIRA BRANCA",
+      "precos": {
+        "gasolina": 6.29,
+        "etanol": 4.59,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-25",
+      "totalAbastecimentos": 12,
+      "ativo": true
+    },
+    {
+      "terminal": "1302174139",
+      "nome": "AUTO POSTO PORTAL DE GUARULHOS",
+      "endereco": "Rua Barão de Mauá, 92 - Parque Estrela",
+      "bandeira": "IPIRANGA",
+      "precos": {
+        "gasolina": 6.09,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-29",
+      "totalAbastecimentos": 8,
+      "ativo": true
+    },
+    {
+      "terminal": "1302218951",
+      "nome": "DUQUE POSTO RODOVIA PRESIDENTE DUTRA",
+      "endereco": "Rod. Presidente Dutra - Cumbica",
+      "bandeira": "BR",
+      "precos": {
+        "gasolina": 7.99,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-27",
+      "totalAbastecimentos": 6,
+      "ativo": true
+    },
+    {
+      "terminal": "1302142112",
+      "nome": "POSTO DE SERVICOS VILA PARAISO",
+      "endereco": "Av. Santa Helena, 390 - Vila Paraíso",
+      "bandeira": "IPIRANGA",
+      "precos": {
+        "gasolina": 6.19,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-27",
+      "totalAbastecimentos": 8,
+      "ativo": true
+    },
+    {
+      "terminal": "1302139485",
+      "nome": "POSTO NAZARE",
+      "endereco": "Av. Candeias, 950 - Cidade Seródio",
+      "bandeira": "BANDEIRA BRANCA",
+      "precos": {
+        "gasolina": 6.29,
+        "etanol": 4.57,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-24",
+      "totalAbastecimentos": 12,
+      "ativo": true
+    },
+    {
+      "terminal": "110595",
+      "nome": "AUTO POSTO FERRARI",
+      "endereco": "Av. Otávio Braga de Mesquita, 3723 - Jd. Nova Taboão",
+      "bandeira": "SHELL",
+      "precos": {
+        "gasolina": 5.59,
+        "etanol": 3.99,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-26",
+      "totalAbastecimentos": 6,
+      "ativo": true
+    },
+    {
+      "terminal": "1302153358",
+      "nome": "POSTO COCAIA",
+      "endereco": "Av. Brigadeiro Faria Lima, 941 - Cocaia",
+      "bandeira": "N/A",
+      "precos": {
+        "gasolina": 6.19,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-30",
+      "totalAbastecimentos": 12,
+      "ativo": true
+    },
+    {
+      "terminal": "1302161678",
+      "nome": "POSTO GRAN JK",
+      "endereco": "Est. Pres. Juscelino K. de Oliveira, 4439 - Jd. Albertina",
+      "bandeira": "BANDEIRA BRANCA",
+      "precos": {
+        "gasolina": 6.29,
+        "etanol": 4.59,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-24",
+      "totalAbastecimentos": 18,
+      "ativo": true
+    },
+    {
+      "terminal": "1105218",
+      "nome": "AUTO POSTO CARROSSEL",
+      "endereco": "Rua General Osório, 200 - Jd. Santa Francisca",
+      "bandeira": "RAIZEN",
+      "precos": {
+        "gasolina": 6.29,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-22",
+      "totalAbastecimentos": 10,
+      "ativo": true
+    },
+    {
+      "terminal": "1105222",
+      "nome": "POSTO PEDRAO",
+      "endereco": "Rod. Presidente Dutra - Várzea do Palácio",
+      "bandeira": "IPIRANGA",
+      "precos": {
+        "gasolina": 6.49,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-22",
+      "totalAbastecimentos": 5,
+      "ativo": true
+    },
+    {
+      "terminal": "1302146360",
+      "nome": "AEROCAR COMBUSTIVEIS",
+      "endereco": "Rua Cachoeira, 1443 - Jardim Moreira",
+      "bandeira": "BANDEIRA BRANCA",
+      "precos": {
+        "gasolina": 6.29,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-22",
+      "totalAbastecimentos": 4,
+      "ativo": true
+    },
+    {
+      "terminal": "1302256531",
+      "nome": "POSTO MESTRE",
+      "endereco": "Av. Sete de Setembro, 1870 - Vila Galvão",
+      "bandeira": "SHELL",
+      "precos": {
+        "gasolina": 6.19,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-16",
+      "totalAbastecimentos": 2,
+      "ativo": true
+    },
+    {
+      "terminal": "11653",
+      "nome": "AUTO POSTO MANCINI",
+      "endereco": "Av. Aniello Pratici, 20 - Jd. Santa Francisca",
+      "bandeira": "SHELL",
+      "precos": {
+        "gasolina": 6.19,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-03",
+      "totalAbastecimentos": 1,
+      "ativo": true
+    },
+    {
+      "terminal": "1302147938",
+      "nome": "CRUZEIRO DO SUL POSTO DE SERVICO",
+      "endereco": "Av. Santos Dumont, 2302 - Cidade Industrial",
+      "bandeira": "PETROBRAS",
+      "precos": {
+        "gasolina": 6.99,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-18",
+      "totalAbastecimentos": 2,
+      "ativo": true
+    },
+    {
+      "terminal": "11051029",
+      "nome": "AUTO POSTO TIO BILY",
+      "endereco": "Rua Cachoeira, 344 - Picanço",
+      "bandeira": "BANDEIRA BRANCA",
+      "precos": {
+        "gasolina": 5.79,
+        "etanol": null,
+        "diesel": null,
+        "gnv": null
+      },
+      "dataUltimoAbastecimento": "2025-12-04",
+      "totalAbastecimentos": 1,
+      "ativo": true
+    }
+  ]
+}
