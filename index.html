@@ -72,6 +72,7 @@
             background: linear-gradient(135deg, #3b82f6, #10b981);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .logo-text span {
@@ -79,7 +80,6 @@
             color: #64748b;
         }
 
-        /* Header Right Section */
         .header-right {
             display: flex;
             align-items: center;
@@ -113,7 +113,6 @@
             text-transform: uppercase;
         }
 
-        /* Indicador ANP */
         .anp-indicator {
             display: flex;
             align-items: center;
@@ -189,7 +188,6 @@
             gap: 12px;
         }
 
-        /* Preço ANP Card */
         .anp-price-card {
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
             border: 1px solid rgba(59, 130, 246, 0.2);
@@ -219,7 +217,6 @@
             margin-top: 4px;
         }
 
-        /* Posto Price Card */
         .posto-price-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -545,6 +542,16 @@
             border: 1px solid #e2e8f0;
         }
 
+        .price-item.below-anp {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .price-item.above-anp {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
         .price-type {
             font-size: 0.7rem;
             color: #64748b;
@@ -565,8 +572,12 @@
             font-size: 0.85rem;
         }
 
-        .price-value.anp-price {
-            color: #3b82f6;
+        .price-value.below-anp {
+            color: #059669;
+        }
+
+        .price-value.above-anp {
+            color: #dc2626;
         }
 
         .price-source {
@@ -641,7 +652,6 @@
             transform: scale(1.05);
         }
 
-        /* Toggle Cobertura */
         .map-btn.active {
             background: #ef4444;
             border-color: #ef4444;
@@ -741,6 +751,16 @@
             border: 1px solid #e2e8f0;
         }
 
+        .info-price-card.below-anp {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .info-price-card.above-anp {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
         .info-price-type {
             font-size: 0.7rem;
             color: #64748b;
@@ -755,8 +775,16 @@
             color: #059669;
         }
 
-        .info-price-value.anp {
-            color: #3b82f6;
+        .info-price-value.below-anp {
+            color: #059669;
+        }
+
+        .info-price-value.above-anp {
+            color: #dc2626;
+        }
+
+        .info-price-value.no-data {
+            color: #94a3b8;
         }
 
         .info-actions {
@@ -841,9 +869,9 @@
             border-radius: 50%;
         }
 
-        .legend-low { background: #10b981; }
-        .legend-medium { background: #eab308; }
-        .legend-high { background: #ef4444; }
+        .legend-below { background: #10b981; }
+        .legend-above { background: #ef4444; }
+        .legend-nodata { background: #3b82f6; }
         .legend-no-coverage { background: rgba(239, 68, 68, 0.3); border: 2px solid #ef4444; }
 
         /* Loading */
@@ -893,9 +921,8 @@
             font-size: 0.8rem;
         }
 
-        /* Leaflet Custom Markers */
+        /* Custom Markers */
         .custom-marker {
-            background: linear-gradient(135deg, #3b82f6, #10b981);
             border-radius: 50%;
             border: 3px solid #fff;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -907,19 +934,19 @@
             font-size: 12px;
         }
 
-        .custom-marker.low-price {
-            background: linear-gradient(135deg, #10b981, #059669);
+        .marker-below-anp {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
         }
 
-        .custom-marker.medium-price {
-            background: linear-gradient(135deg, #eab308, #ca8a04);
+        .marker-above-anp {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
         }
 
-        .custom-marker.high-price {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+        .marker-no-data {
+            background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
         }
 
-        /* Popup Custom - Light Mode */
+        /* Popup Custom */
         .leaflet-popup-content-wrapper {
             background: rgba(255, 255, 255, 0.98);
             color: #1e293b;
@@ -944,8 +971,19 @@
         }
 
         .popup-price {
-            color: #059669;
             font-weight: 700;
+        }
+
+        .popup-price.below-anp {
+            color: #059669;
+        }
+
+        .popup-price.above-anp {
+            color: #dc2626;
+        }
+
+        .popup-price.no-data {
+            color: #3b82f6;
         }
 
         /* Empty State */
@@ -1092,7 +1130,6 @@
                         Preços em Postos Credenciados
                     </div>
                     <div class="stats-row">
-                        <!-- Menor Gasolina -->
                         <div class="posto-price-card menor">
                             <div class="posto-price-header">
                                 <span class="posto-price-type">🟢 Menor Gasolina</span>
@@ -1103,7 +1140,6 @@
                                 <div class="posto-address" id="menorGasolinaEndereco">--</div>
                             </div>
                         </div>
-                        <!-- Maior Gasolina -->
                         <div class="posto-price-card maior">
                             <div class="posto-price-header">
                                 <span class="posto-price-type">🔴 Maior Gasolina</span>
@@ -1116,7 +1152,6 @@
                         </div>
                     </div>
                     <div class="stats-row" style="margin-top: 12px;">
-                        <!-- Menor Etanol -->
                         <div class="posto-price-card menor">
                             <div class="posto-price-header">
                                 <span class="posto-price-type">🟢 Menor Etanol</span>
@@ -1127,7 +1162,6 @@
                                 <div class="posto-address" id="menorEtanolEndereco">--</div>
                             </div>
                         </div>
-                        <!-- Maior Etanol -->
                         <div class="posto-price-card maior">
                             <div class="posto-price-header">
                                 <span class="posto-price-type">🔴 Maior Etanol</span>
@@ -1200,19 +1234,19 @@
 
             <!-- Price Legend -->
             <div class="price-legend">
-                <div class="legend-title">Legenda</div>
+                <div class="legend-title">Legenda de Preços</div>
                 <div class="legend-items">
                     <div class="legend-item">
-                        <div class="legend-color legend-low"></div>
-                        <span>Menor preço</span>
+                        <div class="legend-color legend-below"></div>
+                        <span>Abaixo da ANP</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color legend-medium"></div>
-                        <span>Preço médio</span>
+                        <div class="legend-color legend-above"></div>
+                        <span>Acima da ANP</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color legend-high"></div>
-                        <span>Maior preço</span>
+                        <div class="legend-color legend-nodata"></div>
+                        <span>Sem preço informado</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color legend-no-coverage"></div>
@@ -1244,11 +1278,11 @@
         // CONFIGURAÇÃO E VARIÁVEIS GLOBAIS
         // ==========================================
         const API_POSTOS = 'https://postos-gru.vercel.app';
+        const API_ANP = 'https://anp-gru.vercel.app/prices.json';
         const GUARULHOS_CENTER = [-23.4538, -46.5333];
         const DEFAULT_ZOOM = 12;
-        const COVERAGE_RADIUS = 5; // km
+        const COVERAGE_RADIUS = 5;
 
-        // Limites aproximados de Guarulhos
         const GUARULHOS_BOUNDS = {
             north: -23.35,
             south: -23.52,
@@ -1259,7 +1293,6 @@
         let map;
         let markers = [];
         let coverageCircles = [];
-        let noCoverageLayer = null;
         let postosData = [];
         let precosData = [];
         let anpData = null;
@@ -1289,7 +1322,6 @@
                 attributionControl: false
             }).setView(GUARULHOS_CENTER, DEFAULT_ZOOM);
 
-            // Mapa claro (CartoDB Positron)
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 maxZoom: 19
             }).addTo(map);
@@ -1314,7 +1346,6 @@
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
                 updateANPIndicator(false, 'Erro ao carregar');
-                setTimeout(() => hideLoading(), 1000);
             }
         }
 
@@ -1332,12 +1363,11 @@
                 const postosJson = await postosRes.json();
                 const precosJson = await precosRes.json();
 
-                // Tratamento seguro dos dados
                 postosData = Array.isArray(postosJson) ? postosJson : 
-                             (postosJson.data && Array.isArray(postosJson.data)) ? postosJson.data : [];
+                             (postosJson && postosJson.data && Array.isArray(postosJson.data)) ? postosJson.data : [];
                 
                 precosData = Array.isArray(precosJson) ? precosJson :
-                             (precosJson.data && Array.isArray(precosJson.data)) ? precosJson.data : [];
+                             (precosJson && precosJson.data && Array.isArray(precosJson.data)) ? precosJson.data : [];
 
                 console.log('Postos carregados:', postosData.length);
                 console.log('Preços carregados:', precosData.length);
@@ -1351,89 +1381,61 @@
 
         async function loadANPData() {
             try {
-                // Tentar múltiplas fontes de dados ANP
-                const sources = [
-                    'https://anp-gru.vercel.app/prices.json',
-                    'https://anp-gru.vercel.app/api/prices',
-                    'https://anp-api-gru.vercel.app/prices.json'
-                ];
-
-                let response = null;
-                for (const source of sources) {
-                    try {
-                        response = await fetch(source, { 
-                            method: 'GET',
-                            headers: { 'Accept': 'application/json' }
-                        });
-                        if (response.ok) {
-                            console.log('ANP fonte:', source);
-                            break;
-                        }
-                    } catch (e) {
-                        console.log('Fonte ANP falhou:', source);
-                    }
+                const response = await fetch(API_ANP);
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar ANP');
                 }
 
-                if (response && response.ok) {
-                    const data = await response.json();
+                const json = await response.json();
+                console.log('Resposta ANP:', json);
+
+                // Estrutura do JSON: { success: true, data: { gasolinaComum, etanol, diesel, gnv }, periodStart, periodEnd, updatedAt }
+                if (json.success && json.data) {
+                    anpData = {
+                        gasolinaComum: json.data.gasolinaComum,
+                        etanol: json.data.etanol,
+                        diesel: json.data.diesel,
+                        gnv: json.data.gnv,
+                        periodStart: json.periodStart,
+                        periodEnd: json.periodEnd,
+                        updatedAt: json.updatedAt
+                    };
                     
-                    // Tratar diferentes estruturas de dados
-                    if (data.guarulhos) {
-                        anpData = data;
-                    } else if (data.data && data.data.guarulhos) {
-                        anpData = data.data;
-                    } else if (data.gasolina_comum || data.etanol) {
-                        anpData = { guarulhos: data };
-                    } else {
-                        // Tentar extrair dados de qualquer estrutura
-                        anpData = { guarulhos: data };
-                    }
-                    
-                    console.log('Dados ANP:', anpData);
+                    console.log('Dados ANP processados:', anpData);
                     updateANPIndicator(true);
                     updateANPDisplay();
                 } else {
-                    throw new Error('Nenhuma fonte ANP disponível');
+                    throw new Error('Estrutura de dados ANP inválida');
                 }
 
             } catch (error) {
-                console.warn('Erro ao carregar ANP:', error);
+                console.error('Erro ao carregar ANP:', error);
                 updateANPIndicator(false, 'ANP Offline');
-                
-                // Usar dados simulados como fallback
-                anpData = {
-                    guarulhos: {
-                        gasolina_comum: 5.89,
-                        etanol: 3.79,
-                        diesel: 5.49,
-                        gnv: 4.29
-                    },
-                    dataAtualizacao: new Date().toISOString()
-                };
-                updateANPDisplay();
+                anpData = null;
             }
         }
 
         function updateANPDisplay() {
-            if (anpData && anpData.guarulhos) {
-                const g = anpData.guarulhos;
-                
+            if (anpData) {
                 // Gasolina
-                const gasolinaValue = g.gasolina_comum || g.gasolina || g.GASOLINA_COMUM;
-                if (gasolinaValue) {
-                    document.getElementById('anpGasolina').textContent = `R$ ${parseFloat(gasolinaValue).toFixed(2)}`;
+                if (anpData.gasolinaComum) {
+                    document.getElementById('anpGasolina').textContent = `R$ ${parseFloat(anpData.gasolinaComum).toFixed(2)}`;
                 }
                 
                 // Etanol
-                const etanolValue = g.etanol || g.ETANOL || g.alcool;
-                if (etanolValue) {
-                    document.getElementById('anpEtanol').textContent = `R$ ${parseFloat(etanolValue).toFixed(2)}`;
+                if (anpData.etanol) {
+                    document.getElementById('anpEtanol').textContent = `R$ ${parseFloat(anpData.etanol).toFixed(2)}`;
                 }
                 
                 // Data
-                const dataAtual = anpData.dataAtualizacao || anpData.data || new Date().toISOString();
-                const date = new Date(dataAtual);
-                document.getElementById('anpDate').textContent = date.toLocaleDateString('pt-BR');
+                if (anpData.periodEnd) {
+                    const date = new Date(anpData.periodEnd);
+                    document.getElementById('anpDate').textContent = date.toLocaleDateString('pt-BR');
+                } else if (anpData.updatedAt) {
+                    const date = new Date(anpData.updatedAt);
+                    document.getElementById('anpDate').textContent = date.toLocaleDateString('pt-BR');
+                }
             }
         }
 
@@ -1463,20 +1465,12 @@
             }
 
             postosData = postosData.map(posto => {
-                // Encontrar preço correspondente
                 const preco = Array.isArray(precosData) ? 
                     precosData.find(p => p.terminal === posto.terminal) : null;
-                
-                // Preços ANP
-                let precoANP = null;
-                if (anpData && anpData.guarulhos) {
-                    precoANP = anpData.guarulhos;
-                }
 
                 return {
                     ...posto,
                     precos: preco?.precos || { gasolina: null, etanol: null, diesel: null, gnv: null },
-                    precosANP: precoANP,
                     dataPreco: preco?.dataAtualizacao || preco?.dataUltimoAbastecimento || null,
                     coordenadas: generateCoordinates(posto)
                 };
@@ -1531,13 +1525,45 @@
         }
 
         // ==========================================
-        // ATUALIZAÇÃO DE ESTATÍSTICAS (HEADER)
+        // COMPARAÇÃO COM ANP
+        // ==========================================
+        function getPriceStatus(preco, tipo = 'gasolina') {
+            if (!preco || preco === null || preco === undefined || isNaN(preco)) {
+                return 'no-data';
+            }
+
+            if (!anpData) {
+                return 'no-data';
+            }
+
+            let anpPrice = null;
+            if (tipo === 'gasolina') {
+                anpPrice = anpData.gasolinaComum;
+            } else if (tipo === 'etanol') {
+                anpPrice = anpData.etanol;
+            } else if (tipo === 'diesel') {
+                anpPrice = anpData.diesel;
+            } else if (tipo === 'gnv') {
+                anpPrice = anpData.gnv;
+            }
+
+            if (!anpPrice || anpPrice === null) {
+                return 'no-data';
+            }
+
+            if (preco < anpPrice) {
+                return 'below-anp';
+            } else {
+                return 'above-anp';
+            }
+        }
+
+        // ==========================================
+        // ATUALIZAÇÃO DE ESTATÍSTICAS
         // ==========================================
         function updateStats() {
-            // Total de postos
             document.getElementById('totalPostos').textContent = postosData.length;
 
-            // Encontrar menor e maior gasolina
             const postosComGasolina = postosData.filter(p => 
                 p.precos?.gasolina !== null && 
                 p.precos?.gasolina !== undefined && 
@@ -1545,7 +1571,6 @@
             );
             
             if (postosComGasolina.length > 0) {
-                // Menor Gasolina
                 const menorGasolina = postosComGasolina.reduce((min, p) => 
                     p.precos.gasolina < min.precos.gasolina ? p : min
                 );
@@ -1553,7 +1578,6 @@
                 document.getElementById('menorGasolinaNome').textContent = menorGasolina.nomeFantasia || 'Posto';
                 document.getElementById('menorGasolinaEndereco').textContent = formatEnderecoResumido(menorGasolina);
 
-                // Maior Gasolina
                 const maiorGasolina = postosComGasolina.reduce((max, p) => 
                     p.precos.gasolina > max.precos.gasolina ? p : max
                 );
@@ -1562,7 +1586,6 @@
                 document.getElementById('maiorGasolinaEndereco').textContent = formatEnderecoResumido(maiorGasolina);
             }
 
-            // Encontrar menor e maior etanol
             const postosComEtanol = postosData.filter(p => 
                 p.precos?.etanol !== null && 
                 p.precos?.etanol !== undefined && 
@@ -1570,7 +1593,6 @@
             );
             
             if (postosComEtanol.length > 0) {
-                // Menor Etanol
                 const menorEtanol = postosComEtanol.reduce((min, p) => 
                     p.precos.etanol < min.precos.etanol ? p : min
                 );
@@ -1578,7 +1600,6 @@
                 document.getElementById('menorEtanolNome').textContent = menorEtanol.nomeFantasia || 'Posto';
                 document.getElementById('menorEtanolEndereco').textContent = formatEnderecoResumido(menorEtanol);
 
-                // Maior Etanol
                 const maiorEtanol = postosComEtanol.reduce((max, p) => 
                     p.precos.etanol > max.precos.etanol ? p : max
                 );
@@ -1597,7 +1618,7 @@
         }
 
         // ==========================================
-        // COBERTURA - ÁREAS SEM POSTOS
+        // COBERTURA
         // ==========================================
         function toggleCoverage() {
             showCoverage = !showCoverage;
@@ -1615,12 +1636,11 @@
         function renderCoverageLayer() {
             clearCoverageLayer();
 
-            // Criar círculos de cobertura para cada posto
             postosData.forEach(posto => {
                 if (!posto.coordenadas) return;
                 
                 const circle = L.circle(posto.coordenadas, {
-                    radius: COVERAGE_RADIUS * 1000, // 5km em metros
+                    radius: COVERAGE_RADIUS * 1000,
                     color: '#10b981',
                     fillColor: '#10b981',
                     fillOpacity: 0.1,
@@ -1630,30 +1650,24 @@
                 coverageCircles.push(circle);
             });
 
-            // Criar grid de pontos e verificar cobertura
             renderNoCoverageAreas();
         }
 
         function renderNoCoverageAreas() {
             const gridPoints = [];
-            const step = 0.01; // Aproximadamente 1km
+            const step = 0.01;
 
-            // Criar grid de pontos dentro dos limites de Guarulhos
             for (let lat = GUARULHOS_BOUNDS.south; lat <= GUARULHOS_BOUNDS.north; lat += step) {
                 for (let lng = GUARULHOS_BOUNDS.west; lng <= GUARULHOS_BOUNDS.east; lng += step) {
                     gridPoints.push([lat, lng]);
                 }
             }
 
-            // Verificar quais pontos não têm cobertura
-            const noCoveragePoints = gridPoints.filter(point => {
-                return !hasPostoCoverage(point);
-            });
+            const noCoveragePoints = gridPoints.filter(point => !hasPostoCoverage(point));
 
-            // Renderizar áreas sem cobertura
             noCoveragePoints.forEach(point => {
                 const circle = L.circle(point, {
-                    radius: 500, // raio visual do ponto
+                    radius: 500,
                     color: '#ef4444',
                     fillColor: '#ef4444',
                     fillOpacity: 0.3,
@@ -1677,18 +1691,13 @@
         function clearCoverageLayer() {
             coverageCircles.forEach(circle => map.removeLayer(circle));
             coverageCircles = [];
-            
-            if (noCoverageLayer) {
-                map.removeLayer(noCoverageLayer);
-                noCoverageLayer = null;
-            }
         }
 
         function calculateDistance(point1, point2) {
             if (!point1 || !point2) return Infinity;
             const [lat1, lon1] = point1;
             const [lat2, lon2] = point2;
-            const R = 6371; // Raio da Terra em km
+            const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -1735,8 +1744,9 @@
                 
                 const gasolina = posto.precos?.gasolina;
                 const etanol = posto.precos?.etanol;
-                const gasolinaANP = posto.precosANP?.gasolina_comum || posto.precosANP?.gasolina;
-                const etanolANP = posto.precosANP?.etanol;
+                
+                const gasolinaStatus = getPriceStatus(gasolina, 'gasolina');
+                const etanolStatus = getPriceStatus(etanol, 'etanol');
 
                 return `
                     <div class="post-card" data-terminal="${posto.terminal}" onclick="selectPosto('${posto.terminal}')">
@@ -1749,28 +1759,20 @@
                             <span>${endereco}</span>
                         </div>
                         <div class="post-prices">
-                            <div class="price-item">
+                            <div class="price-item ${gasolinaStatus}">
                                 <div class="price-type">Gasolina</div>
                                 ${gasolina ? 
-                                    `<div class="price-value">R$ ${gasolina.toFixed(2)}</div>
+                                    `<div class="price-value ${gasolinaStatus}">R$ ${gasolina.toFixed(2)}</div>
                                      <div class="price-source">Último abast.</div>` :
-                                    (gasolinaANP ? 
-                                        `<div class="price-value anp-price">R$ ${parseFloat(gasolinaANP).toFixed(2)}</div>
-                                         <div class="price-source">Média ANP</div>` :
-                                        `<div class="price-value no-data">--</div>`
-                                    )
+                                    `<div class="price-value no-data">--</div>`
                                 }
                             </div>
-                            <div class="price-item">
+                            <div class="price-item ${etanolStatus}">
                                 <div class="price-type">Etanol</div>
                                 ${etanol ? 
-                                    `<div class="price-value">R$ ${etanol.toFixed(2)}</div>
+                                    `<div class="price-value ${etanolStatus}">R$ ${etanol.toFixed(2)}</div>
                                      <div class="price-source">Último abast.</div>` :
-                                    (etanolANP ? 
-                                        `<div class="price-value anp-price">R$ ${parseFloat(etanolANP).toFixed(2)}</div>
-                                         <div class="price-source">Média ANP</div>` :
-                                        `<div class="price-value no-data">--</div>`
-                                    )
+                                    `<div class="price-value no-data">--</div>`
                                 }
                             </div>
                         </div>
@@ -1859,25 +1861,19 @@
 
             if (!Array.isArray(postosData) || postosData.length === 0) return;
 
-            const precos = postosData
-                .map(p => p.precos?.gasolina)
-                .filter(p => p !== null && p !== undefined && !isNaN(p));
-            
-            const minPreco = precos.length > 0 ? Math.min(...precos) : 0;
-            const maxPreco = precos.length > 0 ? Math.max(...precos) : 10;
-            const range = maxPreco - minPreco || 1;
-
             postosData.forEach(posto => {
                 if (!posto.coordenadas) return;
 
                 const preco = posto.precos?.gasolina;
-                let markerClass = 'custom-marker';
+                const status = getPriceStatus(preco, 'gasolina');
                 
-                if (preco && range > 0) {
-                    const ratio = (preco - minPreco) / range;
-                    if (ratio < 0.33) markerClass += ' low-price';
-                    else if (ratio < 0.66) markerClass += ' medium-price';
-                    else markerClass += ' high-price';
+                let markerClass = 'custom-marker';
+                if (status === 'below-anp') {
+                    markerClass += ' marker-below-anp';
+                } else if (status === 'above-anp') {
+                    markerClass += ' marker-above-anp';
+                } else {
+                    markerClass += ' marker-no-data';
                 }
 
                 const icon = L.divIcon({
@@ -1887,12 +1883,20 @@
                     iconAnchor: [18, 18]
                 });
 
+                let popupPriceClass = 'no-data';
+                let popupPriceText = 'Preço não informado';
+                
+                if (preco) {
+                    popupPriceClass = status;
+                    popupPriceText = `Gasolina: R$ ${preco.toFixed(2)}`;
+                }
+
                 const marker = L.marker(posto.coordenadas, { icon })
                     .addTo(map)
                     .bindPopup(`
                         <div class="popup-content">
                             <div class="popup-name">${posto.nomeFantasia || 'Posto'}</div>
-                            ${preco ? `<div class="popup-price">Gasolina: R$ ${preco.toFixed(2)}</div>` : ''}
+                            <div class="popup-price ${popupPriceClass}">${popupPriceText}</div>
                         </div>
                     `);
 
@@ -1939,27 +1943,28 @@
             const etanol = posto.precos?.etanol;
             const diesel = posto.precos?.diesel;
             const gnv = posto.precos?.gnv;
-            const gasolinaANP = posto.precosANP?.gasolina_comum || posto.precosANP?.gasolina;
-            const etanolANP = posto.precosANP?.etanol;
+            
+            const gasolinaStatus = getPriceStatus(gasolina, 'gasolina');
+            const etanolStatus = getPriceStatus(etanol, 'etanol');
+            const dieselStatus = getPriceStatus(diesel, 'diesel');
+            const gnvStatus = getPriceStatus(gnv, 'gnv');
 
             document.getElementById('infoPrices').innerHTML = `
-                <div class="info-price-card">
+                <div class="info-price-card ${gasolinaStatus}">
                     <div class="info-price-type">Gasolina</div>
-                    <div class="info-price-value ${!gasolina && gasolinaANP ? 'anp' : ''}">${gasolina ? `R$ ${gasolina.toFixed(2)}` : (gasolinaANP ? `R$ ${parseFloat(gasolinaANP).toFixed(2)}` : '--')}</div>
-                    ${!gasolina && gasolinaANP ? '<div class="price-source" style="font-size:0.6rem;color:#64748b;">ANP</div>' : ''}
+                    <div class="info-price-value ${gasolinaStatus}">${gasolina ? `R$ ${gasolina.toFixed(2)}` : '--'}</div>
                 </div>
-                <div class="info-price-card">
+                <div class="info-price-card ${etanolStatus}">
                     <div class="info-price-type">Etanol</div>
-                    <div class="info-price-value ${!etanol && etanolANP ? 'anp' : ''}">${etanol ? `R$ ${etanol.toFixed(2)}` : (etanolANP ? `R$ ${parseFloat(etanolANP).toFixed(2)}` : '--')}</div>
-                    ${!etanol && etanolANP ? '<div class="price-source" style="font-size:0.6rem;color:#64748b;">ANP</div>' : ''}
+                    <div class="info-price-value ${etanolStatus}">${etanol ? `R$ ${etanol.toFixed(2)}` : '--'}</div>
                 </div>
-                <div class="info-price-card">
+                <div class="info-price-card ${dieselStatus}">
                     <div class="info-price-type">Diesel</div>
-                    <div class="info-price-value">${diesel ? `R$ ${diesel.toFixed(2)}` : '--'}</div>
+                    <div class="info-price-value ${dieselStatus}">${diesel ? `R$ ${diesel.toFixed(2)}` : '--'}</div>
                 </div>
-                <div class="info-price-card">
+                <div class="info-price-card ${gnvStatus}">
                     <div class="info-price-type">GNV</div>
-                    <div class="info-price-value">${gnv ? `R$ ${gnv.toFixed(2)}` : '--'}</div>
+                    <div class="info-price-value ${gnvStatus}">${gnv ? `R$ ${gnv.toFixed(2)}` : '--'}</div>
                 </div>
             `;
 
