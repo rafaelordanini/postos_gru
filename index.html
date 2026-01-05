@@ -24,10 +24,10 @@
 
         /* Header */
         .header {
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, 0.98);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 15px 20px;
+            padding: 12px 20px;
             position: fixed;
             top: 0;
             left: 0;
@@ -36,13 +36,15 @@
         }
 
         .header-content {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
+        }
+
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
+            margin-bottom: 15px;
         }
 
         .logo-section {
@@ -73,33 +75,6 @@
         .logo-text span {
             font-size: 0.75rem;
             color: #94a3b8;
-        }
-
-        .header-stats {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stat-value {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #10b981;
-        }
-
-        .stat-label {
-            font-size: 0.7rem;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         /* Indicador ANP */
@@ -140,12 +115,183 @@
             50% { opacity: 0.5; }
         }
 
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stats-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .stats-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-section-title .icon {
+            font-size: 1rem;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        /* Preço ANP Card */
+        .anp-price-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .anp-price-card .fuel-type {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .anp-price-card .price-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .anp-price-card .price-label {
+            font-size: 0.65rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* Posto Price Card */
+        .posto-price-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .posto-price-card.menor {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .posto-price-card.maior {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .posto-price-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .posto-price-type {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .posto-price-card.menor .posto-price-type {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .posto-price-card.maior .posto-price-type {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .posto-price-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .posto-price-card.menor .posto-price-value {
+            color: #10b981;
+        }
+
+        .posto-price-card.maior .posto-price-value {
+            color: #ef4444;
+        }
+
+        .posto-info {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .posto-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+
+        .posto-address {
+            font-size: 0.7rem;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Contador de postos */
+        .postos-counter {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .counter-item {
+            text-align: center;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .counter-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .counter-label {
+            font-size: 0.65rem;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
         /* Main Container */
         .main-container {
             display: grid;
             grid-template-columns: 380px 1fr;
             height: 100vh;
-            padding-top: 80px;
+            padding-top: 200px;
         }
 
         /* Sidebar */
@@ -783,26 +929,22 @@
             margin-bottom: 15px;
         }
 
-        /* ANP Info Banner */
-        .anp-banner {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 10px;
-            padding: 12px 15px;
-            margin: 10px;
-            font-size: 0.8rem;
-            color: #94a3b8;
-        }
-
-        .anp-banner strong {
-            color: #60a5fa;
-        }
-
         /* Mobile Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-container {
+                padding-top: 320px;
+            }
+        }
+
         @media (max-width: 900px) {
             .main-container {
                 grid-template-columns: 1fr;
                 grid-template-rows: 1fr 1fr;
+                padding-top: 380px;
             }
 
             .sidebar {
@@ -815,8 +957,8 @@
                 order: 1;
             }
 
-            .header-stats {
-                display: none;
+            .stats-row {
+                grid-template-columns: 1fr;
             }
 
             .info-panel {
@@ -835,13 +977,18 @@
             }
         }
 
-        @media (max-width: 480px) {
-            .header-content {
+        @media (max-width: 600px) {
+            .header-top {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .postos-counter {
                 justify-content: center;
             }
 
-            .logo-text h1 {
-                font-size: 1rem;
+            .main-container {
+                padding-top: 450px;
             }
 
             .post-prices {
@@ -865,31 +1012,103 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <div class="logo-section">
-                <div class="logo-icon">⛽</div>
-                <div class="logo-text">
-                    <h1>Postos Credenciados</h1>
-                    <span>Câmara Municipal de Guarulhos</span>
+            <div class="header-top">
+                <div class="logo-section">
+                    <div class="logo-icon">⛽</div>
+                    <div class="logo-text">
+                        <h1>Postos Credenciados</h1>
+                        <span>Câmara Municipal de Guarulhos</span>
+                    </div>
+                </div>
+
+                <div class="postos-counter">
+                    <div class="counter-item">
+                        <div class="counter-value" id="totalPostos">--</div>
+                        <div class="counter-label">Postos</div>
+                    </div>
+                    <div class="anp-indicator" id="anpIndicator">
+                        <div class="anp-dot"></div>
+                        <span id="anpStatus">Conectando ANP...</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="anp-indicator" id="anpIndicator">
-                <div class="anp-dot"></div>
-                <span id="anpStatus">Conectando ANP...</span>
-            </div>
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <!-- Preços ANP -->
+                <div class="stats-section">
+                    <div class="stats-section-title">
+                        <span class="icon">📊</span>
+                        Preços Médios ANP - Guarulhos (Atualizado: <span id="anpDate">--</span>)
+                    </div>
+                    <div class="stats-row">
+                        <div class="anp-price-card">
+                            <div class="fuel-type">Gasolina Comum</div>
+                            <div class="price-value" id="anpGasolina">--</div>
+                            <div class="price-label">Média Regional</div>
+                        </div>
+                        <div class="anp-price-card">
+                            <div class="fuel-type">Etanol</div>
+                            <div class="price-value" id="anpEtanol">--</div>
+                            <div class="price-label">Média Regional</div>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="header-stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="statTotal">--</div>
-                    <div class="stat-label">Postos</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="statGasolina">--</div>
-                    <div class="stat-label">Menor Gasolina</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="statEtanol">--</div>
-                    <div class="stat-label">Menor Etanol</div>
+                <!-- Preços Postos Credenciados -->
+                <div class="stats-section">
+                    <div class="stats-section-title">
+                        <span class="icon">🏆</span>
+                        Preços em Postos Credenciados
+                    </div>
+                    <div class="stats-row">
+                        <!-- Menor Gasolina -->
+                        <div class="posto-price-card menor">
+                            <div class="posto-price-header">
+                                <span class="posto-price-type">🟢 Menor Gasolina</span>
+                                <span class="posto-price-value" id="menorGasolinaValor">--</span>
+                            </div>
+                            <div class="posto-info">
+                                <div class="posto-name" id="menorGasolinaNome">--</div>
+                                <div class="posto-address" id="menorGasolinaEndereco">--</div>
+                            </div>
+                        </div>
+                        <!-- Maior Gasolina -->
+                        <div class="posto-price-card maior">
+                            <div class="posto-price-header">
+                                <span class="posto-price-type">🔴 Maior Gasolina</span>
+                                <span class="posto-price-value" id="maiorGasolinaValor">--</span>
+                            </div>
+                            <div class="posto-info">
+                                <div class="posto-name" id="maiorGasolinaNome">--</div>
+                                <div class="posto-address" id="maiorGasolinaEndereco">--</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-row" style="margin-top: 12px;">
+                        <!-- Menor Etanol -->
+                        <div class="posto-price-card menor">
+                            <div class="posto-price-header">
+                                <span class="posto-price-type">🟢 Menor Etanol</span>
+                                <span class="posto-price-value" id="menorEtanolValor">--</span>
+                            </div>
+                            <div class="posto-info">
+                                <div class="posto-name" id="menorEtanolNome">--</div>
+                                <div class="posto-address" id="menorEtanolEndereco">--</div>
+                            </div>
+                        </div>
+                        <!-- Maior Etanol -->
+                        <div class="posto-price-card maior">
+                            <div class="posto-price-header">
+                                <span class="posto-price-type">🔴 Maior Etanol</span>
+                                <span class="posto-price-value" id="maiorEtanolValor">--</span>
+                            </div>
+                            <div class="posto-info">
+                                <div class="posto-name" id="maiorEtanolNome">--</div>
+                                <div class="posto-address" id="maiorEtanolEndereco">--</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -929,11 +1148,6 @@
                         <option value="BANDEIRA BRANCA">Bandeira Branca</option>
                     </select>
                 </div>
-            </div>
-
-            <!-- ANP Info Banner -->
-            <div class="anp-banner" id="anpBanner">
-                📊 Preços <strong>ANP</strong>: Última atualização em <span id="anpDate">--</span>
             </div>
 
             <div class="posts-list" id="postsList">
@@ -994,12 +1208,11 @@
         // ==========================================
         // CONFIGURAÇÃO E VARIÁVEIS GLOBAIS
         // ==========================================
-        const API_POSTOS = 'https://postos-gru.vercel.app';  // Dados dos postos credenciados
-        const API_ANP = 'https://anp-gru.vercel.app';        // Dados de preços ANP
+        const API_POSTOS = 'https://postos-gru.vercel.app';
+        const API_ANP = 'https://anp-gru.vercel.app';
         const GUARULHOS_CENTER = [-23.4538, -46.5333];
         const DEFAULT_ZOOM = 12;
 
-        // Cache keys para localStorage
         const CACHE_KEYS = {
             ANP_DATA: 'anp_prices_cache',
             ANP_DATE: 'anp_prices_date',
@@ -1007,7 +1220,6 @@
             POSTOS_DATE: 'postos_cache_date'
         };
 
-        // Tempo de cache (24 horas em milissegundos)
         const CACHE_DURATION = 24 * 60 * 60 * 1000;
 
         let map;
@@ -1051,18 +1263,12 @@
         async function loadAllData() {
             try {
                 updateLoadingText('Carregando postos credenciados...');
-                
-                // Carregar dados dos postos
                 await loadPostosData();
                 
-                // Carregar dados da ANP
                 updateLoadingText('Buscando preços da ANP...');
                 await loadANPData();
                 
-                // Mesclar dados
                 mergeData();
-                
-                // Renderizar
                 renderPosts();
                 renderMarkers();
                 updateStats();
@@ -1072,7 +1278,6 @@
                 console.error('Erro ao carregar dados:', error);
                 updateANPIndicator(false, error.message);
                 
-                // Tentar usar cache se disponível
                 if (postosData.length === 0) {
                     loadFromCache();
                 }
@@ -1083,17 +1288,14 @@
 
         async function loadPostosData() {
             try {
-                // Verificar cache primeiro
                 const cachedData = getCachedData(CACHE_KEYS.POSTOS_DATA, CACHE_KEYS.POSTOS_DATE);
                 
                 if (cachedData) {
-                    console.log('Usando cache de postos');
                     postosData = cachedData.postos || [];
                     precosData = cachedData.precos || [];
                     return;
                 }
 
-                // Buscar dados frescos
                 const [postosRes, precosRes] = await Promise.all([
                     fetch(`${API_POSTOS}/postos.json`),
                     fetch(`${API_POSTOS}/precos-postos.json`)
@@ -1109,7 +1311,6 @@
                 postosData = postosJson.data || [];
                 precosData = precosJson.data || [];
 
-                // Salvar no cache
                 setCacheData(CACHE_KEYS.POSTOS_DATA, CACHE_KEYS.POSTOS_DATE, {
                     postos: postosData,
                     precos: precosData
@@ -1123,18 +1324,14 @@
 
         async function loadANPData() {
             try {
-                // Verificar se precisa atualizar (cache de 24h)
                 const cachedANP = getCachedData(CACHE_KEYS.ANP_DATA, CACHE_KEYS.ANP_DATE);
                 
                 if (cachedANP && !shouldUpdateANP()) {
-                    console.log('Usando cache da ANP');
                     anpData = cachedANP;
                     updateANPDate(localStorage.getItem(CACHE_KEYS.ANP_DATE));
                     return;
                 }
 
-                // Buscar dados frescos da ANP
-                console.log('Buscando dados frescos da ANP...');
                 const response = await fetch(`${API_ANP}/prices.json`);
                 
                 if (!response.ok) {
@@ -1143,7 +1340,6 @@
 
                 anpData = await response.json();
                 
-                // Salvar no cache
                 const now = new Date().toISOString();
                 setCacheData(CACHE_KEYS.ANP_DATA, CACHE_KEYS.ANP_DATE, anpData);
                 updateANPDate(now);
@@ -1151,7 +1347,6 @@
             } catch (error) {
                 console.warn('Erro ao carregar ANP, usando cache:', error);
                 
-                // Tentar usar cache mesmo expirado
                 const cachedANP = localStorage.getItem(CACHE_KEYS.ANP_DATA);
                 if (cachedANP) {
                     anpData = JSON.parse(cachedANP);
@@ -1167,7 +1362,6 @@
             const lastDate = new Date(lastUpdate);
             const now = new Date();
             
-            // Atualizar se passou mais de 24 horas
             return (now - lastDate) > CACHE_DURATION;
         }
 
@@ -1180,7 +1374,7 @@
                 const now = new Date();
 
                 if ((now - cacheDate) > CACHE_DURATION) {
-                    return null; // Cache expirado
+                    return null;
                 }
 
                 const data = localStorage.getItem(dataKey);
@@ -1217,11 +1411,9 @@
         }
 
         function mergeData() {
-            // Mesclar preços dos postos credenciados
             postosData = postosData.map(posto => {
                 const preco = precosData.find(p => p.terminal === posto.terminal);
                 
-                // Buscar preço ANP para a bandeira/região se disponível
                 let precoANP = null;
                 if (anpData && anpData.guarulhos) {
                     precoANP = anpData.guarulhos;
@@ -1261,9 +1453,7 @@
             document.getElementById('loadingSubtext').textContent = text;
         }
 
-        // Gerar coordenadas baseadas no endereço
         function generateCoordinates(posto) {
-            // Mapeamento de bairros para coordenadas aproximadas
             const bairroCoords = {
                 'Cocaia': [-23.4300, -46.5200],
                 'Centro': [-23.4628, -46.5327],
@@ -1296,7 +1486,6 @@
             const bairro = posto.endereco?.bairro || '';
             let coords = bairroCoords.default;
 
-            // Procurar bairro correspondente
             for (const [key, value] of Object.entries(bairroCoords)) {
                 if (bairro.toLowerCase().includes(key.toLowerCase())) {
                     coords = value;
@@ -1304,9 +1493,75 @@
                 }
             }
 
-            // Adicionar variação aleatória para não sobrepor marcadores
             const variation = () => (Math.random() - 0.5) * 0.008;
             return [coords[0] + variation(), coords[1] + variation()];
+        }
+
+        // ==========================================
+        // ATUALIZAÇÃO DE ESTATÍSTICAS (HEADER)
+        // ==========================================
+        function updateStats() {
+            // Total de postos
+            document.getElementById('totalPostos').textContent = postosData.length;
+
+            // Preços ANP
+            if (anpData?.guarulhos) {
+                const anp = anpData.guarulhos;
+                document.getElementById('anpGasolina').textContent = anp.gasolina_comum ? 
+                    `R$ ${anp.gasolina_comum.toFixed(2)}` : '--';
+                document.getElementById('anpEtanol').textContent = anp.etanol ? 
+                    `R$ ${anp.etanol.toFixed(2)}` : '--';
+            }
+
+            // Encontrar menor e maior gasolina
+            const postosComGasolina = postosData.filter(p => p.precos?.gasolina !== null && p.precos?.gasolina !== undefined);
+            
+            if (postosComGasolina.length > 0) {
+                // Menor Gasolina
+                const menorGasolina = postosComGasolina.reduce((min, p) => 
+                    p.precos.gasolina < min.precos.gasolina ? p : min
+                );
+                document.getElementById('menorGasolinaValor').textContent = `R$ ${menorGasolina.precos.gasolina.toFixed(2)}`;
+                document.getElementById('menorGasolinaNome').textContent = menorGasolina.nomeFantasia || 'Posto';
+                document.getElementById('menorGasolinaEndereco').textContent = formatEnderecoResumido(menorGasolina);
+
+                // Maior Gasolina
+                const maiorGasolina = postosComGasolina.reduce((max, p) => 
+                    p.precos.gasolina > max.precos.gasolina ? p : max
+                );
+                document.getElementById('maiorGasolinaValor').textContent = `R$ ${maiorGasolina.precos.gasolina.toFixed(2)}`;
+                document.getElementById('maiorGasolinaNome').textContent = maiorGasolina.nomeFantasia || 'Posto';
+                document.getElementById('maiorGasolinaEndereco').textContent = formatEnderecoResumido(maiorGasolina);
+            }
+
+            // Encontrar menor e maior etanol
+            const postosComEtanol = postosData.filter(p => p.precos?.etanol !== null && p.precos?.etanol !== undefined);
+            
+            if (postosComEtanol.length > 0) {
+                // Menor Etanol
+                const menorEtanol = postosComEtanol.reduce((min, p) => 
+                    p.precos.etanol < min.precos.etanol ? p : min
+                );
+                document.getElementById('menorEtanolValor').textContent = `R$ ${menorEtanol.precos.etanol.toFixed(2)}`;
+                document.getElementById('menorEtanolNome').textContent = menorEtanol.nomeFantasia || 'Posto';
+                document.getElementById('menorEtanolEndereco').textContent = formatEnderecoResumido(menorEtanol);
+
+                // Maior Etanol
+                const maiorEtanol = postosComEtanol.reduce((max, p) => 
+                    p.precos.etanol > max.precos.etanol ? p : max
+                );
+                document.getElementById('maiorEtanolValor').textContent = `R$ ${maiorEtanol.precos.etanol.toFixed(2)}`;
+                document.getElementById('maiorEtanolNome').textContent = maiorEtanol.nomeFantasia || 'Posto';
+                document.getElementById('maiorEtanolEndereco').textContent = formatEnderecoResumido(maiorEtanol);
+            }
+        }
+
+        function formatEnderecoResumido(posto) {
+            if (!posto.endereco) return 'Endereço não disponível';
+            const e = posto.endereco;
+            const rua = e.rua || e.logradouro || '';
+            const bairro = e.bairro || '';
+            return `${rua}${bairro ? ' - ' + bairro : ''}`.trim() || 'Endereço não disponível';
         }
 
         // ==========================================
@@ -1333,7 +1588,6 @@
 
                 const badgeClass = getBadgeClass(posto.bandeira);
                 
-                // Determinar preço a exibir (posto ou ANP)
                 const gasolina = posto.precos?.gasolina;
                 const etanol = posto.precos?.etanol;
                 const gasolinaANP = posto.precosANP?.gasolina_comum;
@@ -1389,7 +1643,6 @@
             let filtered = [...postosData];
             const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
 
-            // Filtro de busca
             if (searchTerm) {
                 filtered = filtered.filter(posto => {
                     const nome = (posto.nomeFantasia || '').toLowerCase();
@@ -1399,14 +1652,12 @@
                 });
             }
 
-            // Filtro de bandeira
             if (currentBandeira) {
                 filtered = filtered.filter(posto => 
                     (posto.bandeira || '').toUpperCase().includes(currentBandeira.toUpperCase())
                 );
             }
 
-            // Filtros especiais
             if (currentFilter === '24h') {
                 filtered = filtered.filter(posto => is24Hours(posto));
             } else if (currentFilter === 'low-price') {
@@ -1415,7 +1666,6 @@
                 filtered = filtered.slice(0, 10);
             }
 
-            // Ordenação
             switch (currentSort) {
                 case 'name':
                     filtered.sort((a, b) => (a.nomeFantasia || '').localeCompare(b.nomeFantasia || ''));
@@ -1457,11 +1707,9 @@
         }
 
         function renderMarkers() {
-            // Limpar marcadores existentes
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
 
-            // Calcular range de preços para colorização
             const precos = postosData
                 .map(p => p.precos?.gasolina)
                 .filter(p => p !== null && p !== undefined);
@@ -1504,35 +1752,6 @@
             });
         }
 
-        function updateStats() {
-            // Total de postos
-            document.getElementById('statTotal').textContent = postosData.length;
-
-            // Menor preço gasolina
-            const gasolinaPrecos = postosData
-                .map(p => p.precos?.gasolina)
-                .filter(p => p !== null && p !== undefined);
-            
-            if (gasolinaPrecos.length > 0) {
-                const minGasolina = Math.min(...gasolinaPrecos);
-                document.getElementById('statGasolina').textContent = `R$ ${minGasolina.toFixed(2)}`;
-            } else if (anpData?.guarulhos?.gasolina_comum) {
-                document.getElementById('statGasolina').textContent = `R$ ${anpData.guarulhos.gasolina_comum.toFixed(2)}`;
-            }
-
-            // Menor preço etanol
-            const etanolPrecos = postosData
-                .map(p => p.precos?.etanol)
-                .filter(p => p !== null && p !== undefined);
-            
-            if (etanolPrecos.length > 0) {
-                const minEtanol = Math.min(...etanolPrecos);
-                document.getElementById('statEtanol').textContent = `R$ ${minEtanol.toFixed(2)}`;
-            } else if (anpData?.guarulhos?.etanol) {
-                document.getElementById('statEtanol').textContent = `R$ ${anpData.guarulhos.etanol.toFixed(2)}`;
-            }
-        }
-
         // ==========================================
         // INTERAÇÕES
         // ==========================================
@@ -1542,7 +1761,6 @@
 
             selectedPosto = posto;
 
-            // Destacar card
             document.querySelectorAll('.post-card').forEach(card => {
                 card.classList.remove('active');
                 if (card.dataset.terminal === terminal) {
@@ -1550,12 +1768,10 @@
                 }
             });
 
-            // Centralizar mapa
             if (posto.coordenadas) {
                 map.setView(posto.coordenadas, 15);
             }
 
-            // Mostrar painel de informações
             showInfoPanel(posto);
         }
 
@@ -1570,7 +1786,6 @@
             document.getElementById('infoAddress').textContent = endereco;
             document.getElementById('infoContact').textContent = posto.contato?.telefone || '';
 
-            // Preços
             const gasolina = posto.precos?.gasolina;
             const etanol = posto.precos?.etanol;
             const diesel = posto.precos?.diesel;
@@ -1599,7 +1814,6 @@
                 </div>
             `;
 
-            // Configurar botões
             document.getElementById('btnRoute').onclick = () => openRoute(posto);
             document.getElementById('btnCall').onclick = () => callPosto(posto);
 
@@ -1644,12 +1858,10 @@
         // EVENT LISTENERS
         // ==========================================
         function initEventListeners() {
-            // Busca
             document.getElementById('searchInput').addEventListener('input', () => {
                 renderPosts();
             });
 
-            // Filtros
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1659,19 +1871,16 @@
                 });
             });
 
-            // Ordenação
             document.getElementById('sortSelect').addEventListener('change', (e) => {
                 currentSort = e.target.value;
                 renderPosts();
             });
 
-            // Filtro de bandeira
             document.getElementById('bandeira-filter').addEventListener('change', (e) => {
                 currentBandeira = e.target.value;
                 renderPosts();
             });
 
-            // Controles do mapa
             document.getElementById('locateBtn').addEventListener('click', locateUser);
             document.getElementById('zoomInBtn').addEventListener('click', () => map.zoomIn());
             document.getElementById('zoomOutBtn').addEventListener('click', () => map.zoomOut());
@@ -1688,7 +1897,6 @@
                         userLocation = [position.coords.latitude, position.coords.longitude];
                         map.setView(userLocation, 14);
                         
-                        // Adicionar marcador do usuário
                         const userIcon = L.divIcon({
                             className: 'user-marker',
                             html: '📍',
@@ -1697,7 +1905,6 @@
                         });
                         L.marker(userLocation, { icon: userIcon }).addTo(map);
 
-                        // Re-ordenar se necessário
                         if (currentSort === 'distance') {
                             renderPosts();
                         }
@@ -1717,15 +1924,10 @@
             document.getElementById('loadingOverlay').classList.add('hidden');
         }
 
-        function showError(message) {
-            console.error(message);
-        }
-
         // ==========================================
         // ATUALIZAÇÃO AUTOMÁTICA ANP (a cada 24h)
         // ==========================================
         function scheduleANPUpdate() {
-            // Verificar a cada hora se precisa atualizar
             setInterval(async () => {
                 if (shouldUpdateANP()) {
                     console.log('Atualizando dados da ANP...');
@@ -1734,10 +1936,9 @@
                     renderPosts();
                     updateStats();
                 }
-            }, 60 * 60 * 1000); // Verifica a cada hora
+            }, 60 * 60 * 1000);
         }
 
-        // Iniciar agendamento
         scheduleANPUpdate();
     </script>
 </body>
