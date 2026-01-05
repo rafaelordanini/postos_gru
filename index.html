@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postos Credenciados - Guarulhos</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            padding: 16px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* ANP Prices Bar */
+        .anp-bar {
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            color: white;
+            padding: 12px 20px;
+            position: fixed;
+            top: 72px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .anp-bar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .anp-title {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .anp-prices {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .anp-price-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .anp-fuel-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .anp-fuel-icon.gasolina {
+            background: #ff5252;
+        }
+
+        .anp-fuel-icon.etanol {
+            background: #4caf50;
+        }
+
+        .anp-fuel-name {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .anp-fuel-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .anp-ratio {
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .anp-ratio.etanol-vale {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .anp-ratio.gasolina-vale {
+            background: rgba(255, 82, 82, 0.3);
+        }
+
+        .anp-status {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        /* Map Container */
+        #map {
+            position: fixed;
+            top: 130px;
+            left: 0;
+            right: 0;
+            bottom: 60px;
+            z-index: 1;
+        }
+
+        /* Bottom Bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 12px 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .posts-count {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .posts-count strong {
+            color: #1a73e8;
+        }
+
+        .btn-my-location {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-my-location:hover {
+            background: #1557b0;
+        }
+
+        /* Custom Markers */
+        .custom-marker {
+            background: #1a73e8;
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .custom-marker.credenciado {
+            background: #4caf50;
+        }
+
+        /* Popup Styles */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            min-width: 200px;
+        }
+
+        .popup-content {
+            padding: 16px;
+        }
+
+        .popup-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .popup-address {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .popup-badge {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .popup-prices {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .popup-price {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .popup-price-label {
+            font-size: 0.7rem;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .popup-price-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .popup-btn {
+            width: 100%;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .popup-btn:hover {
+            background: #1557b0;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 130px;
+            left: 0;
+            right: 0;
+            bottom: 60px;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+        }
+
+        .loading-spinner {
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsivo */
+        @media (max-width: 600px) {
+            .anp-bar-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .anp-prices {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .anp-ratio {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>⛽ Postos Credenciados</h1>
+            <div class="header-subtitle">Prime Benefícios • Guarulhos, SP</div>
+        </div>
+    </header>
+
+    <!-- ANP Prices Bar -->
+    <div class="anp-bar">
+        <div class="anp-bar-content">
+            <div>
+                <div class="anp-title">📊 Preços Médios ANP - Guarulhos</div>
+                <div id="anp-status" class="anp-status">Carregando...</div>
+            </div>
+            <div class="anp-prices">
+                <div class="anp-price-item">
+                    <div class="anp-fuel-icon gasolina">⛽</div>
+                    <div>
+                        <div class="anp-fuel-name">Gasolina</div>
+                        <div id="anp-gasolina" class="anp-fuel-price">R$ --</div>
+                    </div>
+                </div>
+                <div class="anp-price-item">
+                    <div class="anp-fuel-icon etanol">🌿</div>
+                    <div>
+                        <div class="anp-fuel-name">Etanol</div>
+                        <div id="anp-etanol" class="anp-fuel-price">R$ --</div>
+                    </div>
+                </div>
+            </div>
+            <div id="anp-ratio" class="anp-ratio">
+                Proporção: --%
+            </div>
+        </div>
+    </div>
+
+    <!-- Map -->
+    <div id="map"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <div>Carregando postos...</div>
+        </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="bottom-bar">
+        <div class="posts-count">
+            <strong id="posts-count">0</strong> postos encontrados
+        </div>
+        <button class="btn-my-location" onclick="goToMyLocation()">
+            📍 Minha Localização
+        </button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // ========================================
+        // CONFIGURAÇÃO
+        // ========================================
+        const ANP_API_URL = 'https://anp-gru.vercel.app/api/prices';
+        const RATIO_THRESHOLD = 0.70;
+
+        // Centro de Guarulhos
+        const GUARULHOS_CENTER = [-23.4538, -46.5333];
+        const DEFAULT_ZOOM = 13;
+
+        // Dados da ANP
+        let anpPrices = {
+            gasolina: null,
+            etanol: null
+        };
+
+        // Mapa
+        let map;
+        let userMarker;
+
+        // ========================================
+        // LISTA DE POSTOS CREDENCIADOS
+        // ========================================
+        const postos = [
+            {
+                id: 1,
+                nome: "Posto Shell - Centro",
+                endereco: "Av. Paulo Faccini, 500 - Centro",
+                lat: -23.4538,
+                lng: -46.5333,
+                credenciado: true,
+                bandeira: "Shell"
+            },
+            {
+                id: 2,
+                nome: "Posto Ipiranga - Macedo",
+                endereco: "Av. Macedo, 1200 - Macedo",
+                lat: -23.4620,
+                lng: -46.5280,
+                credenciado: true,
+                bandeira: "Ipiranga"
+            },
+            {
+                id: 3,
+                nome: "Posto BR - Taboão",
+                endereco: "Rua Taboão, 800 - Taboão",
+                lat: -23.4480,
+                lng: -46.5400,
+                credenciado: true,
+                bandeira: "Petrobras"
+            },
+            {
+                id: 4,
+                nome: "Posto Ale - Vila Augusta",
+                endereco: "Av. Guarulhos, 2500 - Vila Augusta",
+                lat: -23.4650,
+                lng: -46.5180,
+                credenciado: true,
+                bandeira: "Ale"
+            },
+            {
+                id: 5,
+                nome: "Posto Shell - Dutra",
+                endereco: "Rod. Presidente Dutra, km 225",
+                lat: -23.4400,
+                lng: -46.5500,
+                credenciado: true,
+                bandeira: "Shell"
+            },
+            {
+                id: 6,
+                nome: "Posto Ipiranga - Bonsucesso",
+                endereco: "Av. Bonsucesso, 900 - Bonsucesso",
+                lat: -23.4750,
+                lng: -46.5100,
+                credenciado: true,
+                bandeira: "Ipiranga"
+            },
+            {
+                id: 7,
+                nome: "Posto BR - Cecap",
+                endereco: "Av. Cecap, 1500 - Cecap",
+                lat: -23.4350,
+                lng: -46.5450,
+                credenciado: true,
+                bandeira: "Petrobras"
+            },
+            {
+                id: 8,
+                nome: "Posto Raízen - Picanço",
+                endereco: "Rua Picanço, 450 - Picanço",
+                lat: -23.4580,
+                lng: -46.5600,
+                credenciado: true,
+                bandeira: "Shell"
+            }
+        ];
+
+        // ========================================
+        // BUSCAR PREÇOS DA ANP
+        // ========================================
+        async function fetchANPPrices() {
+            const statusEl = document.getElementById('anp-status');
+            const gasolinaEl = document.getElementById('anp-gasolina');
+            const etanolEl = document.getElementById('anp-etanol');
+            const ratioEl = document.getElementById('anp-ratio');
+
+            try {
+                const response = await fetch(ANP_API_URL);
+                const result = await response.json();
+
+                if (result.success) {
+                    anpPrices.gasolina = result.data.gasolinaComum;
+                    anpPrices.etanol = result.data.etanol;
+
+                    // Atualizar exibição
+                    gasolinaEl.textContent = formatCurrency(anpPrices.gasolina);
+                    etanolEl.textContent = formatCurrency(anpPrices.etanol);
+
+                    // Calcular proporção
+                    const ratio = anpPrices.etanol / anpPrices.gasolina;
+                    const ratioPercent = (ratio * 100).toFixed(1);
+
+                    if (ratio <= RATIO_THRESHOLD) {
+                        ratioEl.textContent = `✅ ${ratioPercent}% - Etanol vale a pena!`;
+                        ratioEl.classList.add('etanol-vale');
+                        ratioEl.classList.remove('gasolina-vale');
+                    } else {
+                        ratioEl.textContent = `⛽ ${ratioPercent}% - Gasolina é melhor`;
+                        ratioEl.classList.add('gasolina-vale');
+                        ratioEl.classList.remove('etanol-vale');
+                    }
+
+                    // Status com período
+                    const inicio = formatDate(result.periodStart);
+                    const fim = formatDate(result.periodEnd);
+                    statusEl.textContent = `Semana: ${inicio} a ${fim}`;
+
+                    // Salvar cache
+                    localStorage.setItem('anp-cache', JSON.stringify({
+                        ...result,
+                        cachedAt: Date.now()
+                    }));
+
+                } else {
+                    throw new Error('Erro na API');
+                }
+
+            } catch (error) {
+                console.error('Erro ao buscar ANP:', error);
+
+                // Tentar cache
+                const cached = localStorage.getItem('anp-cache');
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    anpPrices.gasolina = data.data.gasolinaComum;
+                    anpPrices.etanol = data.data.etanol;
+
+                    gasolinaEl.textContent = formatCurrency(anpPrices.gasolina);
+                    etanolEl.textContent = formatCurrency(anpPrices.etanol);
+
+                    const ratio = anpPrices.etanol / anpPrices.gasolina;
+                    ratioEl.textContent = `⚠️ ${(ratio * 100).toFixed(1)}% (cache)`;
+
+                    statusEl.textContent = '⚠️ Usando dados em cache';
+                } else {
+                    statusEl.textContent = '❌ Erro ao carregar preços';
+                }
+            }
+        }
+
+        // ========================================
+        // INICIALIZAR MAPA
+        // ========================================
+        function initMap() {
+            map = L.map('map').setView(GUARULHOS_CENTER, DEFAULT_ZOOM);
+
+            // Tile layer (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Adicionar marcadores dos postos
+            addPostosMarkers();
+
+            // Esconder loading
+            document.getElementById('loading').style.display = 'none';
+
+            // Atualizar contador
+            document.getElementById('posts-count').textContent = postos.length;
+        }
+
+        // ========================================
+        // ADICIONAR MARCADORES
+        // ========================================
+        function addPostosMarkers() {
+            postos.forEach(posto => {
+                // Ícone customizado
+                const icon = L.divIcon({
+                    className: 'custom-marker' + (posto.credenciado ? ' credenciado' : ''),
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10],
+                    popupAnchor: [0, -10]
+                });
+
+                // Criar marcador
+                const marker = L.marker([posto.lat, posto.lng], { icon })
+                    .addTo(map);
+
+                // Popup
+                marker.bindPopup(createPopupContent(posto));
+            });
+        }
+
+        // ========================================
+        // CRIAR CONTEÚDO DO POPUP
+        // ========================================
+        function createPopupContent(posto) {
+            const gasolinaDisplay = anpPrices.gasolina 
+                ? formatCurrency(anpPrices.gasolina) 
+                : 'R$ --';
+            const etanolDisplay = anpPrices.etanol 
+                ? formatCurrency(anpPrices.etanol) 
+                : 'R$ --';
+
+            const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${posto.lat},${posto.lng}`;
+
+            return `
+                <div class="popup-content">
+                    <div class="popup-title">${posto.nome}</div>
+                    <div class="popup-address">${posto.endereco}</div>
+                    ${posto.credenciado ? '<div class="popup-badge">✓ Credenciado Prime</div>' : ''}
+                    <div class="popup-prices">
+                        <div class="popup-price">
+                            <div class="popup-price-label">Gasolina*</div>
+                            <div class="popup-price-value">${gasolinaDisplay}</div>
+                        </div>
+                        <div class="popup-price">
+                            <div class="popup-price-label">Etanol*</div>
+                            <div class="popup-price-value">${etanolDisplay}</div>
+                        </div>
+                    </div>
+                    <a href="${mapsUrl}" target="_blank" class="popup-btn">
+                        🧭 Traçar Rota
+                    </a>
+                    <div style="font-size: 0.65rem; color: #999; margin-top: 8px; text-align: center;">
+                        *Preços médios ANP - podem variar no posto
+                    </div>
+                </div>
+            `;
+        }
+
+        // ========================================
+        // MINHA LOCALIZAÇÃO
+        // ========================================
+        function goToMyLocation() {
+            if (!navigator.geolocation) {
+                alert('Geolocalização não suportada neste navegador.');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+
+                    // Mover mapa
+                    map.setView([latitude, longitude], 15);
+
+                    // Remover marcador anterior se existir
+                    if (userMarker) {
+                        map.removeLayer(userMarker);
+                    }
+
+                    // Adicionar marcador do usuário
+                    const userIcon = L.divIcon({
+                        className: 'user-marker',
+                        html: '<div style="background: #1a73e8; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(26,115,232,0.5);"></div>',
+                        iconSize: [16, 16],
+                        iconAnchor: [8, 8]
+                    });
+
+                    userMarker = L.marker([latitude, longitude], { icon: userIcon })
+                        .addTo(map)
+                        .bindPopup('📍 Você está aqui')
+                        .openPopup();
+                },
+                (error) => {
+                    console.error('Erro ao obter localização:', error);
+                    alert('Não foi possível obter sua localização.');
+                }
+            );
+        }
+
+        // ========================================
+        // UTILITÁRIOS
+        // ========================================
+        function formatCurrency(value) {
+            if (value === null || value === undefined) return 'R$ --';
+            return `R$ ${value.toFixed(2).replace('.', ',')}`;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '--';
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // ========================================
+        // INICIALIZAÇÃO
+        // ========================================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Buscar preços da ANP primeiro
+            await fetchANPPrices();
+            
+            // Inicializar mapa
+            initMap();
+        });
+    </script>
+</body>
+</html>
