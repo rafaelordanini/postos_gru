@@ -1,0 +1,943 @@
+{
+  "success": true,
+  "updatedAt": "2026-01-05T12:30:00.000Z",
+  "total": 38,
+  "data": [
+    {
+      "terminal": "1302327274",
+      "nomeFantasia": "AUTO POSTO CRUZEIRO DO SUL",
+      "razaoSocial": "GDO PARTICIPACOES SA",
+      "cnpj": "27.751.075/0177-21",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Santos Dumont",
+        "numero": "2302",
+        "bairro": "Cidade Industrial Satélite de São Paulo",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07220000"
+      },
+      "contato": {
+        "nome": "Carlos Alberto Moraes Duque",
+        "telefone": "(11) 974069129",
+        "email": "cartoes@rededuque.com.br"
+      },
+      "bandeira": "BR",
+      "horarioFuncionamento": "24 horas",
+      "ultimaTransacao": "2026-01-04",
+      "ativo": true
+    },
+    {
+      "terminal": "1302322824",
+      "nomeFantasia": "AUTO POSTO GUARULHOS",
+      "razaoSocial": "GDO PARTICIPACOES SA",
+      "cnpj": "27.751.075/0012-13",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Rotary",
+        "numero": "710",
+        "bairro": "Vila das Bandeiras",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07042-000"
+      },
+      "contato": {
+        "nome": "Carlos Alberto Moraes Duque",
+        "telefone": "(11) 974069129",
+        "email": "cartoes@rededuque.com.br"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "24 Horas",
+      "ultimaTransacao": "2026-01-04",
+      "ativo": true
+    },
+    {
+      "terminal": "1302311815",
+      "nomeFantasia": "AUTO POSTO R66",
+      "razaoSocial": "AUTO POSTO R66 LTDA",
+      "cnpj": "17.688.784/0001-95",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Guarulhos",
+        "numero": "2316",
+        "bairro": "Vila Augusta",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07025000"
+      },
+      "contato": {
+        "nome": "Marcos Paulo Solak Sato",
+        "telefone": "(11) 970373067",
+        "email": "r66adm@hotmail.com.br"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "24 horas",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "1302294886",
+      "nomeFantasia": "AUTO POSTO SANTANA CUMBICA",
+      "razaoSocial": "GDO PARTICIPACOES SA",
+      "cnpj": "27.751.075/0030-03",
+      "endereco": {
+        "logradouro": "RODOVIA",
+        "rua": "Hélio Smidt",
+        "numero": "S/N",
+        "bairro": "Aeroporto Internacional de Guarulhos",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07190100"
+      },
+      "contato": {
+        "nome": "Carlos Alberto Moraes Duque",
+        "telefone": "(11) 31732080",
+        "email": "cartoes@rededuque.com.br"
+      },
+      "bandeira": "BR",
+      "horarioFuncionamento": "24 Horas",
+      "ultimaTransacao": "2026-01-05",
+      "ativo": true
+    },
+    {
+      "terminal": "1302292534",
+      "nomeFantasia": "AUTO POSTO AEROPORTO",
+      "razaoSocial": "GDO PARTICIPACOES SA",
+      "cnpj": "27.751.075/0037-71",
+      "endereco": {
+        "logradouro": "RODOVIA",
+        "rua": "Hélio Smidt",
+        "numero": "S/N",
+        "bairro": "Aeroporto",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07190100"
+      },
+      "contato": {
+        "nome": "Eduardo Moraes Duque",
+        "telefone": "(11) 31732080",
+        "email": "cartoes@rededuque.com.br"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "24 Horas",
+      "ultimaTransacao": "2026-01-05",
+      "ativo": true
+    },
+    {
+      "terminal": "1302287009",
+      "nomeFantasia": "AUTO POSTO BEQUIA",
+      "razaoSocial": "AUTO POSTO BEQUIA LTDA",
+      "cnpj": "46.587.906/0001-55",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Monteiro Lobato",
+        "numero": "1341",
+        "bairro": "Macedo",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07112000"
+      },
+      "contato": {
+        "nome": "Ricardo Pereira Quadrau",
+        "telefone": "(11) 31011326",
+        "email": "orian@uol.com.br"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "2ª a 6ª 05:00-23:00, Sáb 05:00-23:00, Dom 07:00-22:00",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "1302261879",
+      "nomeFantasia": "POSTO ZATEC CUMBICA",
+      "razaoSocial": "POSTO DE COMBUSTIVEIS E CONVENIENCIA ZATEC CUMBICA LTDA",
+      "cnpj": "33.085.870/0001-60",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Santos Dumont",
+        "numero": "1155",
+        "bairro": "Cumbica",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07180270"
+      },
+      "contato": {
+        "nome": "Elder Luis Mussi Bagiani",
+        "telefone": "(11) 914398679",
+        "email": "cartoes.postos@eurogestao.com.br"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "24 Horas",
+      "ultimaTransacao": "2025-10-13",
+      "ativo": true
+    },
+    {
+      "terminal": "1302256531",
+      "nomeFantasia": "POSTO MESTRE",
+      "razaoSocial": "AUTO POSTO MESTRE LTDA",
+      "cnpj": "49.098.957/0001-01",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Sete de Setembro",
+        "numero": "1870",
+        "bairro": "Vila Galvão",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07064002"
+      },
+      "contato": {
+        "nome": "Marcelo De Oliveira Sousa",
+        "telefone": "(11) 32596403",
+        "email": "postononinha@gmail.com"
+      },
+      "bandeira": "SHELL",
+      "horarioFuncionamento": "24 horas",
+      "ultimaTransacao": "2026-01-02",
+      "ativo": true
+    },
+    {
+      "terminal": "1302244849",
+      "nomeFantasia": "AUTO POSTO MACEDO",
+      "razaoSocial": "AUTO POSTO MACEDO LTDA",
+      "cnpj": "49.056.146/0001-48",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Monteiro Lobato",
+        "numero": "1471",
+        "bairro": "Macedo",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07112-000"
+      },
+      "contato": {
+        "nome": "Sergio Motta Marques",
+        "telefone": "(11) 991355498",
+        "email": "sergiommjunior@hotmail.com"
+      },
+      "bandeira": "SHELL",
+      "horarioFuncionamento": "24 Horas",
+      "ultimaTransacao": "2025-12-14",
+      "ativo": true
+    },
+    {
+      "terminal": "1302218951",
+      "nomeFantasia": "DUQUE POSTO RODOVIA PRESIDENTE DUTRA",
+      "razaoSocial": "DUQUE POSTO RODOVIA PRESIDENTE DUTRA LTDA",
+      "cnpj": "42.679.810/0001-66",
+      "endereco": {
+        "logradouro": "RODOVIA",
+        "rua": "Presidente Dutra",
+        "numero": "S/N",
+        "bairro": "Cumbica",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07178-580"
+      },
+      "contato": {
+        "nome": "Carlos Alberto Moraes Duque",
+        "telefone": "(11) 31732080",
+        "email": "cartoes@rededuque.com.br"
+      },
+      "bandeira": "BR",
+      "horarioFuncionamento": "24 HORAS",
+      "ultimaTransacao": "2026-01-05",
+      "ativo": true
+    },
+    {
+      "terminal": "1302196721",
+      "nomeFantasia": "CENTRO AUTOMOTIVO PUGLIA",
+      "razaoSocial": "CENTRO AUTOMOTIVO PUGLIA LTDA",
+      "cnpj": "38.033.703/0001-99",
+      "endereco": {
+        "logradouro": "RODOVIA",
+        "rua": "Presidente Dutra",
+        "numero": "S/N",
+        "bairro": "Várzea do Palácio",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07034010"
+      },
+      "contato": {
+        "nome": "Ernesto dos Santos Andrade",
+        "telefone": "(11) 45062522",
+        "email": "thayane.pereira@esagestao.com.br"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "24 horas",
+      "ultimaTransacao": "2025-12-31",
+      "ativo": true
+    },
+    {
+      "terminal": "1302176396",
+      "nomeFantasia": "AUTO POSTO EMIRADOS",
+      "razaoSocial": "AUTO POSTO EMIRADOS COMBUSTIVEIS E CONVENIENCIAS LTDA",
+      "cnpj": "10.945.085/0001-34",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Presidente Humberto de Alencar Castelo Branco",
+        "numero": "1318",
+        "bairro": "Vila Augusta",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07040030"
+      },
+      "contato": {
+        "nome": "Moises Amoriati Neto",
+        "telefone": "(11) 982330954",
+        "email": "moisesaneto@gmail.com"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "2ª a Sáb 06:00-21:45, Dom 07:00-19:00",
+      "ultimaTransacao": "2026-01-02",
+      "ativo": true
+    },
+    {
+      "terminal": "1302175327",
+      "nomeFantasia": "CENTRO AUTOMOTIVO GUARULHOS",
+      "razaoSocial": "CENTRO AUTOMOTIVO GUARULHOS LTDA",
+      "cnpj": "31.120.669/0001-40",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Rotary",
+        "numero": "710",
+        "bairro": "Vila das Bandeiras",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07042000"
+      },
+      "contato": {
+        "nome": "Carlos Alberto Moraes Duque",
+        "telefone": "(11) 31732080",
+        "email": "cartoes@rededuque.com.br"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "24 HORAS",
+      "ultimaTransacao": "2026-01-05",
+      "ativo": true
+    },
+    {
+      "terminal": "1302174139",
+      "nomeFantasia": "AUTO POSTO PORTAL DE GUARULHOS",
+      "razaoSocial": "AUTO POSTO PORTAL DE GUARULHOS LTDA",
+      "cnpj": "07.299.435/0001-28",
+      "endereco": {
+        "logradouro": "RUA",
+        "rua": "Barão de Mauá",
+        "numero": "92",
+        "bairro": "Parque Estrela",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07012040"
+      },
+      "contato": {
+        "nome": "Lidiane",
+        "telefone": "(11) 947778017",
+        "email": "postoportaldeguarulhos@redebrothers.com.br"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "24 HORAS",
+      "ultimaTransacao": "2026-01-04",
+      "ativo": true
+    },
+    {
+      "terminal": "1302162269",
+      "nomeFantasia": "CARRETEIRO",
+      "razaoSocial": "CARRETEIRO REVENDEDOR DE PETROLEO E DERIVADOS LTDA",
+      "cnpj": "49.084.890/0001-56",
+      "endereco": {
+        "logradouro": "RODOVIA",
+        "rua": "Presidente Dutra",
+        "numero": "S/N",
+        "bairro": "Porto da Igreja",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07034000"
+      },
+      "contato": {
+        "nome": "Rodrigo de Godoy Tavares dos Reis",
+        "telefone": "(11) 22422377",
+        "email": "rgtr.kitao@gmail.com"
+      },
+      "bandeira": "BR",
+      "horarioFuncionamento": "24 HORAS",
+      "ultimaTransacao": "2025-12-30",
+      "ativo": true
+    },
+    {
+      "terminal": "1302161678",
+      "nomeFantasia": "POSTO GRAN JK",
+      "razaoSocial": "AUTO POSTO GRAN JK",
+      "cnpj": "31.179.246/0001-04",
+      "endereco": {
+        "logradouro": "ESTRADA",
+        "rua": "Presidente Juscelino Kubitschek de Oliveira",
+        "numero": "4439",
+        "bairro": "Jardim Albertina",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07252000"
+      },
+      "contato": {
+        "nome": "Ricardo Pereira Quadrau",
+        "telefone": "(11) 24614589",
+        "email": "postojk@terra.com.br"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "2ª a Sáb 06:00-23:00, Dom 07:00-22:00",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "1302160397",
+      "nomeFantasia": "LAGO DE COMO",
+      "razaoSocial": "AUTO POSTO LAGO DE COMO LTDA",
+      "cnpj": "15.605.507/0001-46",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Papa João Paulo I",
+        "numero": "2339",
+        "bairro": "Jardim Presidente Dutra",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07170-350"
+      },
+      "contato": {
+        "nome": "Luciana Lopes Sano Tanonaka",
+        "telefone": "(11) 999908523",
+        "email": "lulopess@gmail.com"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": null,
+      "ultimaTransacao": "2026-01-02",
+      "ativo": true
+    },
+    {
+      "terminal": "1302160388",
+      "nomeFantasia": "AUTO POSTO AMIGAO",
+      "razaoSocial": "AUTO POSTO M E M AMIGAO LTDA",
+      "cnpj": "18.022.196/0001-80",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Manoel Izidoro Martins",
+        "numero": "586",
+        "bairro": "Cidade Martins",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07132280"
+      },
+      "contato": {
+        "nome": "João Batista",
+        "telefone": "(11) 993705123",
+        "email": "redejohn.mmamigao@gmail.com"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "2ª a 6ª 06:00-22:00, Sáb 06:00-22:00, Dom 09:00-19:00",
+      "ultimaTransacao": "2025-11-25",
+      "ativo": true
+    },
+    {
+      "terminal": "1302160387",
+      "nomeFantasia": "AUTO POSTO PORTAL DE SANTANA",
+      "razaoSocial": "AUTO POSTO PORTAL DE SANTANA LTDA",
+      "cnpj": "10.765.690/0002-04",
+      "endereco": {
+        "logradouro": "RODOVIA",
+        "rua": "Hélio Smidt",
+        "numero": "S/N",
+        "bairro": "Aeroporto de Guarulhos",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07190100"
+      },
+      "contato": {
+        "nome": "Carlos Alberto Moraes Duque",
+        "telefone": "(11) 31732080",
+        "email": "cartoes@rededuque.com.br"
+      },
+      "bandeira": "SHELL",
+      "horarioFuncionamento": "24 HORAS",
+      "ultimaTransacao": "2026-01-05",
+      "ativo": true
+    },
+    {
+      "terminal": "1302153358",
+      "nomeFantasia": "POSTO COCAIA",
+      "razaoSocial": "COCAIA COMERCIO DE LUBRIFICANTES LTDA",
+      "cnpj": "07.558.287/0001-19",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Brigadeiro Faria Lima",
+        "numero": "941",
+        "bairro": "Cocaia",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07130000"
+      },
+      "contato": {
+        "nome": "Pedro",
+        "telefone": "(11) 2405-1888",
+        "email": "postococaia@gmail.com"
+      },
+      "bandeira": "N/A",
+      "horarioFuncionamento": "24 HORAS",
+      "ultimaTransacao": "2025-12-30",
+      "ativo": true
+    },
+    {
+      "terminal": "1302151558",
+      "nomeFantasia": "POSTO SAKAMOTO I",
+      "razaoSocial": "AUTO POSTO SAKAMOTO LTDA",
+      "cnpj": "49.051.667/0001-02",
+      "endereco": {
+        "logradouro": "RODOVIA",
+        "rua": "Presidente Dutra, km 210,5",
+        "numero": "S/N",
+        "bairro": "Cidade Industrial Satélite de São Paulo",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07210-000"
+      },
+      "contato": {
+        "nome": "Claudio Satio Sakamoto",
+        "telefone": "(11) 2462-4400",
+        "email": "p.sakamoto@sti.com.br"
+      },
+      "bandeira": "PETROBRAS",
+      "horarioFuncionamento": "24 horas",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "1302150778",
+      "nomeFantasia": "BG LESTE PETROLEO",
+      "razaoSocial": "BG LESTE PETROLEO LTDA",
+      "cnpj": "04.881.800/0001-10",
+      "endereco": {
+        "logradouro": "RODOVIA",
+        "rua": "Ayrton Senna da Silva",
+        "numero": "S/N",
+        "bairro": "Vila Anny",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07262285"
+      },
+      "contato": {
+        "nome": "Alessandra Santana",
+        "telefone": "(11) 964350363",
+        "email": "alessandra@admgeral.com"
+      },
+      "bandeira": "N/A",
+      "horarioFuncionamento": "24 HORAS",
+      "ultimaTransacao": "2025-12-10",
+      "ativo": true
+    },
+    {
+      "terminal": "1302147938",
+      "nomeFantasia": "CRUZEIRO DO SUL POSTO DE SERVICO",
+      "razaoSocial": "CRUZEIRO DO SUL POSTO DE SERVICO LT",
+      "cnpj": "47.720.503/0001-03",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Santos Dumont",
+        "numero": "2302",
+        "bairro": "Cidade Industrial Satélite",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07220000"
+      },
+      "contato": {
+        "nome": "Josiana Palmeira",
+        "telefone": "(11) 31732080",
+        "email": "cartoes@rededuque.com.br"
+      },
+      "bandeira": "PETROBRAS",
+      "horarioFuncionamento": "24 HORAS DIESEL",
+      "ultimaTransacao": "2026-01-04",
+      "ativo": true
+    },
+    {
+      "terminal": "1302146360",
+      "nomeFantasia": "AEROCAR COMBUSTIVEIS",
+      "razaoSocial": "AEROCAR COMERCIO VAREJISTA DE COMBUSTIVEIS LTDA",
+      "cnpj": "25.334.124/0001-34",
+      "endereco": {
+        "logradouro": "RUA",
+        "rua": "Cachoeira",
+        "numero": "1443",
+        "bairro": "Jardim Moreira",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07083220"
+      },
+      "contato": {
+        "nome": "Roberta",
+        "telefone": "(11) 982788803",
+        "email": "posto.aerocar@redecinadis.com.br"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "06:00-23:00",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "1302142112",
+      "nomeFantasia": "POSTO DE SERVICOS VILA PARAISO",
+      "razaoSocial": "POSTO DE SERVICOS VILA PARAISO LTDA EPP",
+      "cnpj": "21.016.197/0001-27",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Santa Helena",
+        "numero": "390",
+        "bairro": "Vila Paraíso",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07241270"
+      },
+      "contato": {
+        "nome": "Tamires",
+        "telefone": "(11) 4645-4935",
+        "email": "pvlparaiso@terra.com.br"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "06:00-22:00",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "1302139485",
+      "nomeFantasia": "POSTO NAZARE",
+      "razaoSocial": "CENTRO AUTOMOTIVO NAZARE LTDA",
+      "cnpj": "19.106.320/0001-59",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Candeias",
+        "numero": "950",
+        "bairro": "Cidade Seródio",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07150610"
+      },
+      "contato": {
+        "nome": "Edilene",
+        "telefone": "(11) 2467-5691",
+        "email": "nazare@rede900.com.br"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "24h",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "1302136097",
+      "nomeFantasia": "AUTO POSTO MAIA",
+      "razaoSocial": "AUTO POSTO MAIA EIRELI",
+      "cnpj": "22.603.910/0001-00",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Salgado Filho",
+        "numero": "1686",
+        "bairro": "Centro",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07115000"
+      },
+      "contato": {
+        "nome": "Willian",
+        "telefone": "(11) 24400631",
+        "email": "willian237silva@gmail.com"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "06:00-00:00",
+      "ultimaTransacao": "2025-12-22",
+      "ativo": true
+    },
+    {
+      "terminal": "1302132704",
+      "nomeFantasia": "AUTO POSTO D6",
+      "razaoSocial": "AUTO POSTO D6 LTDA",
+      "cnpj": "14.620.521/0001-56",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Otávio Braga de Mesquita",
+        "numero": "1473",
+        "bairro": "Vila Flórida",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07191000"
+      },
+      "contato": {
+        "nome": "André Cristiano Crize",
+        "telefone": "(11) 23696998",
+        "email": "andre.cristiano@redecinadis.com.br"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "06:00-23:00",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "11051029",
+      "nomeFantasia": "AUTO POSTO TIO BILY",
+      "razaoSocial": "AUTO POSTO TIO BILY LTDA",
+      "cnpj": "05.357.759/0001-40",
+      "endereco": {
+        "logradouro": "RUA",
+        "rua": "Cachoeira",
+        "numero": "344",
+        "bairro": "Picanço",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07080000"
+      },
+      "contato": {
+        "nome": "Carlos Eduardo da Costa",
+        "telefone": "(11) 956969440",
+        "email": "autopostofernao@hotmail.com"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "24H",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "4101130",
+      "nomeFantasia": "AUTO POSTO COCAIA",
+      "razaoSocial": "AUTO POSTO COCAIA LTDA",
+      "cnpj": "44.261.766/0001-03",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Tiradentes",
+        "numero": "2595",
+        "bairro": "Cocaia",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07113001"
+      },
+      "contato": {
+        "nome": "João Batista Gomes de Oliveira",
+        "telefone": "(11) 44195175",
+        "email": "autopostococaia@gmail.com"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "24 horas",
+      "ultimaTransacao": "2026-01-02",
+      "ativo": true
+    },
+    {
+      "terminal": "1105975",
+      "nomeFantasia": "AUTO POSTO VILA BARROS",
+      "razaoSocial": "AUTO POSTO VILA BARROS LTDA",
+      "cnpj": "44.270.999/0001-64",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Otávio Braga de Mesquita",
+        "numero": "1838",
+        "bairro": "Vila Barros",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07191000"
+      },
+      "contato": {
+        "nome": "Rogério/Roberto/Carlos",
+        "telefone": "(11) 2402-2684",
+        "email": "vilabarros.1838@gmail.com"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "04:00-00:30",
+      "ultimaTransacao": "2025-12-30",
+      "ativo": true
+    },
+    {
+      "terminal": "1105848",
+      "nomeFantasia": "AUTO POSTO BOI CAMPEAO",
+      "razaoSocial": "AUTO POSTO BOI CAMPEAO LTDA",
+      "cnpj": "07.623.726/0001-20",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Presidente Juscelino Kubitschek de Oliveira",
+        "numero": "1785",
+        "bairro": "Parque São Miguel",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07260000"
+      },
+      "contato": {
+        "nome": "Andreia Lima",
+        "telefone": "(11) 2303-8659",
+        "email": "postoboicampeao@terra.com.br"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "06:00-22:00",
+      "ultimaTransacao": "2025-12-31",
+      "ativo": true
+    },
+    {
+      "terminal": "1105682",
+      "nomeFantasia": "LUIZ XII",
+      "razaoSocial": "CENTRO AUTOMOTIVO LUIZ XII LTDA",
+      "cnpj": "05.794.555/0001-76",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Salgado Filho",
+        "numero": "1595",
+        "bairro": "Centro",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07115000"
+      },
+      "contato": {
+        "nome": "Ricardo",
+        "telefone": "(11) 24614589",
+        "email": "postoluiz12@terra.com.br"
+      },
+      "bandeira": "PETROBRAS",
+      "horarioFuncionamento": "2ª a Sáb 06:00-00:00, Dom 06:00-22:00",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "1105222",
+      "nomeFantasia": "POSTO PEDRAO",
+      "razaoSocial": "AUTO POSTO PEDRAO LTDA",
+      "cnpj": "49.033.632/0001-40",
+      "endereco": {
+        "logradouro": "RODOVIA",
+        "rua": "Presidente Dutra",
+        "numero": "S/N",
+        "bairro": "Várzea do Palácio",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07178580"
+      },
+      "contato": {
+        "nome": "Pedro",
+        "telefone": "(11) 973270369",
+        "email": "pedrao@esagestao.com.br"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "24 HORAS",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "1105221",
+      "nomeFantasia": "NOVA TRABALHADORES",
+      "razaoSocial": "POSTO DE SERVICOS NOVA TRABALHADORES LTDA",
+      "cnpj": "05.911.517/0001-56",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Antonio Bardella",
+        "numero": "71",
+        "bairro": "Zona Industrial",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07220-020"
+      },
+      "contato": {
+        "nome": "Thaiane",
+        "telefone": "(11) 2412-9495",
+        "email": "thayane.pereira@esagestao.com.br"
+      },
+      "bandeira": "IPIRANGA",
+      "horarioFuncionamento": "06:00-00:00",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "1105218",
+      "nomeFantasia": "AUTO POSTO CARROSSEL",
+      "razaoSocial": "AUTO POSTO CARROSSEL LTDA",
+      "cnpj": "45.819.307/0001-57",
+      "endereco": {
+        "logradouro": "RUA",
+        "rua": "General Osório",
+        "numero": "200",
+        "bairro": "Jardim Santa Francisca",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07024000"
+      },
+      "contato": {
+        "nome": "Ingrid/Eliza",
+        "telefone": "(11) 2408-0585",
+        "email": "carrossel@esagestao.com.br"
+      },
+      "bandeira": "RAIZEN",
+      "horarioFuncionamento": "06:00-22:00",
+      "ultimaTransacao": "2026-01-02",
+      "ativo": true
+    },
+    {
+      "terminal": "1105217",
+      "nomeFantasia": "AUTO POSTO PRISCILA",
+      "razaoSocial": "AUTO POSTO PRISCILA LTDA",
+      "cnpj": "01.460.726/0001-70",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Marechal Rondon",
+        "numero": "550",
+        "bairro": "Itapegica",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07030060"
+      },
+      "contato": {
+        "nome": "Rafael",
+        "telefone": "(11) 2425-1698",
+        "email": "priscila@esagestao.com.br"
+      },
+      "bandeira": "BANDEIRA BRANCA",
+      "horarioFuncionamento": "24 horas",
+      "ultimaTransacao": "2025-12-31",
+      "ativo": true
+    },
+    {
+      "terminal": "110595",
+      "nomeFantasia": "AUTO POSTO FERRARI",
+      "razaoSocial": "AUTO POSTO FERRARI LTDA",
+      "cnpj": "49.093.156/0001-53",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Otávio Braga de Mesquita",
+        "numero": "3723",
+        "bairro": "Jardim Nova Taboão",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07140230"
+      },
+      "contato": {
+        "nome": "Lucas",
+        "telefone": "(11) 24020199",
+        "email": "cartoes.suporte@postossetee.com.br"
+      },
+      "bandeira": "SHELL",
+      "horarioFuncionamento": "2ª a Sáb 06:00-22:00, Dom 07:00-19:00",
+      "ultimaTransacao": "2026-01-03",
+      "ativo": true
+    },
+    {
+      "terminal": "11653",
+      "nomeFantasia": "AUTO POSTO MANCINI",
+      "razaoSocial": "AUTO POSTO MANCINI LTDA",
+      "cnpj": "03.421.926/0001-49",
+      "endereco": {
+        "logradouro": "AVENIDA",
+        "rua": "Aniello Pratici",
+        "numero": "20",
+        "bairro": "Jardim Santa Francisca",
+        "cidade": "GUARULHOS",
+        "uf": "SP",
+        "cep": "07013000"
+      },
+      "contato": {
+        "nome": "Pamella",
+        "telefone": "(11) 4506-2504",
+        "email": "pamella.januario@esagestao.com.br"
+      },
+      "bandeira": "SHELL",
+      "horarioFuncionamento": "24 HORAS",
+      "ultimaTransacao": "2025-12-31",
+      "ativo": true
+    }
+  ]
+}
