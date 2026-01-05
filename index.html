@@ -22,12 +22,12 @@
             color: #1e293b;
         }
 
-        /* Header */
+        /* Header Compacto */
         .header {
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 12px 20px;
+            padding: 8px 15px;
             position: fixed;
             top: 0;
             left: 0;
@@ -45,29 +45,29 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
         }
 
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
         .logo-icon {
-            width: 45px;
-            height: 45px;
+            width: 32px;
+            height: 32px;
             background: linear-gradient(135deg, #3b82f6, #10b981);
-            border-radius: 12px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
         }
 
         .logo-text h1 {
-            font-size: 1.2rem;
+            font-size: 0.95rem;
             font-weight: 700;
             background: linear-gradient(135deg, #3b82f6, #10b981);
             -webkit-background-clip: text;
@@ -76,39 +76,32 @@
         }
 
         .logo-text span {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #64748b;
         }
 
         .header-right {
             display: flex;
             align-items: center;
-            gap: 20px;
-        }
-
-        .postos-counter {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .counter-item {
             text-align: center;
-            padding: 8px 15px;
+            padding: 4px 10px;
             background: linear-gradient(135deg, #f8fafc, #f1f5f9);
             border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
         }
 
         .counter-value {
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #10b981;
         }
 
         .counter-label {
-            font-size: 0.65rem;
+            font-size: 0.55rem;
             color: #64748b;
             text-transform: uppercase;
         }
@@ -116,12 +109,12 @@
         .anp-indicator {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
+            gap: 5px;
+            padding: 5px 10px;
             background: rgba(59, 130, 246, 0.1);
             border: 1px solid rgba(59, 130, 246, 0.3);
-            border-radius: 20px;
-            font-size: 0.8rem;
+            border-radius: 15px;
+            font-size: 0.7rem;
             color: #3b82f6;
             font-weight: 500;
         }
@@ -139,8 +132,8 @@
         }
 
         .anp-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: currentColor;
             animation: pulse 2s infinite;
@@ -151,78 +144,77 @@
             50% { opacity: 0.5; }
         }
 
-        /* Stats Grid */
+        /* Stats Grid Compacto */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 10px;
         }
 
         .stats-section {
             background: linear-gradient(135deg, #ffffff, #f8fafc);
             border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border-radius: 10px;
+            padding: 8px 10px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
         }
 
         .stats-section-title {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             color: #64748b;
-            margin-bottom: 12px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
             font-weight: 600;
         }
 
         .stats-section-title .icon {
-            font-size: 1rem;
+            font-size: 0.8rem;
         }
 
         .stats-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 8px;
         }
 
         .anp-price-card {
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
             border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 12px;
-            padding: 14px;
+            border-radius: 8px;
+            padding: 8px;
             text-align: center;
         }
 
         .anp-price-card .fuel-type {
-            font-size: 0.7rem;
+            font-size: 0.55rem;
             color: #64748b;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+            margin-bottom: 2px;
             font-weight: 600;
         }
 
         .anp-price-card .price-value {
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #3b82f6;
         }
 
         .anp-price-card .price-label {
-            font-size: 0.65rem;
+            font-size: 0.5rem;
             color: #94a3b8;
-            margin-top: 4px;
         }
 
         .posto-price-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 14px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            border-radius: 8px;
+            padding: 6px 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
         }
 
         .posto-price-card.menor {
@@ -238,16 +230,16 @@
         .posto-price-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
+            align-items: center;
+            margin-bottom: 4px;
         }
 
         .posto-price-type {
-            font-size: 0.65rem;
+            font-size: 0.5rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 4px 10px;
-            border-radius: 6px;
+            letter-spacing: 0.3px;
+            padding: 2px 6px;
+            border-radius: 4px;
             font-weight: 600;
         }
 
@@ -262,7 +254,7 @@
         }
 
         .posto-price-value {
-            font-size: 1.4rem;
+            font-size: 1rem;
             font-weight: 700;
         }
 
@@ -275,23 +267,22 @@
         }
 
         .posto-info {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            margin-top: 4px;
+            padding-top: 4px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
         }
 
         .posto-name {
-            font-size: 0.85rem;
+            font-size: 0.65rem;
             font-weight: 600;
             color: #1e293b;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-bottom: 4px;
         }
 
         .posto-address {
-            font-size: 0.72rem;
+            font-size: 0.55rem;
             color: #64748b;
             white-space: nowrap;
             overflow: hidden;
@@ -301,9 +292,9 @@
         /* Main Container */
         .main-container {
             display: grid;
-            grid-template-columns: 380px 1fr;
+            grid-template-columns: 350px 1fr;
             height: 100vh;
-            padding-top: 200px;
+            padding-top: 140px;
         }
 
         /* Sidebar */
@@ -316,7 +307,7 @@
         }
 
         .sidebar-header {
-            padding: 20px;
+            padding: 12px;
             border-bottom: 1px solid #e2e8f0;
             background: #f8fafc;
         }
@@ -327,12 +318,12 @@
 
         .search-input {
             width: 100%;
-            padding: 14px 20px 14px 45px;
+            padding: 10px 15px 10px 38px;
             background: #ffffff;
             border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 10px;
             color: #1e293b;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             transition: all 0.3s;
         }
 
@@ -344,44 +335,44 @@
             outline: none;
             border-color: #3b82f6;
             background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .search-icon {
             position: absolute;
-            left: 15px;
+            left: 12px;
             top: 50%;
             transform: translateY(-50%);
             color: #94a3b8;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
         }
 
         /* Filters */
         .filters-section {
-            padding: 15px 20px;
+            padding: 10px 12px;
             border-bottom: 1px solid #e2e8f0;
             background: #fafbfc;
         }
 
         .filter-row {
             display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
+            gap: 6px;
+            margin-bottom: 8px;
             flex-wrap: wrap;
         }
 
         .filter-btn {
-            padding: 8px 14px;
+            padding: 6px 10px;
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 20px;
+            border-radius: 15px;
             color: #64748b;
-            font-size: 0.78rem;
+            font-size: 0.7rem;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             font-weight: 500;
         }
 
@@ -395,28 +386,28 @@
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             border-color: transparent;
             color: #fff;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
         }
 
         /* Filtros de cor */
         .filter-btn.filter-green.active {
             background: linear-gradient(135deg, #10b981, #059669);
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
         }
 
         .filter-btn.filter-red.active {
             background: linear-gradient(135deg, #ef4444, #dc2626);
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
         }
 
         .filter-btn.filter-blue.active {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
         }
 
         .color-indicator {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             display: inline-block;
         }
@@ -426,15 +417,15 @@
         .color-indicator.blue { background: #3b82f6; }
 
         .sort-select {
-            padding: 8px 12px;
+            padding: 6px 10px;
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 6px;
             color: #334155;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             cursor: pointer;
             flex: 1;
-            min-width: 140px;
+            min-width: 120px;
         }
 
         .sort-select:focus {
@@ -445,17 +436,15 @@
         /* Filter Stats */
         .filter-stats {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed #e2e8f0;
+            gap: 12px;
+            padding-top: 6px;
         }
 
         .filter-stat-item {
             display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 0.75rem;
+            gap: 4px;
+            font-size: 0.7rem;
             color: #64748b;
         }
 
@@ -471,12 +460,12 @@
         .posts-list {
             flex: 1;
             overflow-y: auto;
-            padding: 10px;
+            padding: 8px;
             background: #f8fafc;
         }
 
         .posts-list::-webkit-scrollbar {
-            width: 6px;
+            width: 5px;
         }
 
         .posts-list::-webkit-scrollbar-track {
@@ -491,14 +480,14 @@
         .post-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 12px;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
         .post-card::before {
@@ -527,8 +516,8 @@
         .post-card:hover {
             background: #fafbfc;
             border-color: rgba(59, 130, 246, 0.4);
-            transform: translateX(5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateX(4px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
         }
 
         .post-card.active {
@@ -540,25 +529,25 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .post-name {
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: #1e293b;
             line-height: 1.3;
             flex: 1;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
         .post-badge {
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.6rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             white-space: nowrap;
         }
 
@@ -570,29 +559,30 @@
         .badge-branca { background: #64748b; color: #fff; }
 
         .post-address {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: #64748b;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             display: flex;
             align-items: flex-start;
-            gap: 8px;
+            gap: 6px;
         }
 
         .post-address-icon {
             color: #94a3b8;
-            margin-top: 2px;
+            margin-top: 1px;
+            font-size: 0.8rem;
         }
 
         .post-prices {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            gap: 6px;
         }
 
         .price-item {
             background: #f8fafc;
-            padding: 10px 12px;
-            border-radius: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
             text-align: center;
             border: 1px solid #e2e8f0;
         }
@@ -608,23 +598,23 @@
         }
 
         .price-type {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: #64748b;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+            margin-bottom: 2px;
             font-weight: 600;
         }
 
         .price-value {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             color: #059669;
         }
 
         .price-value.no-data {
             color: #94a3b8;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .price-value.below-anp {
@@ -636,26 +626,25 @@
         }
 
         .price-source {
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             color: #94a3b8;
-            margin-top: 2px;
         }
 
         .post-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 12px;
-            padding-top: 12px;
+            margin-top: 10px;
+            padding-top: 10px;
             border-top: 1px solid #e2e8f0;
         }
 
         .post-hours {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #64748b;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
 
         .post-hours.open {
@@ -666,8 +655,8 @@
         .post-image-indicator {
             display: flex;
             align-items: center;
-            gap: 4px;
-            font-size: 0.7rem;
+            gap: 3px;
+            font-size: 0.65rem;
             color: #10b981;
         }
 
@@ -684,28 +673,28 @@
         /* Map Controls */
         .map-controls {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             z-index: 999;
         }
 
         .map-btn {
-            width: 45px;
-            height: 45px;
+            width: 38px;
+            height: 38px;
             background: rgba(255, 255, 255, 0.98);
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 10px;
             color: #334155;
-            font-size: 1.2rem;
+            font-size: 1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
         .map-btn:hover {
@@ -715,28 +704,22 @@
             transform: scale(1.05);
         }
 
-        .map-btn.active {
-            background: #ef4444;
-            border-color: #ef4444;
-            color: #fff;
-        }
-
         /* Info Panel */
         .info-panel {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 25px;
+            border-radius: 16px;
+            padding: 20px;
             border: 1px solid #e2e8f0;
             display: none;
             z-index: 999;
-            max-width: 550px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            max-height: 80vh;
+            max-width: 500px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            max-height: 75vh;
             overflow-y: auto;
         }
 
@@ -748,7 +731,7 @@
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(15px);
             }
             to {
                 opacity: 1;
@@ -758,15 +741,15 @@
 
         .info-close {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 32px;
-            height: 32px;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
             background: #f1f5f9;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             color: #64748b;
-            font-size: 1.2rem;
+            font-size: 1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -780,38 +763,38 @@
         }
 
         .info-header {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .info-name {
-            font-size: 1.4rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: #1e293b;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .info-address {
             color: #64748b;
-            font-size: 0.95rem;
-            margin-bottom: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
         }
 
         .info-contact {
             color: #94a3b8;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
         }
 
         .info-prices {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
         .info-price-card {
             background: #f8fafc;
-            border-radius: 12px;
-            padding: 15px 10px;
+            border-radius: 10px;
+            padding: 10px 6px;
             text-align: center;
             border: 1px solid #e2e8f0;
         }
@@ -827,15 +810,15 @@
         }
 
         .info-price-type {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: #64748b;
             text-transform: uppercase;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             font-weight: 600;
         }
 
         .info-price-value {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #059669;
         }
@@ -850,29 +833,30 @@
 
         .info-price-value.no-data {
             color: #94a3b8;
+            font-size: 0.9rem;
         }
 
         /* Upload Section */
         .upload-section {
-            margin-top: 20px;
-            padding-top: 20px;
+            margin-top: 15px;
+            padding-top: 15px;
             border-top: 1px solid #e2e8f0;
         }
 
         .upload-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: #334155;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .upload-area {
             border: 2px dashed #cbd5e1;
-            border-radius: 12px;
-            padding: 30px 20px;
+            border-radius: 10px;
+            padding: 20px 15px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
@@ -890,18 +874,18 @@
         }
 
         .upload-icon {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 2rem;
+            margin-bottom: 6px;
         }
 
         .upload-text {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #64748b;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .upload-subtext {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #94a3b8;
         }
 
@@ -913,13 +897,13 @@
         .images-gallery {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 15px;
+            gap: 8px;
+            margin-top: 12px;
         }
 
         .gallery-item {
             position: relative;
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
             aspect-ratio: 1;
             background: #f1f5f9;
@@ -938,7 +922,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             opacity: 0;
             transition: opacity 0.3s;
         }
@@ -948,16 +932,16 @@
         }
 
         .gallery-btn {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             background: rgba(255, 255, 255, 0.9);
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             transition: all 0.2s;
         }
 
@@ -973,21 +957,21 @@
 
         .gallery-date {
             position: absolute;
-            bottom: 5px;
-            left: 5px;
-            right: 5px;
+            bottom: 4px;
+            left: 4px;
+            right: 4px;
             background: rgba(0, 0, 0, 0.7);
             color: #fff;
-            font-size: 0.6rem;
-            padding: 3px 6px;
-            border-radius: 4px;
+            font-size: 0.5rem;
+            padding: 2px 4px;
+            border-radius: 3px;
             text-align: center;
         }
 
         /* Upload Progress */
         .upload-progress {
             display: none;
-            margin-top: 15px;
+            margin-top: 10px;
         }
 
         .upload-progress.active {
@@ -995,7 +979,7 @@
         }
 
         .progress-bar {
-            height: 6px;
+            height: 5px;
             background: #e2e8f0;
             border-radius: 3px;
             overflow: hidden;
@@ -1010,51 +994,51 @@
         }
 
         .progress-text {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #64748b;
-            margin-top: 5px;
+            margin-top: 4px;
             text-align: center;
         }
 
         /* Price Legend */
         .price-legend {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 15px;
+            left: 15px;
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 15px;
+            border-radius: 10px;
+            padding: 10px 12px;
             border: 1px solid #e2e8f0;
             z-index: 999;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .legend-title {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #64748b;
             text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             font-weight: 600;
         }
 
         .legend-items {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
+            gap: 6px;
+            font-size: 0.7rem;
             color: #475569;
         }
 
         .legend-color {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
         }
 
@@ -1080,20 +1064,20 @@
         .image-modal img {
             max-width: 90%;
             max-height: 90%;
-            border-radius: 10px;
+            border-radius: 8px;
         }
 
         .image-modal-close {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
             background: rgba(255, 255, 255, 0.1);
             border: none;
             border-radius: 50%;
             color: #fff;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -1127,8 +1111,8 @@
         }
 
         .loading-spinner {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border: 4px solid #e2e8f0;
             border-top-color: #3b82f6;
             border-radius: 50%;
@@ -1140,29 +1124,29 @@
         }
 
         .loading-text {
-            margin-top: 20px;
+            margin-top: 15px;
             color: #334155;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 500;
         }
 
         .loading-subtext {
-            margin-top: 8px;
+            margin-top: 6px;
             color: #64748b;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         /* Custom Markers */
         .custom-marker {
             border-radius: 50%;
             border: 3px solid #fff;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .marker-below-anp {
@@ -1181,9 +1165,9 @@
         .leaflet-popup-content-wrapper {
             background: rgba(255, 255, 255, 0.98);
             color: #1e293b;
-            border-radius: 12px;
+            border-radius: 10px;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
         }
 
         .leaflet-popup-tip {
@@ -1191,13 +1175,13 @@
         }
 
         .popup-content {
-            padding: 5px;
+            padding: 3px;
         }
 
         .popup-name {
             font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 5px;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
             color: #1e293b;
         }
 
@@ -1220,33 +1204,33 @@
         /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 15px;
             color: #64748b;
         }
 
         .empty-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
         }
 
         /* Toast Notification */
         .toast {
             position: fixed;
-            bottom: 30px;
+            bottom: 25px;
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
+            transform: translateX(-50%) translateY(80px);
             background: #1e293b;
             color: #fff;
-            padding: 15px 25px;
-            border-radius: 12px;
-            font-size: 0.9rem;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.85rem;
             z-index: 10001;
             opacity: 0;
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            gap: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
         }
 
         .toast.success {
@@ -1263,21 +1247,22 @@
         }
 
         /* Mobile Responsive */
-        @media (max-width: 1200px) {
+        @media (max-width: 1024px) {
             .stats-grid {
                 grid-template-columns: 1fr;
+                gap: 8px;
             }
             
             .main-container {
-                padding-top: 320px;
+                padding-top: 200px;
             }
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 768px) {
             .main-container {
                 grid-template-columns: 1fr;
                 grid-template-rows: 1fr 1fr;
-                padding-top: 380px;
+                padding-top: 220px;
             }
 
             .sidebar {
@@ -1290,15 +1275,20 @@
                 order: 1;
             }
 
+            .header-top {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
             .stats-row {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
             }
 
             .info-panel {
-                left: 10px;
-                right: 10px;
-                bottom: 10px;
-                padding: 20px;
+                left: 8px;
+                right: 8px;
+                bottom: 8px;
+                padding: 15px;
             }
 
             .info-prices {
@@ -1314,19 +1304,14 @@
             }
         }
 
-        @media (max-width: 600px) {
-            .header-top {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .header-right {
-                width: 100%;
-                justify-content: center;
+        @media (max-width: 480px) {
+            .header {
+                padding: 6px 10px;
             }
 
             .main-container {
-                padding-top: 450px;
+                padding-top: 240px;
+                grid-template-columns: 1fr;
             }
 
             .filter-row {
@@ -1334,8 +1319,13 @@
             }
 
             .filter-btn {
+                font-size: 0.65rem;
+                padding: 5px 8px;
+            }
+
+            .sort-select {
                 font-size: 0.7rem;
-                padding: 6px 10px;
+                min-width: 100px;
             }
         }
     </style>
@@ -1373,15 +1363,13 @@
                 </div>
 
                 <div class="header-right">
-                    <div class="postos-counter">
-                        <div class="counter-item">
-                            <div class="counter-value" id="totalPostos">--</div>
-                            <div class="counter-label">Postos</div>
-                        </div>
+                    <div class="counter-item">
+                        <div class="counter-value" id="totalPostos">--</div>
+                        <div class="counter-label">Postos</div>
                     </div>
                     <div class="anp-indicator" id="anpIndicator">
                         <div class="anp-dot"></div>
-                        <span id="anpStatus">Conectando ANP...</span>
+                        <span id="anpStatus">Conectando...</span>
                     </div>
                 </div>
             </div>
@@ -1392,18 +1380,18 @@
                 <div class="stats-section">
                     <div class="stats-section-title">
                         <span class="icon">📊</span>
-                        Preços Médios ANP - Guarulhos (Atualizado: <span id="anpDate">--</span>)
+                        Preços ANP - Guarulhos (<span id="anpDate">--</span>)
                     </div>
                     <div class="stats-row">
                         <div class="anp-price-card">
-                            <div class="fuel-type">Gasolina Comum</div>
+                            <div class="fuel-type">Gasolina</div>
                             <div class="price-value" id="anpGasolina">--</div>
-                            <div class="price-label">Média Regional</div>
+                            <div class="price-label">Média</div>
                         </div>
                         <div class="anp-price-card">
                             <div class="fuel-type">Etanol</div>
                             <div class="price-value" id="anpEtanol">--</div>
-                            <div class="price-label">Média Regional</div>
+                            <div class="price-label">Média</div>
                         </div>
                     </div>
                 </div>
@@ -1412,12 +1400,12 @@
                 <div class="stats-section">
                     <div class="stats-section-title">
                         <span class="icon">🏆</span>
-                        Preços em Postos Credenciados
+                        Postos Credenciados
                     </div>
                     <div class="stats-row">
                         <div class="posto-price-card menor">
                             <div class="posto-price-header">
-                                <span class="posto-price-type">🟢 Menor Gasolina</span>
+                                <span class="posto-price-type">🟢 Menor Gas.</span>
                                 <span class="posto-price-value" id="menorGasolinaValor">--</span>
                             </div>
                             <div class="posto-info">
@@ -1427,7 +1415,7 @@
                         </div>
                         <div class="posto-price-card maior">
                             <div class="posto-price-header">
-                                <span class="posto-price-type">🔴 Maior Gasolina</span>
+                                <span class="posto-price-type">🔴 Maior Gas.</span>
                                 <span class="posto-price-value" id="maiorGasolinaValor">--</span>
                             </div>
                             <div class="posto-info">
@@ -1435,11 +1423,9 @@
                                 <div class="posto-address" id="maiorGasolinaEndereco">--</div>
                             </div>
                         </div>
-                    </div>
-                    <div class="stats-row" style="margin-top: 12px;">
                         <div class="posto-price-card menor">
                             <div class="posto-price-header">
-                                <span class="posto-price-type">🟢 Menor Etanol</span>
+                                <span class="posto-price-type">🟢 Menor Eta.</span>
                                 <span class="posto-price-value" id="menorEtanolValor">--</span>
                             </div>
                             <div class="posto-info">
@@ -1449,7 +1435,7 @@
                         </div>
                         <div class="posto-price-card maior">
                             <div class="posto-price-header">
-                                <span class="posto-price-type">🔴 Maior Etanol</span>
+                                <span class="posto-price-type">🔴 Maior Eta.</span>
                                 <span class="posto-price-value" id="maiorEtanolValor">--</span>
                             </div>
                             <div class="posto-info">
@@ -1470,7 +1456,7 @@
             <div class="sidebar-header">
                 <div class="search-container">
                     <span class="search-icon">🔍</span>
-                    <input type="text" class="search-input" id="searchInput" placeholder="Buscar posto, endereço ou bairro...">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Buscar posto ou endereço...">
                 </div>
             </div>
 
@@ -1497,8 +1483,8 @@
                 <div class="filter-row">
                     <select class="sort-select" id="sortSelect">
                         <option value="name">Ordenar: Nome A-Z</option>
-                        <option value="price-asc">Ordenar: Menor Preço</option>
-                        <option value="price-desc">Ordenar: Maior Preço</option>
+                        <option value="price-asc">Menor Preço</option>
+                        <option value="price-desc">Maior Preço</option>
                     </select>
                     <select class="sort-select" id="bandeira-filter">
                         <option value="">Todas Bandeiras</option>
@@ -1545,19 +1531,19 @@
 
             <!-- Price Legend -->
             <div class="price-legend">
-                <div class="legend-title">Legenda de Preços</div>
+                <div class="legend-title">Legenda</div>
                 <div class="legend-items">
                     <div class="legend-item">
                         <div class="legend-color legend-below"></div>
-                        <span>Abaixo da ANP</span>
+                        <span>Abaixo ANP</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color legend-above"></div>
-                        <span>Acima da ANP</span>
+                        <span>Acima ANP</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color legend-nodata"></div>
-                        <span>Sem preço informado</span>
+                        <span>Sem preço</span>
                     </div>
                 </div>
             </div>
@@ -1579,7 +1565,7 @@
                     </div>
                     <div class="upload-area" id="uploadArea">
                         <div class="upload-icon">📁</div>
-                        <div class="upload-text">Clique ou arraste imagens aqui</div>
+                        <div class="upload-text">Clique ou arraste imagens</div>
                         <div class="upload-subtext">JPG, PNG ou GIF - Máx. 5MB</div>
                         <input type="file" class="upload-input" id="uploadInput" accept="image/*" multiple>
                     </div>
@@ -1617,7 +1603,7 @@
         let currentColorFilter = null;
         let currentSort = 'name';
         let currentBandeira = '';
-        let postoImages = {}; // Armazena imagens por terminal
+        let postoImages = {};
 
         // ==========================================
         // INICIALIZAÇÃO
@@ -1687,9 +1673,6 @@
                 precosData = Array.isArray(precosJson) ? precosJson :
                              (precosJson && precosJson.data && Array.isArray(precosJson.data)) ? precosJson.data : [];
 
-                console.log('Postos carregados:', postosData.length);
-                console.log('Preços carregados:', precosData.length);
-
             } catch (error) {
                 console.error('Erro ao carregar postos:', error);
                 postosData = [];
@@ -1706,20 +1689,18 @@
                 }
 
                 const json = await response.json();
-                console.log('Resposta ANP:', json);
 
                 if (json.success && json.data) {
                     anpData = {
-                        gasolinaComum: json.data.gasolinaComum,
-                        etanol: json.data.etanol,
-                        diesel: json.data.diesel,
-                        gnv: json.data.gnv,
+                        gasolinaComum: parseFloat(json.data.gasolinaComum),
+                        etanol: parseFloat(json.data.etanol),
+                        diesel: parseFloat(json.data.diesel),
+                        gnv: parseFloat(json.data.gnv),
                         periodStart: json.periodStart,
                         periodEnd: json.periodEnd,
                         updatedAt: json.updatedAt
                     };
                     
-                    console.log('Dados ANP processados:', anpData);
                     updateANPIndicator(true);
                     updateANPDisplay();
                 } else {
@@ -1735,12 +1716,12 @@
 
         function updateANPDisplay() {
             if (anpData) {
-                if (anpData.gasolinaComum) {
-                    document.getElementById('anpGasolina').textContent = `R$ ${parseFloat(anpData.gasolinaComum).toFixed(2)}`;
+                if (anpData.gasolinaComum && !isNaN(anpData.gasolinaComum)) {
+                    document.getElementById('anpGasolina').textContent = `R$ ${anpData.gasolinaComum.toFixed(2)}`;
                 }
                 
-                if (anpData.etanol) {
-                    document.getElementById('anpEtanol').textContent = `R$ ${parseFloat(anpData.etanol).toFixed(2)}`;
+                if (anpData.etanol && !isNaN(anpData.etanol)) {
+                    document.getElementById('anpEtanol').textContent = `R$ ${anpData.etanol.toFixed(2)}`;
                 }
                 
                 if (anpData.periodEnd) {
@@ -1773,7 +1754,6 @@
 
         function mergeData() {
             if (!Array.isArray(postosData)) {
-                console.error('postosData não é um array:', postosData);
                 postosData = [];
                 return;
             }
@@ -1789,8 +1769,6 @@
                     coordenadas: generateCoordinates(posto)
                 };
             });
-
-            console.log('Dados mesclados:', postosData.length, 'postos');
         }
 
         function generateCoordinates(posto) {
@@ -1842,10 +1820,12 @@
         // COMPARAÇÃO COM ANP
         // ==========================================
         function getPriceStatus(preco, tipo = 'gasolina') {
-            if (!preco || preco === null || preco === undefined || isNaN(preco)) {
+            // Se não tem preço válido, retorna no-data
+            if (preco === null || preco === undefined || isNaN(preco) || preco <= 0) {
                 return 'no-data';
             }
 
+            // Se não tem dados da ANP, considera como no-data
             if (!anpData) {
                 return 'no-data';
             }
@@ -1861,11 +1841,13 @@
                 anpPrice = anpData.gnv;
             }
 
-            if (!anpPrice || anpPrice === null) {
+            // Se não tem preço ANP para comparar
+            if (!anpPrice || isNaN(anpPrice) || anpPrice <= 0) {
                 return 'no-data';
             }
 
-            if (preco < anpPrice) {
+            // Compara preço do posto com ANP
+            if (parseFloat(preco) < parseFloat(anpPrice)) {
                 return 'below-anp';
             } else {
                 return 'above-anp';
@@ -1879,7 +1861,9 @@
             let green = 0, red = 0, blue = 0;
 
             postosData.forEach(posto => {
-                const status = getPriceStatus(posto.precos?.gasolina, 'gasolina');
+                const gasolinaPreco = posto.precos?.gasolina;
+                const status = getPriceStatus(gasolinaPreco, 'gasolina');
+                
                 if (status === 'below-anp') green++;
                 else if (status === 'above-anp') red++;
                 else blue++;
@@ -1899,7 +1883,8 @@
             const postosComGasolina = postosData.filter(p => 
                 p.precos?.gasolina !== null && 
                 p.precos?.gasolina !== undefined && 
-                !isNaN(p.precos.gasolina)
+                !isNaN(p.precos.gasolina) &&
+                p.precos.gasolina > 0
             );
             
             if (postosComGasolina.length > 0) {
@@ -1921,7 +1906,8 @@
             const postosComEtanol = postosData.filter(p => 
                 p.precos?.etanol !== null && 
                 p.precos?.etanol !== undefined && 
-                !isNaN(p.precos.etanol)
+                !isNaN(p.precos.etanol) &&
+                p.precos.etanol > 0
             );
             
             if (postosComEtanol.length > 0) {
@@ -1971,7 +1957,7 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">🔍</div>
-                        <p>Nenhum posto encontrado com os filtros atuais</p>
+                        <p>Nenhum posto com os filtros atuais</p>
                     </div>
                 `;
                 return;
@@ -2003,17 +1989,17 @@
                             <span>${endereco}</span>
                         </div>
                         <div class="post-prices">
-                            <div class="price-item ${gasolinaStatus}">
+                            <div class="price-item ${gasolinaStatus !== 'no-data' ? gasolinaStatus : ''}">
                                 <div class="price-type">Gasolina</div>
-                                ${gasolina ? 
+                                ${gasolina && gasolina > 0 ? 
                                     `<div class="price-value ${gasolinaStatus}">R$ ${gasolina.toFixed(2)}</div>
                                      <div class="price-source">Último abast.</div>` :
                                     `<div class="price-value no-data">--</div>`
                                 }
                             </div>
-                            <div class="price-item ${etanolStatus}">
+                            <div class="price-item ${etanolStatus !== 'no-data' ? etanolStatus : ''}">
                                 <div class="price-type">Etanol</div>
-                                ${etanol ? 
+                                ${etanol && etanol > 0 ? 
                                     `<div class="price-value ${etanolStatus}">R$ ${etanol.toFixed(2)}</div>
                                      <div class="price-source">Último abast.</div>` :
                                     `<div class="price-value no-data">--</div>`
@@ -2024,7 +2010,7 @@
                             <div class="post-hours ${is24Hours(posto) ? 'open' : ''}">
                                 🕐 ${posto.horarioFuncionamento || 'Não informado'}
                             </div>
-                            ${hasImages ? `<div class="post-image-indicator">📷 ${postoImages[posto.terminal].length} foto(s)</div>` : ''}
+                            ${hasImages ? `<div class="post-image-indicator">📷 ${postoImages[posto.terminal].length}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -2037,6 +2023,7 @@
             let filtered = [...postosData];
             const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
 
+            // Filtro de busca
             if (searchTerm) {
                 filtered = filtered.filter(posto => {
                     const nome = (posto.nomeFantasia || '').toLowerCase();
@@ -2046,28 +2033,32 @@
                 });
             }
 
+            // Filtro de bandeira
             if (currentBandeira) {
                 filtered = filtered.filter(posto => 
                     (posto.bandeira || '').toUpperCase().includes(currentBandeira.toUpperCase())
                 );
             }
 
-            // Filtro por cor
+            // Filtro por cor (status de preço)
             if (currentColorFilter) {
                 filtered = filtered.filter(posto => {
-                    const status = getPriceStatus(posto.precos?.gasolina, 'gasolina');
+                    const gasolinaPreco = posto.precos?.gasolina;
+                    const status = getPriceStatus(gasolinaPreco, 'gasolina');
                     return status === currentColorFilter;
                 });
             }
 
+            // Filtros gerais
             if (currentFilter === '24h') {
                 filtered = filtered.filter(posto => is24Hours(posto));
             } else if (currentFilter === 'low-price') {
-                filtered = filtered.filter(posto => posto.precos?.gasolina);
+                filtered = filtered.filter(posto => posto.precos?.gasolina && posto.precos.gasolina > 0);
                 filtered.sort((a, b) => (a.precos?.gasolina || 999) - (b.precos?.gasolina || 999));
                 filtered = filtered.slice(0, 10);
             }
 
+            // Ordenação
             switch (currentSort) {
                 case 'name':
                     filtered.sort((a, b) => (a.nomeFantasia || '').localeCompare(b.nomeFantasia || ''));
@@ -2100,17 +2091,19 @@
         }
 
         function renderMarkers() {
+            // Remove marcadores antigos
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
 
             if (!Array.isArray(postosData) || postosData.length === 0) return;
 
-            // Aplica filtros ao mapa também
+            // Aplica filtro de cor aos marcadores também
             let filteredPosts = postosData;
             
             if (currentColorFilter) {
                 filteredPosts = postosData.filter(posto => {
-                    const status = getPriceStatus(posto.precos?.gasolina, 'gasolina');
+                    const gasolinaPreco = posto.precos?.gasolina;
+                    const status = getPriceStatus(gasolinaPreco, 'gasolina');
                     return status === currentColorFilter;
                 });
             }
@@ -2133,14 +2126,14 @@
                 const icon = L.divIcon({
                     className: markerClass,
                     html: '⛽',
-                    iconSize: [36, 36],
-                    iconAnchor: [18, 18]
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
                 });
 
                 let popupPriceClass = 'no-data';
                 let popupPriceText = 'Preço não informado';
                 
-                if (preco) {
+                if (preco && preco > 0) {
                     popupPriceClass = status;
                     popupPriceText = `Gasolina: R$ ${preco.toFixed(2)}`;
                 }
@@ -2204,21 +2197,21 @@
             const gnvStatus = getPriceStatus(gnv, 'gnv');
 
             document.getElementById('infoPrices').innerHTML = `
-                <div class="info-price-card ${gasolinaStatus}">
+                <div class="info-price-card ${gasolinaStatus !== 'no-data' ? gasolinaStatus : ''}">
                     <div class="info-price-type">Gasolina</div>
-                    <div class="info-price-value ${gasolinaStatus}">${gasolina ? `R$ ${gasolina.toFixed(2)}` : '--'}</div>
+                    <div class="info-price-value ${gasolinaStatus}">${gasolina && gasolina > 0 ? `R$ ${gasolina.toFixed(2)}` : '--'}</div>
                 </div>
-                <div class="info-price-card ${etanolStatus}">
+                <div class="info-price-card ${etanolStatus !== 'no-data' ? etanolStatus : ''}">
                     <div class="info-price-type">Etanol</div>
-                    <div class="info-price-value ${etanolStatus}">${etanol ? `R$ ${etanol.toFixed(2)}` : '--'}</div>
+                    <div class="info-price-value ${etanolStatus}">${etanol && etanol > 0 ? `R$ ${etanol.toFixed(2)}` : '--'}</div>
                 </div>
-                <div class="info-price-card ${dieselStatus}">
+                <div class="info-price-card ${dieselStatus !== 'no-data' ? dieselStatus : ''}">
                     <div class="info-price-type">Diesel</div>
-                    <div class="info-price-value ${dieselStatus}">${diesel ? `R$ ${diesel.toFixed(2)}` : '--'}</div>
+                    <div class="info-price-value ${dieselStatus}">${diesel && diesel > 0 ? `R$ ${diesel.toFixed(2)}` : '--'}</div>
                 </div>
-                <div class="info-price-card ${gnvStatus}">
+                <div class="info-price-card ${gnvStatus !== 'no-data' ? gnvStatus : ''}">
                     <div class="info-price-type">GNV</div>
-                    <div class="info-price-value ${gnvStatus}">${gnv ? `R$ ${gnv.toFixed(2)}` : '--'}</div>
+                    <div class="info-price-value ${gnvStatus}">${gnv && gnv > 0 ? `R$ ${gnv.toFixed(2)}` : '--'}</div>
                 </div>
             `;
 
@@ -2330,7 +2323,7 @@
                         progress.classList.remove('active');
                         renderImagesGallery(terminal);
                         renderPosts();
-                        showToast('Imagem adicionada com sucesso!', 'success');
+                        showToast('Imagem adicionada!', 'success');
                     }, 500);
                 };
 
@@ -2431,16 +2424,19 @@
                 });
             });
 
-            // Filtros de cor
+            // Filtros de cor - toggle on/off
             document.querySelectorAll('.filter-btn[data-color]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const wasActive = btn.classList.contains('active');
                     
+                    // Remove active de todos os filtros de cor
                     document.querySelectorAll('.filter-btn[data-color]').forEach(b => b.classList.remove('active'));
                     
                     if (wasActive) {
+                        // Se já estava ativo, desativa (mostra todos)
                         currentColorFilter = null;
                     } else {
+                        // Se não estava ativo, ativa este filtro
                         btn.classList.add('active');
                         currentColorFilter = btn.dataset.color;
                     }
@@ -2491,9 +2487,9 @@
                         
                         const userIcon = L.divIcon({
                             className: 'user-marker',
-                            html: '<div style="background:#3b82f6;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.3);"></div>',
-                            iconSize: [20, 20],
-                            iconAnchor: [10, 10]
+                            html: '<div style="background:#3b82f6;width:18px;height:18px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+                            iconSize: [18, 18],
+                            iconAnchor: [9, 9]
                         });
                         L.marker(userLocation, { icon: userIcon }).addTo(map)
                             .bindPopup('Você está aqui').openPopup();
