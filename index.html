@@ -365,23 +365,23 @@
 
         .filter-row {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 10px;
             flex-wrap: wrap;
         }
 
         .filter-btn {
-            padding: 8px 16px;
+            padding: 8px 14px;
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 20px;
             color: #64748b;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             font-weight: 500;
         }
 
@@ -397,6 +397,33 @@
             color: #fff;
             box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
         }
+
+        /* Filtros de cor */
+        .filter-btn.filter-green.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .filter-btn.filter-red.active {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .filter-btn.filter-blue.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .color-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .color-indicator.green { background: #10b981; }
+        .color-indicator.red { background: #ef4444; }
+        .color-indicator.blue { background: #3b82f6; }
 
         .sort-select {
             padding: 8px 12px;
@@ -414,6 +441,31 @@
             outline: none;
             border-color: #3b82f6;
         }
+
+        /* Filter Stats */
+        .filter-stats {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .filter-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .filter-stat-count {
+            font-weight: 700;
+        }
+
+        .filter-stat-count.green { color: #10b981; }
+        .filter-stat-count.red { color: #ef4444; }
+        .filter-stat-count.blue { color: #3b82f6; }
 
         /* Posts List */
         .posts-list {
@@ -456,9 +508,20 @@
             left: 0;
             width: 4px;
             height: 100%;
-            background: linear-gradient(180deg, #3b82f6, #10b981);
-            opacity: 0;
+            opacity: 1;
             transition: opacity 0.3s;
+        }
+
+        .post-card.status-below-anp::before {
+            background: #10b981;
+        }
+
+        .post-card.status-above-anp::before {
+            background: #ef4444;
+        }
+
+        .post-card.status-no-data::before {
+            background: #3b82f6;
         }
 
         .post-card:hover {
@@ -468,17 +531,9 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
-        .post-card:hover::before {
-            opacity: 1;
-        }
-
         .post-card.active {
             background: rgba(59, 130, 246, 0.08);
             border-color: #3b82f6;
-        }
-
-        .post-card.active::before {
-            opacity: 1;
         }
 
         .post-header {
@@ -608,6 +663,14 @@
             font-weight: 500;
         }
 
+        .post-image-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            color: #10b981;
+        }
+
         /* Map */
         .map-container {
             position: relative;
@@ -671,8 +734,10 @@
             border: 1px solid #e2e8f0;
             display: none;
             z-index: 999;
-            max-width: 500px;
+            max-width: 550px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .info-panel.active {
@@ -787,44 +852,168 @@
             color: #94a3b8;
         }
 
-        .info-actions {
-            display: flex;
-            gap: 12px;
+        /* Upload Section */
+        .upload-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
         }
 
-        .info-btn {
-            flex: 1;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 0.95rem;
+        .upload-title {
+            font-size: 0.85rem;
             font-weight: 600;
+            color: #334155;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
             cursor: pointer;
+            transition: all 0.3s;
+            background: #fafbfc;
+        }
+
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .upload-subtext {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        /* Images Gallery */
+        .images-gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            background: #f1f5f9;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-item-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: all 0.3s;
-            border: none;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        .info-btn-primary {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        .gallery-item:hover .gallery-item-overlay {
+            opacity: 1;
+        }
+
+        .gallery-btn {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .gallery-btn:hover {
+            background: #fff;
+            transform: scale(1.1);
+        }
+
+        .gallery-btn.delete:hover {
+            background: #ef4444;
             color: #fff;
         }
 
-        .info-btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+        .gallery-date {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            font-size: 0.6rem;
+            padding: 3px 6px;
+            border-radius: 4px;
+            text-align: center;
         }
 
-        .info-btn-secondary {
-            background: #f1f5f9;
-            color: #334155;
-            border: 1px solid #e2e8f0;
+        /* Upload Progress */
+        .upload-progress {
+            display: none;
+            margin-top: 15px;
         }
 
-        .info-btn-secondary:hover {
+        .upload-progress.active {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 6px;
             background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 3px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 5px;
+            text-align: center;
         }
 
         /* Price Legend */
@@ -872,7 +1061,49 @@
         .legend-below { background: #10b981; }
         .legend-above { background: #ef4444; }
         .legend-nodata { background: #3b82f6; }
-        .legend-no-coverage { background: rgba(239, 68, 68, 0.3); border: 2px solid #ef4444; }
+
+        /* Image Modal */
+        .image-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-modal.active {
+            display: flex;
+        }
+
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .image-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
 
         /* Loading */
         .loading-overlay {
@@ -998,6 +1229,39 @@
             margin-bottom: 15px;
         }
 
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b;
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            z-index: 10001;
+            opacity: 0;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .toast.active {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
         /* Mobile Responsive */
         @media (max-width: 1200px) {
             .stats-grid {
@@ -1044,6 +1308,10 @@
             .price-legend {
                 display: none;
             }
+
+            .images-gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 600px) {
@@ -1061,8 +1329,13 @@
                 padding-top: 450px;
             }
 
-            .info-actions {
-                flex-direction: column;
+            .filter-row {
+                flex-wrap: wrap;
+            }
+
+            .filter-btn {
+                font-size: 0.7rem;
+                padding: 6px 10px;
             }
         }
     </style>
@@ -1073,6 +1346,18 @@
         <div class="loading-spinner"></div>
         <div class="loading-text">Carregando postos credenciados...</div>
         <div class="loading-subtext" id="loadingSubtext">Buscando dados da ANP...</div>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+        <button class="image-modal-close" onclick="closeImageModal()">×</button>
+        <img src="" alt="Imagem do posto" id="modalImage">
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastIcon">✓</span>
+        <span id="toastMessage"></span>
     </div>
 
     <!-- Header -->
@@ -1193,14 +1478,27 @@
                 <div class="filter-row">
                     <button class="filter-btn active" data-filter="all">Todos</button>
                     <button class="filter-btn" data-filter="24h">🕐 24h</button>
-                    <button class="filter-btn" data-filter="low-price">💰 Menor Preço</button>
+                    <button class="filter-btn" data-filter="low-price">💰 Top 10</button>
+                </div>
+                <div class="filter-row">
+                    <button class="filter-btn filter-green" data-color="below-anp">
+                        <span class="color-indicator green"></span>
+                        Abaixo ANP
+                    </button>
+                    <button class="filter-btn filter-red" data-color="above-anp">
+                        <span class="color-indicator red"></span>
+                        Acima ANP
+                    </button>
+                    <button class="filter-btn filter-blue" data-color="no-data">
+                        <span class="color-indicator blue"></span>
+                        Sem Preço
+                    </button>
                 </div>
                 <div class="filter-row">
                     <select class="sort-select" id="sortSelect">
                         <option value="name">Ordenar: Nome A-Z</option>
                         <option value="price-asc">Ordenar: Menor Preço</option>
                         <option value="price-desc">Ordenar: Maior Preço</option>
-                        <option value="distance">Ordenar: Mais Próximo</option>
                     </select>
                     <select class="sort-select" id="bandeira-filter">
                         <option value="">Todas Bandeiras</option>
@@ -1211,6 +1509,20 @@
                         <option value="RAIZEN">Raízen</option>
                         <option value="BANDEIRA BRANCA">Bandeira Branca</option>
                     </select>
+                </div>
+                <div class="filter-stats">
+                    <div class="filter-stat-item">
+                        <span class="color-indicator green"></span>
+                        <span class="filter-stat-count green" id="countGreen">0</span>
+                    </div>
+                    <div class="filter-stat-item">
+                        <span class="color-indicator red"></span>
+                        <span class="filter-stat-count red" id="countRed">0</span>
+                    </div>
+                    <div class="filter-stat-item">
+                        <span class="color-indicator blue"></span>
+                        <span class="filter-stat-count blue" id="countBlue">0</span>
+                    </div>
                 </div>
             </div>
 
@@ -1226,7 +1538,6 @@
             <!-- Map Controls -->
             <div class="map-controls">
                 <button class="map-btn" id="locateBtn" title="Minha localização">📍</button>
-                <button class="map-btn" id="coverageBtn" title="Mostrar áreas sem cobertura">🔴</button>
                 <button class="map-btn" id="zoomInBtn" title="Zoom in">+</button>
                 <button class="map-btn" id="zoomOutBtn" title="Zoom out">−</button>
                 <button class="map-btn" id="resetBtn" title="Resetar mapa">🔄</button>
@@ -1248,10 +1559,6 @@
                         <div class="legend-color legend-nodata"></div>
                         <span>Sem preço informado</span>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color legend-no-coverage"></div>
-                        <span>Sem cobertura (5km)</span>
-                    </div>
                 </div>
             </div>
 
@@ -1264,9 +1571,27 @@
                     <div class="info-contact" id="infoContact"></div>
                 </div>
                 <div class="info-prices" id="infoPrices"></div>
-                <div class="info-actions">
-                    <button class="info-btn info-btn-primary" id="btnRoute">🗺️ Traçar Rota</button>
-                    <button class="info-btn info-btn-secondary" id="btnCall">📞 Ligar</button>
+                
+                <!-- Upload Section -->
+                <div class="upload-section">
+                    <div class="upload-title">
+                        📸 Fotos do Posto
+                    </div>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Clique ou arraste imagens aqui</div>
+                        <div class="upload-subtext">JPG, PNG ou GIF - Máx. 5MB</div>
+                        <input type="file" class="upload-input" id="uploadInput" accept="image/*" multiple>
+                    </div>
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Enviando...</div>
+                    </div>
+                    <div class="images-gallery" id="imagesGallery">
+                        <!-- Imagens serão carregadas aqui -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -1281,32 +1606,24 @@
         const API_ANP = 'https://anp-gru.vercel.app/prices.json';
         const GUARULHOS_CENTER = [-23.4538, -46.5333];
         const DEFAULT_ZOOM = 12;
-        const COVERAGE_RADIUS = 5;
-
-        const GUARULHOS_BOUNDS = {
-            north: -23.35,
-            south: -23.52,
-            east: -46.38,
-            west: -46.60
-        };
 
         let map;
         let markers = [];
-        let coverageCircles = [];
         let postosData = [];
         let precosData = [];
         let anpData = null;
-        let userLocation = null;
         let selectedPosto = null;
         let currentFilter = 'all';
+        let currentColorFilter = null;
         let currentSort = 'name';
         let currentBandeira = '';
-        let showCoverage = false;
+        let postoImages = {}; // Armazena imagens por terminal
 
         // ==========================================
         // INICIALIZAÇÃO
         // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
+            loadImagesFromStorage();
             initMap();
             await loadAllData();
             initEventListeners();
@@ -1339,6 +1656,7 @@
                 await loadANPData();
                 
                 mergeData();
+                updateColorCounts();
                 renderPosts();
                 renderMarkers();
                 updateStats();
@@ -1390,7 +1708,6 @@
                 const json = await response.json();
                 console.log('Resposta ANP:', json);
 
-                // Estrutura do JSON: { success: true, data: { gasolinaComum, etanol, diesel, gnv }, periodStart, periodEnd, updatedAt }
                 if (json.success && json.data) {
                     anpData = {
                         gasolinaComum: json.data.gasolinaComum,
@@ -1418,17 +1735,14 @@
 
         function updateANPDisplay() {
             if (anpData) {
-                // Gasolina
                 if (anpData.gasolinaComum) {
                     document.getElementById('anpGasolina').textContent = `R$ ${parseFloat(anpData.gasolinaComum).toFixed(2)}`;
                 }
                 
-                // Etanol
                 if (anpData.etanol) {
                     document.getElementById('anpEtanol').textContent = `R$ ${parseFloat(anpData.etanol).toFixed(2)}`;
                 }
                 
-                // Data
                 if (anpData.periodEnd) {
                     const date = new Date(anpData.periodEnd);
                     document.getElementById('anpDate').textContent = date.toLocaleDateString('pt-BR');
@@ -1559,6 +1873,24 @@
         }
 
         // ==========================================
+        // CONTAGEM DE CORES
+        // ==========================================
+        function updateColorCounts() {
+            let green = 0, red = 0, blue = 0;
+
+            postosData.forEach(posto => {
+                const status = getPriceStatus(posto.precos?.gasolina, 'gasolina');
+                if (status === 'below-anp') green++;
+                else if (status === 'above-anp') red++;
+                else blue++;
+            });
+
+            document.getElementById('countGreen').textContent = green;
+            document.getElementById('countRed').textContent = red;
+            document.getElementById('countBlue').textContent = blue;
+        }
+
+        // ==========================================
         // ATUALIZAÇÃO DE ESTATÍSTICAS
         // ==========================================
         function updateStats() {
@@ -1618,96 +1950,6 @@
         }
 
         // ==========================================
-        // COBERTURA
-        // ==========================================
-        function toggleCoverage() {
-            showCoverage = !showCoverage;
-            const btn = document.getElementById('coverageBtn');
-            
-            if (showCoverage) {
-                btn.classList.add('active');
-                renderCoverageLayer();
-            } else {
-                btn.classList.remove('active');
-                clearCoverageLayer();
-            }
-        }
-
-        function renderCoverageLayer() {
-            clearCoverageLayer();
-
-            postosData.forEach(posto => {
-                if (!posto.coordenadas) return;
-                
-                const circle = L.circle(posto.coordenadas, {
-                    radius: COVERAGE_RADIUS * 1000,
-                    color: '#10b981',
-                    fillColor: '#10b981',
-                    fillOpacity: 0.1,
-                    weight: 1
-                }).addTo(map);
-                
-                coverageCircles.push(circle);
-            });
-
-            renderNoCoverageAreas();
-        }
-
-        function renderNoCoverageAreas() {
-            const gridPoints = [];
-            const step = 0.01;
-
-            for (let lat = GUARULHOS_BOUNDS.south; lat <= GUARULHOS_BOUNDS.north; lat += step) {
-                for (let lng = GUARULHOS_BOUNDS.west; lng <= GUARULHOS_BOUNDS.east; lng += step) {
-                    gridPoints.push([lat, lng]);
-                }
-            }
-
-            const noCoveragePoints = gridPoints.filter(point => !hasPostoCoverage(point));
-
-            noCoveragePoints.forEach(point => {
-                const circle = L.circle(point, {
-                    radius: 500,
-                    color: '#ef4444',
-                    fillColor: '#ef4444',
-                    fillOpacity: 0.3,
-                    weight: 0
-                }).addTo(map);
-                
-                coverageCircles.push(circle);
-            });
-
-            console.log('Áreas sem cobertura:', noCoveragePoints.length);
-        }
-
-        function hasPostoCoverage(point) {
-            return postosData.some(posto => {
-                if (!posto.coordenadas) return false;
-                const distance = calculateDistance(point, posto.coordenadas);
-                return distance <= COVERAGE_RADIUS;
-            });
-        }
-
-        function clearCoverageLayer() {
-            coverageCircles.forEach(circle => map.removeLayer(circle));
-            coverageCircles = [];
-        }
-
-        function calculateDistance(point1, point2) {
-            if (!point1 || !point2) return Infinity;
-            const [lat1, lon1] = point1;
-            const [lat2, lon2] = point2;
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        // ==========================================
         // RENDERIZAÇÃO
         // ==========================================
         function renderPosts() {
@@ -1747,9 +1989,11 @@
                 
                 const gasolinaStatus = getPriceStatus(gasolina, 'gasolina');
                 const etanolStatus = getPriceStatus(etanol, 'etanol');
+                
+                const hasImages = postoImages[posto.terminal] && postoImages[posto.terminal].length > 0;
 
                 return `
-                    <div class="post-card" data-terminal="${posto.terminal}" onclick="selectPosto('${posto.terminal}')">
+                    <div class="post-card status-${gasolinaStatus}" data-terminal="${posto.terminal}" onclick="selectPosto('${posto.terminal}')">
                         <div class="post-header">
                             <div class="post-name">${posto.nomeFantasia || 'Posto sem nome'}</div>
                             <span class="post-badge ${badgeClass}">${posto.bandeira || 'Branca'}</span>
@@ -1780,6 +2024,7 @@
                             <div class="post-hours ${is24Hours(posto) ? 'open' : ''}">
                                 🕐 ${posto.horarioFuncionamento || 'Não informado'}
                             </div>
+                            ${hasImages ? `<div class="post-image-indicator">📷 ${postoImages[posto.terminal].length} foto(s)</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -1807,6 +2052,14 @@
                 );
             }
 
+            // Filtro por cor
+            if (currentColorFilter) {
+                filtered = filtered.filter(posto => {
+                    const status = getPriceStatus(posto.precos?.gasolina, 'gasolina');
+                    return status === currentColorFilter;
+                });
+            }
+
             if (currentFilter === '24h') {
                 filtered = filtered.filter(posto => is24Hours(posto));
             } else if (currentFilter === 'low-price') {
@@ -1824,15 +2077,6 @@
                     break;
                 case 'price-desc':
                     filtered.sort((a, b) => (b.precos?.gasolina || 0) - (a.precos?.gasolina || 0));
-                    break;
-                case 'distance':
-                    if (userLocation) {
-                        filtered.sort((a, b) => {
-                            const distA = calculateDistance(userLocation, a.coordenadas);
-                            const distB = calculateDistance(userLocation, b.coordenadas);
-                            return distA - distB;
-                        });
-                    }
                     break;
             }
 
@@ -1861,7 +2105,17 @@
 
             if (!Array.isArray(postosData) || postosData.length === 0) return;
 
-            postosData.forEach(posto => {
+            // Aplica filtros ao mapa também
+            let filteredPosts = postosData;
+            
+            if (currentColorFilter) {
+                filteredPosts = postosData.filter(posto => {
+                    const status = getPriceStatus(posto.precos?.gasolina, 'gasolina');
+                    return status === currentColorFilter;
+                });
+            }
+
+            filteredPosts.forEach(posto => {
                 if (!posto.coordenadas) return;
 
                 const preco = posto.precos?.gasolina;
@@ -1937,7 +2191,7 @@
 
             document.getElementById('infoName').textContent = posto.nomeFantasia || 'Posto';
             document.getElementById('infoAddress').textContent = endereco;
-            document.getElementById('infoContact').textContent = posto.contato?.telefone || '';
+            document.getElementById('infoContact').textContent = `🕐 ${posto.horarioFuncionamento || 'Horário não informado'}`;
 
             const gasolina = posto.precos?.gasolina;
             const etanol = posto.precos?.etanol;
@@ -1968,8 +2222,7 @@
                 </div>
             `;
 
-            document.getElementById('btnRoute').onclick = () => openRoute(posto);
-            document.getElementById('btnCall').onclick = () => callPosto(posto);
+            renderImagesGallery(posto.terminal);
 
             panel.classList.add('active');
         }
@@ -1980,34 +2233,220 @@
             document.querySelectorAll('.post-card').forEach(card => card.classList.remove('active'));
         }
 
-        function openRoute(posto) {
-            if (posto.coordenadas) {
-                const [lat, lng] = posto.coordenadas;
-                window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+        // ==========================================
+        // UPLOAD DE IMAGENS
+        // ==========================================
+        function loadImagesFromStorage() {
+            const stored = localStorage.getItem('postoImages');
+            if (stored) {
+                postoImages = JSON.parse(stored);
             }
         }
 
-        function callPosto(posto) {
-            if (posto.contato?.telefone) {
-                const tel = posto.contato.telefone.replace(/\D/g, '');
-                window.open(`tel:${tel}`, '_self');
+        function saveImagesToStorage() {
+            localStorage.setItem('postoImages', JSON.stringify(postoImages));
+        }
+
+        function initUploadListeners() {
+            const uploadArea = document.getElementById('uploadArea');
+            const uploadInput = document.getElementById('uploadInput');
+
+            uploadArea.addEventListener('click', () => {
+                uploadInput.click();
+            });
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
+
+            uploadInput.addEventListener('change', (e) => {
+                const files = e.target.files;
+                handleFiles(files);
+            });
+        }
+
+        function handleFiles(files) {
+            if (!selectedPosto) return;
+
+            const terminal = selectedPosto.terminal;
+            if (!postoImages[terminal]) {
+                postoImages[terminal] = [];
             }
+
+            const progress = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            Array.from(files).forEach((file, index) => {
+                if (!file.type.startsWith('image/')) {
+                    showToast('Apenas imagens são permitidas', 'error');
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('Imagem muito grande (máx. 5MB)', 'error');
+                    return;
+                }
+
+                progress.classList.add('active');
+                progressFill.style.width = '0%';
+                progressText.textContent = `Processando ${index + 1}/${files.length}...`;
+
+                const reader = new FileReader();
+                reader.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percent = (e.loaded / e.total) * 100;
+                        progressFill.style.width = percent + '%';
+                    }
+                };
+
+                reader.onload = (e) => {
+                    const imageData = {
+                        id: Date.now() + Math.random(),
+                        src: e.target.result,
+                        date: new Date().toLocaleDateString('pt-BR'),
+                        fileName: file.name
+                    };
+
+                    postoImages[terminal].push(imageData);
+                    saveImagesToStorage();
+
+                    progressFill.style.width = '100%';
+                    progressText.textContent = 'Concluído!';
+
+                    setTimeout(() => {
+                        progress.classList.remove('active');
+                        renderImagesGallery(terminal);
+                        renderPosts();
+                        showToast('Imagem adicionada com sucesso!', 'success');
+                    }, 500);
+                };
+
+                reader.onerror = () => {
+                    showToast('Erro ao processar imagem', 'error');
+                    progress.classList.remove('active');
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            document.getElementById('uploadInput').value = '';
+        }
+
+        function renderImagesGallery(terminal) {
+            const gallery = document.getElementById('imagesGallery');
+            const images = postoImages[terminal] || [];
+
+            if (images.length === 0) {
+                gallery.innerHTML = '';
+                return;
+            }
+
+            gallery.innerHTML = images.map(img => `
+                <div class="gallery-item">
+                    <img src="${img.src}" alt="Foto do posto" onclick="openImageModal('${img.src}')">
+                    <div class="gallery-item-overlay">
+                        <button class="gallery-btn" onclick="openImageModal('${img.src}')" title="Ampliar">🔍</button>
+                        <button class="gallery-btn delete" onclick="deleteImage('${terminal}', '${img.id}')" title="Excluir">🗑️</button>
+                    </div>
+                    <div class="gallery-date">${img.date}</div>
+                </div>
+            `).join('');
+        }
+
+        function deleteImage(terminal, imageId) {
+            event.stopPropagation();
+            
+            if (!postoImages[terminal]) return;
+
+            postoImages[terminal] = postoImages[terminal].filter(img => img.id != imageId);
+            saveImagesToStorage();
+            renderImagesGallery(terminal);
+            renderPosts();
+            showToast('Imagem removida', 'success');
+        }
+
+        function openImageModal(src) {
+            event.stopPropagation();
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = src;
+            modal.classList.add('active');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
+
+        // ==========================================
+        // TOAST NOTIFICATION
+        // ==========================================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastMessage = document.getElementById('toastMessage');
+
+            toast.className = `toast ${type}`;
+            toastIcon.textContent = type === 'success' ? '✓' : '✕';
+            toastMessage.textContent = message;
+
+            toast.classList.add('active');
+
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 3000);
         }
 
         // ==========================================
         // EVENT LISTENERS
         // ==========================================
         function initEventListeners() {
+            initUploadListeners();
+
             document.getElementById('searchInput').addEventListener('input', () => {
                 renderPosts();
+                renderMarkers();
             });
 
-            document.querySelectorAll('.filter-btn').forEach(btn => {
+            // Filtros gerais
+            document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     currentFilter = btn.dataset.filter;
                     renderPosts();
+                    renderMarkers();
+                });
+            });
+
+            // Filtros de cor
+            document.querySelectorAll('.filter-btn[data-color]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const wasActive = btn.classList.contains('active');
+                    
+                    document.querySelectorAll('.filter-btn[data-color]').forEach(b => b.classList.remove('active'));
+                    
+                    if (wasActive) {
+                        currentColorFilter = null;
+                    } else {
+                        btn.classList.add('active');
+                        currentColorFilter = btn.dataset.color;
+                    }
+                    
+                    renderPosts();
+                    renderMarkers();
                 });
             });
 
@@ -2019,17 +2458,26 @@
             document.getElementById('bandeira-filter').addEventListener('change', (e) => {
                 currentBandeira = e.target.value;
                 renderPosts();
+                renderMarkers();
             });
 
             document.getElementById('locateBtn').addEventListener('click', locateUser);
-            document.getElementById('coverageBtn').addEventListener('click', toggleCoverage);
             document.getElementById('zoomInBtn').addEventListener('click', () => map.zoomIn());
             document.getElementById('zoomOutBtn').addEventListener('click', () => map.zoomOut());
             document.getElementById('resetBtn').addEventListener('click', () => {
                 map.setView(GUARULHOS_CENTER, DEFAULT_ZOOM);
                 closeInfoPanel();
-                if (showCoverage) {
-                    toggleCoverage();
+                currentColorFilter = null;
+                document.querySelectorAll('.filter-btn[data-color]').forEach(b => b.classList.remove('active'));
+                renderPosts();
+                renderMarkers();
+            });
+
+            // Fechar modal com ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeImageModal();
+                    closeInfoPanel();
                 }
             });
         }
@@ -2038,7 +2486,7 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        userLocation = [position.coords.latitude, position.coords.longitude];
+                        const userLocation = [position.coords.latitude, position.coords.longitude];
                         map.setView(userLocation, 14);
                         
                         const userIcon = L.divIcon({
@@ -2049,14 +2497,10 @@
                         });
                         L.marker(userLocation, { icon: userIcon }).addTo(map)
                             .bindPopup('Você está aqui').openPopup();
-
-                        if (currentSort === 'distance') {
-                            renderPosts();
-                        }
                     },
                     (error) => {
                         console.error('Erro ao obter localização:', error);
-                        alert('Não foi possível obter sua localização');
+                        showToast('Não foi possível obter sua localização', 'error');
                     }
                 );
             }
