@@ -1752,24 +1752,63 @@
             if (subtext) subtext.textContent = text;
         }
 
-        function mergeData() {
-            if (!Array.isArray(postosData)) {
-                postosData = [];
-                return;
+      function mergeData() {
+    if (!Array.isArray(postosData)) {
+        postosData = [];
+        return;
+    }
+
+    postosData = postosData.map(posto => {
+        const preco = Array.isArray(precosData) ? 
+            precosData.find(p => p.terminal === posto.terminal) : null;
+
+        // Corrige o mapeamento invertido dos campos de endereço
+        let enderecoCorrigido = {};
+        
+        if (posto.endereco) {
+            const e = posto.endereco;
+            
+            // Os campos estão invertidos no JSON:
+            // e.rua = tipo de logradouro (AVENIDA, RUA, RODOVIA)
+            // e.numero = nome da rua/avenida
+            // e.bairro = número do endereço
+            // e.uf = bairro real
+            // e.logradouro = CEP
+            
+            const tipoLogradouro = e.rua || '';
+            const nomeLogradouro = e.numero || '';
+            const numero = e.bairro || 'S/N';
+            const bairro = e.uf || '';
+            const cidade = 'Guarulhos';
+            const uf = 'SP';
+            
+            // Formata o CEP
+            let cep = e.logradouro || '';
+            cep = cep.replace(/\D/g, '');
+            if (cep.length === 8) {
+                cep = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
             }
-
-            postosData = postosData.map(posto => {
-                const preco = Array.isArray(precosData) ? 
-                    precosData.find(p => p.terminal === posto.terminal) : null;
-
-                return {
-                    ...posto,
-                    precos: preco?.precos || { gasolina: null, etanol: null, diesel: null, gnv: null },
-                    dataPreco: preco?.dataAtualizacao || preco?.dataUltimoAbastecimento || null,
-                    coordenadas: generateCoordinates(posto)
-                };
-            });
+            
+            enderecoCorrigido = {
+                tipoLogradouro: tipoLogradouro.trim(),
+                logradouro: nomeLogradouro.trim(),
+                numero: numero.trim(),
+                bairro: bairro.trim(),
+                cidade: cidade,
+                uf: uf,
+                cep: cep
+            };
         }
+
+        return {
+            ...posto,
+            endereco: enderecoCorrigido,
+            precos: preco?.precos || { gasolina: null, etanol: null, diesel: null, gnv: null },
+            dataPreco: preco?.dataAtualizacao || preco?.dataUltimoAbastecimento || null,
+            coordenadas: generateCoordinates({ ...posto, endereco: enderecoCorrigido })
+        };
+    });
+}
 
         function generateCoordinates(posto) {
             const bairroCoords = {
@@ -1934,7 +1973,37 @@
             const bairro = e.bairro || '';
             return `${rua}${bairro ? ' - ' + bairro : ''}`.trim() || 'Endereço não disponível';
         }
-
+function formatEnderecoCard(posto) {
+    if (!posto.endereco) return 'Endereço não disponível';
+    
+    const e = posto.endereco;
+    let partes = [];
+    
+    // Tipo + Nome do logradouro
+    if (e.tipoLogradouro && e.logradouro) {
+        partes.push(`${e.tipoLogradouro} ${e.logradouro}`);
+    } else if (e.logradouro) {
+        partes.push(e.logradouro);
+    }
+    
+    // Número
+    if (e.numero && e.numero !== 'S/N' && e.numero !== 'S N') {
+        partes[0] = partes[0] ? `${partes[0]}, ${e.numero}` : e.numero;
+    } else if (partes.length > 0) {
+        partes[0] = `${partes[0]}, S/N`;
+    }
+    
+    // Bairro
+    if (e.bairro) {
+        partes.push(e.bairro);
+    }
+    
+    if (partes.length === 0) {
+        return 'Endereço não disponível';
+    }
+    
+    return partes.join(' - ');
+}
         // ==========================================
         // RENDERIZAÇÃO
         // ==========================================
@@ -1942,7 +2011,7 @@
             const container = document.getElementById('postsList');
             
             if (!Array.isArray(postosData) || postosData.length === 0) {
-                container.innerHTML = `
+                container.innerHTML = `const endereco = formatEnderecoCard(posto);
                     <div class="empty-state">
                         <div class="empty-icon">🔍</div>
                         <p>Nenhum posto encontrado</p>
@@ -1964,7 +2033,7 @@
             }
 
             container.innerHTML = filteredPosts.map(posto => {
-                const endereco = posto.endereco ? 
+                    const endereco = formatEnderecoCard(posto);
                     `${posto.endereco.logradouro || posto.endereco.rua || ''}, ${posto.endereco.numero || ''} - ${posto.endereco.bairro || ''}` : 
                     'Endereço não disponível';
 
