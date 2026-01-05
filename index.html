@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Postos Credenciados - Guarulhos</title>
+    <title>Postos Credenciados - Câmara Municipal de Guarulhos</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,707 +16,1394 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
         }
 
         /* Header */
         .header {
-            background: linear-gradient(135deg, #1a73e8, #0d47a1);
-            color: white;
-            padding: 16px 20px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
         .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .header-subtitle {
-            font-size: 0.85rem;
-            opacity: 0.9;
-        }
-
-        /* ANP Prices Bar */
-        .anp-bar {
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
-            color: white;
-            padding: 12px 20px;
-            position: fixed;
-            top: 72px;
-            left: 0;
-            right: 0;
-            z-index: 999;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-
-        .anp-bar-content {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
             gap: 12px;
         }
 
-        .anp-title {
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text span {
             font-size: 0.75rem;
-            opacity: 0.9;
+            color: #94a3b8;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .anp-prices {
-            display: flex;
-            gap: 20px;
-            align-items: center;
+        /* Main Container */
+        .main-container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            height: 100vh;
+            padding-top: 80px;
         }
 
-        .anp-price-item {
+        /* Sidebar */
+        .sidebar {
+            background: rgba(15, 23, 42, 0.98);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .search-input::placeholder {
+            color: #64748b;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        /* Filters */
+        .filters-section {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
+            gap: 6px;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-color: transparent;
+            color: #fff;
+        }
+
+        .sort-select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 0.85rem;
+            cursor: pointer;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        /* Posts List */
+        .posts-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .posts-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .posts-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .posts-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .post-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .post-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #3b82f6, #10b981);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .post-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateX(5px);
+        }
+
+        .post-card:hover::before {
+            opacity: 1;
+        }
+
+        .post-card.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: #3b82f6;
+        }
+
+        .post-card.active::before {
+            opacity: 1;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .post-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            line-height: 1.3;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .post-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .badge-br { background: #16a34a; color: #fff; }
+        .badge-ipiranga { background: #ea580c; color: #fff; }
+        .badge-shell { background: #eab308; color: #000; }
+        .badge-petrobras { background: #0ea5e9; color: #fff; }
+        .badge-raizen { background: #dc2626; color: #fff; }
+        .badge-branca { background: #64748b; color: #fff; }
+
+        .post-address {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
             gap: 8px;
         }
 
-        .anp-fuel-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
+        .post-address-icon {
+            color: #64748b;
+            margin-top: 2px;
         }
 
-        .anp-fuel-icon.gasolina {
-            background: #ff5252;
+        .post-prices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
         }
 
-        .anp-fuel-icon.etanol {
-            background: #4caf50;
+        .price-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-align: center;
         }
 
-        .anp-fuel-name {
-            font-size: 0.8rem;
-            opacity: 0.9;
+        .price-type {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
         }
 
-        .anp-fuel-price {
+        .price-value {
             font-size: 1.1rem;
             font-weight: 700;
+            color: #10b981;
         }
 
-        .anp-ratio {
-            background: rgba(255,255,255,0.2);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+        .price-value.no-data {
+            color: #475569;
+            font-size: 0.85rem;
         }
 
-        .anp-ratio.etanol-vale {
-            background: rgba(76, 175, 80, 0.3);
-        }
-
-        .anp-ratio.gasolina-vale {
-            background: rgba(255, 82, 82, 0.3);
-        }
-
-        .anp-status {
-            font-size: 0.7rem;
-            opacity: 0.8;
-        }
-
-        /* Map Container */
-        #map {
-            position: fixed;
-            top: 130px;
-            left: 0;
-            right: 0;
-            bottom: 60px;
-            z-index: 1;
-        }
-
-        /* Bottom Bar */
-        .bottom-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 12px 20px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
+        .post-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .posts-count {
-            font-size: 0.9rem;
-            color: #666;
+        .post-hours {
+            font-size: 0.75rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        .posts-count strong {
-            color: #1a73e8;
+        .post-hours.open {
+            color: #10b981;
         }
 
-        .btn-my-location {
-            background: #1a73e8;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.9rem;
+        .post-distance {
+            font-size: 0.8rem;
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        /* Map */
+        .map-container {
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Map Controls */
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 999;
+        }
+
+        .map-btn {
+            width: 45px;
+            height: 45px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1.2rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
+            justify-content: center;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
         }
 
-        .btn-my-location:hover {
-            background: #1557b0;
+        .map-btn:hover {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            transform: scale(1.05);
         }
 
-        /* Custom Markers */
-        .custom-marker {
-            background: #1a73e8;
-            border: 3px solid white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        /* Info Panel */
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: none;
+            z-index: 999;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .custom-marker.credenciado {
-            background: #4caf50;
+        .info-panel.active {
+            display: block;
+            animation: slideUp 0.3s ease;
         }
 
-        /* Popup Styles */
-        .leaflet-popup-content-wrapper {
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .leaflet-popup-content {
-            margin: 0;
-            min-width: 200px;
+        .info-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
         }
 
-        .popup-content {
-            padding: 16px;
+        .info-close:hover {
+            background: #ef4444;
+            color: #fff;
         }
 
-        .popup-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #333;
+        .info-header {
+            margin-bottom: 20px;
+        }
+
+        .info-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
             margin-bottom: 8px;
         }
 
-        .popup-address {
+        .info-address {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .info-contact {
+            color: #64748b;
             font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 12px;
         }
 
-        .popup-badge {
-            display: inline-block;
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin-bottom: 12px;
-        }
-
-        .popup-prices {
+        .info-prices {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 12px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
-        .popup-price {
-            background: #f5f5f5;
-            padding: 8px;
-            border-radius: 8px;
+        .info-price-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px 10px;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .popup-price-label {
+        .info-price-type {
             font-size: 0.7rem;
-            color: #999;
+            color: #64748b;
             text-transform: uppercase;
+            margin-bottom: 6px;
         }
 
-        .popup-price-value {
-            font-size: 1rem;
+        .info-price-value {
+            font-size: 1.3rem;
             font-weight: 700;
-            color: #333;
+            color: #10b981;
         }
 
-        .popup-btn {
-            width: 100%;
-            background: #1a73e8;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+        .info-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .info-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
             cursor: pointer;
-            text-decoration: none;
-            display: block;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: none;
         }
 
-        .popup-btn:hover {
-            background: #1557b0;
+        .info-btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
         }
+
+        .info-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .info-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .info-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Price Legend */
+        .price-legend {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 999;
+        }
+
+        .legend-title {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-low { background: #10b981; }
+        .legend-medium { background: #eab308; }
+        .legend-high { background: #ef4444; }
 
         /* Loading */
         .loading-overlay {
             position: fixed;
-            top: 130px;
+            top: 0;
             left: 0;
             right: 0;
-            bottom: 60px;
-            background: rgba(255,255,255,0.9);
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.98);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 500;
+            z-index: 9999;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
         }
 
         .loading-spinner {
-            text-align: center;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #e0e0e0;
-            border-top-color: #1a73e8;
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #3b82f6;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        /* Responsivo */
-        @media (max-width: 600px) {
-            .anp-bar-content {
+        .loading-text {
+            margin-top: 20px;
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        /* Leaflet Custom Markers */
+        .custom-marker {
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .custom-marker.low-price {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .custom-marker.medium-price {
+            background: linear-gradient(135deg, #eab308, #ca8a04);
+        }
+
+        .custom-marker.high-price {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        /* Popup Custom */
+        .leaflet-popup-content-wrapper {
+            background: rgba(15, 23, 42, 0.98);
+            color: #e2e8f0;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .leaflet-popup-tip {
+            background: rgba(15, 23, 42, 0.98);
+        }
+
+        .popup-content {
+            padding: 5px;
+        }
+
+        .popup-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .popup-price {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+
+            .sidebar {
+                order: 2;
+                border-right: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .map-container {
+                order: 1;
+            }
+
+            .header-stats {
+                display: none;
+            }
+
+            .info-panel {
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+                padding: 20px;
+            }
+
+            .info-prices {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .price-legend {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-content {
+                justify-content: center;
+            }
+
+            .logo-text h1 {
+                font-size: 1rem;
+            }
+
+            .post-prices {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .info-actions {
                 flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .anp-prices {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .anp-ratio {
-                width: 100%;
-                text-align: center;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Carregando postos credenciados...</div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <h1>⛽ Postos Credenciados</h1>
-            <div class="header-subtitle">Prime Benefícios • Guarulhos, SP</div>
+            <div class="logo-section">
+                <div class="logo-icon">⛽</div>
+                <div class="logo-text">
+                    <h1>Postos Credenciados</h1>
+                    <span>Câmara Municipal de Guarulhos</span>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="statTotal">--</div>
+                    <div class="stat-label">Postos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statGasolina">--</div>
+                    <div class="stat-label">Menor Gasolina</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statEtanol">--</div>
+                    <div class="stat-label">Menor Etanol</div>
+                </div>
+            </div>
         </div>
     </header>
 
-    <!-- ANP Prices Bar -->
-    <div class="anp-bar">
-        <div class="anp-bar-content">
-            <div>
-                <div class="anp-title">📊 Preços Médios ANP - Guarulhos</div>
-                <div id="anp-status" class="anp-status">Carregando...</div>
-            </div>
-            <div class="anp-prices">
-                <div class="anp-price-item">
-                    <div class="anp-fuel-icon gasolina">⛽</div>
-                    <div>
-                        <div class="anp-fuel-name">Gasolina</div>
-                        <div id="anp-gasolina" class="anp-fuel-price">R$ --</div>
-                    </div>
-                </div>
-                <div class="anp-price-item">
-                    <div class="anp-fuel-icon etanol">🌿</div>
-                    <div>
-                        <div class="anp-fuel-name">Etanol</div>
-                        <div id="anp-etanol" class="anp-fuel-price">R$ --</div>
-                    </div>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Buscar posto, endereço ou bairro...">
                 </div>
             </div>
-            <div id="anp-ratio" class="anp-ratio">
-                Proporção: --%
+
+            <div class="filters-section">
+                <div class="filter-row">
+                    <button class="filter-btn active" data-filter="all">Todos</button>
+                    <button class="filter-btn" data-filter="24h">🕐 24h</button>
+                    <button class="filter-btn" data-filter="low-price">💰 Menor Preço</button>
+                </div>
+                <div class="filter-row">
+                    <select class="sort-select" id="sortSelect">
+                        <option value="name">Ordenar: Nome A-Z</option>
+                        <option value="price-asc">Ordenar: Menor Preço</option>
+                        <option value="price-desc">Ordenar: Maior Preço</option>
+                        <option value="distance">Ordenar: Mais Próximo</option>
+                    </select>
+                    <select class="sort-select" id="bandeira-filter">
+                        <option value="">Todas Bandeiras</option>
+                        <option value="PETROBRAS">Petrobras</option>
+                        <option value="IPIRANGA">Ipiranga</option>
+                        <option value="SHELL">Shell</option>
+                        <option value="BR">BR</option>
+                        <option value="RAIZEN">Raízen</option>
+                        <option value="BANDEIRA BRANCA">Bandeira Branca</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="posts-list" id="postsList">
+                <!-- Posts serão carregados aqui -->
+            </div>
+        </aside>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <div id="map"></div>
+
+            <!-- Map Controls -->
+            <div class="map-controls">
+                <button class="map-btn" id="locateBtn" title="Minha localização">📍</button>
+                <button class="map-btn" id="zoomInBtn" title="Zoom in">+</button>
+                <button class="map-btn" id="zoomOutBtn" title="Zoom out">−</button>
+                <button class="map-btn" id="resetBtn" title="Resetar mapa">🔄</button>
+            </div>
+
+            <!-- Price Legend -->
+            <div class="price-legend">
+                <div class="legend-title">Legenda de Preços</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-color legend-low"></div>
+                        <span>Menor preço</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-medium"></div>
+                        <span>Preço médio</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-high"></div>
+                        <span>Maior preço</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Panel -->
+            <div class="info-panel" id="infoPanel">
+                <button class="info-close" onclick="closeInfoPanel()">×</button>
+                <div class="info-header">
+                    <div class="info-name" id="infoName"></div>
+                    <div class="info-address" id="infoAddress"></div>
+                    <div class="info-contact" id="infoContact"></div>
+                </div>
+                <div class="info-prices" id="infoPrices"></div>
+                <div class="info-actions">
+                    <button class="info-btn info-btn-primary" id="btnRoute">
+                        🗺️ Traçar Rota
+                    </button>
+                    <button class="info-btn info-btn-secondary" id="btnCall">
+                        📞 Ligar
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-
-    <!-- Map -->
-    <div id="map"></div>
-
-    <!-- Loading Overlay -->
-    <div id="loading" class="loading-overlay">
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <div>Carregando postos...</div>
-        </div>
-    </div>
-
-    <!-- Bottom Bar -->
-    <div class="bottom-bar">
-        <div class="posts-count">
-            <strong id="posts-count">0</strong> postos encontrados
-        </div>
-        <button class="btn-my-location" onclick="goToMyLocation()">
-            📍 Minha Localização
-        </button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // ========================================
-        // CONFIGURAÇÃO
-        // ========================================
-        const ANP_API_URL = 'https://anp-gru.vercel.app/prices.json';
-        const RATIO_THRESHOLD = 0.70;
-
-        // Centro de Guarulhos
+        // ==========================================
+        // CONFIGURAÇÃO E VARIÁVEIS GLOBAIS
+        // ==========================================
+        const API_BASE = 'https://anp-gru.vercel.app';
         const GUARULHOS_CENTER = [-23.4538, -46.5333];
-        const DEFAULT_ZOOM = 13;
+        const DEFAULT_ZOOM = 12;
 
-        // Dados da ANP
-        let anpPrices = {
-            gasolina: null,
-            etanol: null
-        };
-
-        // Mapa
         let map;
-        let userMarker;
+        let markers = [];
+        let postosData = [];
+        let precosData = [];
+        let userLocation = null;
+        let selectedPosto = null;
 
-        // ========================================
-        // LISTA DE POSTOS CREDENCIADOS
-        // ========================================
-        const postos = [
-            {
-                id: 1,
-                nome: "Posto Shell - Centro",
-                endereco: "Av. Paulo Faccini, 500 - Centro",
-                lat: -23.4538,
-                lng: -46.5333,
-                credenciado: true,
-                bandeira: "Shell"
-            },
-            {
-                id: 2,
-                nome: "Posto Ipiranga - Macedo",
-                endereco: "Av. Macedo, 1200 - Macedo",
-                lat: -23.4620,
-                lng: -46.5280,
-                credenciado: true,
-                bandeira: "Ipiranga"
-            },
-            {
-                id: 3,
-                nome: "Posto BR - Taboão",
-                endereco: "Rua Taboão, 800 - Taboão",
-                lat: -23.4480,
-                lng: -46.5400,
-                credenciado: true,
-                bandeira: "Petrobras"
-            },
-            {
-                id: 4,
-                nome: "Posto Ale - Vila Augusta",
-                endereco: "Av. Guarulhos, 2500 - Vila Augusta",
-                lat: -23.4650,
-                lng: -46.5180,
-                credenciado: true,
-                bandeira: "Ale"
-            },
-            {
-                id: 5,
-                nome: "Posto Shell - Dutra",
-                endereco: "Rod. Presidente Dutra, km 225",
-                lat: -23.4400,
-                lng: -46.5500,
-                credenciado: true,
-                bandeira: "Shell"
-            },
-            {
-                id: 6,
-                nome: "Posto Ipiranga - Bonsucesso",
-                endereco: "Av. Bonsucesso, 900 - Bonsucesso",
-                lat: -23.4750,
-                lng: -46.5100,
-                credenciado: true,
-                bandeira: "Ipiranga"
-            },
-            {
-                id: 7,
-                nome: "Posto BR - Cecap",
-                endereco: "Av. Cecap, 1500 - Cecap",
-                lat: -23.4350,
-                lng: -46.5450,
-                credenciado: true,
-                bandeira: "Petrobras"
-            },
-            {
-                id: 8,
-                nome: "Posto Raízen - Picanço",
-                endereco: "Rua Picanço, 450 - Picanço",
-                lat: -23.4580,
-                lng: -46.5600,
-                credenciado: true,
-                bandeira: "Shell"
-            }
-        ];
+        // ==========================================
+        // INICIALIZAÇÃO
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            initMap();
+            await loadData();
+            initEventListeners();
+            hideLoading();
+        });
 
-        // ========================================
-        // BUSCAR PREÇOS DA ANP
-        // ========================================
-        async function fetchANPPrices() {
-            const statusEl = document.getElementById('anp-status');
-            const gasolinaEl = document.getElementById('anp-gasolina');
-            const etanolEl = document.getElementById('anp-etanol');
-            const ratioEl = document.getElementById('anp-ratio');
-
-            try {
-                const response = await fetch(ANP_API_URL);
-                const result = await response.json();
-
-                if (result.success) {
-                    anpPrices.gasolina = result.data.gasolinaComum;
-                    anpPrices.etanol = result.data.etanol;
-
-                    // Atualizar exibição
-                    gasolinaEl.textContent = formatCurrency(anpPrices.gasolina);
-                    etanolEl.textContent = formatCurrency(anpPrices.etanol);
-
-                    // Calcular proporção
-                    const ratio = anpPrices.etanol / anpPrices.gasolina;
-                    const ratioPercent = (ratio * 100).toFixed(1);
-
-                    if (ratio <= RATIO_THRESHOLD) {
-                        ratioEl.textContent = `✅ ${ratioPercent}% - Etanol vale a pena!`;
-                        ratioEl.classList.add('etanol-vale');
-                        ratioEl.classList.remove('gasolina-vale');
-                    } else {
-                        ratioEl.textContent = `⛽ ${ratioPercent}% - Gasolina é melhor`;
-                        ratioEl.classList.add('gasolina-vale');
-                        ratioEl.classList.remove('etanol-vale');
-                    }
-
-                    // Status com período
-                    const inicio = formatDate(result.periodStart);
-                    const fim = formatDate(result.periodEnd);
-                    statusEl.textContent = `Semana: ${inicio} a ${fim}`;
-
-                    // Salvar cache
-                    localStorage.setItem('anp-cache', JSON.stringify({
-                        ...result,
-                        cachedAt: Date.now()
-                    }));
-
-                } else {
-                    throw new Error('Erro na API');
-                }
-
-            } catch (error) {
-                console.error('Erro ao buscar ANP:', error);
-
-                // Tentar cache
-                const cached = localStorage.getItem('anp-cache');
-                if (cached) {
-                    const data = JSON.parse(cached);
-                    anpPrices.gasolina = data.data.gasolinaComum;
-                    anpPrices.etanol = data.data.etanol;
-
-                    gasolinaEl.textContent = formatCurrency(anpPrices.gasolina);
-                    etanolEl.textContent = formatCurrency(anpPrices.etanol);
-
-                    const ratio = anpPrices.etanol / anpPrices.gasolina;
-                    ratioEl.textContent = `⚠️ ${(ratio * 100).toFixed(1)}% (cache)`;
-
-                    statusEl.textContent = '⚠️ Usando dados em cache';
-                } else {
-                    statusEl.textContent = '❌ Erro ao carregar preços';
-                }
-            }
-        }
-
-        // ========================================
-        // INICIALIZAR MAPA
-        // ========================================
+        // ==========================================
+        // MAPA
+        // ==========================================
         function initMap() {
-            map = L.map('map').setView(GUARULHOS_CENTER, DEFAULT_ZOOM);
+            map = L.map('map', {
+                zoomControl: false,
+                attributionControl: false
+            }).setView(GUARULHOS_CENTER, DEFAULT_ZOOM);
 
-            // Tile layer (OpenStreetMap)
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19
             }).addTo(map);
-
-            // Adicionar marcadores dos postos
-            addPostosMarkers();
-
-            // Esconder loading
-            document.getElementById('loading').style.display = 'none';
-
-            // Atualizar contador
-            document.getElementById('posts-count').textContent = postos.length;
         }
 
-        // ========================================
-        // ADICIONAR MARCADORES
-        // ========================================
-        function addPostosMarkers() {
-            postos.forEach(posto => {
-                // Ícone customizado
-                const icon = L.divIcon({
-                    className: 'custom-marker' + (posto.credenciado ? ' credenciado' : ''),
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10],
-                    popupAnchor: [0, -10]
+        // ==========================================
+        // CARREGAMENTO DE DADOS
+        // ==========================================
+        async function loadData() {
+            try {
+                // Carregar postos e preços
+                const [postosRes, precosRes] = await Promise.all([
+                    fetch(`${API_BASE}/postos.json`),
+                    fetch(`${API_BASE}/precos-postos.json`)
+                ]);
+
+                const postosJson = await postosRes.json();
+                const precosJson = await precosRes.json();
+
+                postosData = postosJson.data || [];
+                precosData = precosJson.data || [];
+
+                // Mesclar dados de preços nos postos
+                postosData = postosData.map(posto => {
+                    const preco = precosData.find(p => p.terminal === posto.terminal);
+                    return {
+                        ...posto,
+                        precos: preco?.precos || { gasolina: null, etanol: null, diesel: null, gnv: null },
+                        dataPreco: preco?.dataUltimoAbastecimento || null
+                    };
                 });
 
-                // Criar marcador
-                const marker = L.marker([posto.lat, posto.lng], { icon })
-                    .addTo(map);
+                // Gerar coordenadas simuladas (em produção, usar API de geocoding)
+                postosData = postosData.map(posto => ({
+                    ...posto,
+                    coordenadas: generateCoordinates(posto)
+                }));
 
-                // Popup
-                marker.bindPopup(createPopupContent(posto));
-            });
+                renderPosts();
+                renderMarkers();
+                updateStats();
+
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                showError('Erro ao carregar dados. Tentando novamente...');
+                setTimeout(loadData, 3000);
+            }
         }
 
-        // ========================================
-        // CRIAR CONTEÚDO DO POPUP
-        // ========================================
-        function createPopupContent(posto) {
-            const gasolinaDisplay = anpPrices.gasolina 
-                ? formatCurrency(anpPrices.gasolina) 
-                : 'R$ --';
-            const etanolDisplay = anpPrices.etanol 
-                ? formatCurrency(anpPrices.etanol) 
-                : 'R$ --';
+        // Gerar coordenadas baseadas no endereço (simulado)
+        function generateCoordinates(posto) {
+            const bairroCoords = {
+                'Cocaia': [-23.4300, -46.5200],
+                'Centro': [-23.4628, -46.5327],
+                'Vila Augusta': [-23.4450, -46.5100],
+                'Vila Barros': [-23.4550, -46.5000],
+                'Macedo': [-23.4700, -46.5400],
+                'Cumbica': [-23.4350, -46.4800],
+                'Aeroporto': [-23.4350, -46.4700],
+                'Vila das Bandeiras': [-23.4600, -46.5250],
+                'Picanço': [-23.4750, -46.5350],
+                'Vila Galvão': [-23.4900, -46.5450],
+                'Itapegica': [-23.4550, -46.5550],
+                'Cidade Industrial': [-23.4200, -46.4900],
+                'Jardim Presidente Dutra': [-23.4400, -46.5300],
+                'Cidade Seródio': [-23.4650, -46.5150],
+                'Vila Paraíso': [-23.4100, -46.5100],
+                'Jardim Albertina': [-23.4000, -46.4600],
+                'Jardim Santa Francisca': [-23.4580, -46.5380],
+                'Jardim Nova Taboão': [-23.4500, -46.5050],
+                'Várzea do Palácio': [-23.4480, -46.5420],
+                'Porto da Igreja': [-23.4520, -46.5480],
+                'Parque São Miguel': [-23.3950, -46.4500],
+                'Zona Industrial': [-23.4150, -46.4850],
+                'Parque Estrela': [-23.4620, -46.5290],
+                'Vila Flórida': [-23.4380, -46.4950],
+                'Cidade Martins': [-23.4720, -46.5280],
+                'Jardim Moreira': [-23.4680, -46.5320]
+            };
 
-            const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${posto.lat},${posto.lng}`;
+            const bairro = posto.endereco?.bairro || '';
+            const baseCoords = Object.entries(bairroCoords).find(([key]) => 
+                bairro.toLowerCase().includes(key.toLowerCase())
+            )?.[1] || GUARULHOS_CENTER;
 
-            return `
-                <div class="popup-content">
-                    <div class="popup-title">${posto.nome}</div>
-                    <div class="popup-address">${posto.endereco}</div>
-                    ${posto.credenciado ? '<div class="popup-badge">✓ Credenciado Prime</div>' : ''}
-                    <div class="popup-prices">
-                        <div class="popup-price">
-                            <div class="popup-price-label">Gasolina*</div>
-                            <div class="popup-price-value">${gasolinaDisplay}</div>
+            // Adicionar pequena variação para evitar sobreposição
+            const variation = () => (Math.random() - 0.5) * 0.008;
+            return [baseCoords[0] + variation(), baseCoords[1] + variation()];
+        }
+
+        // ==========================================
+        // RENDERIZAÇÃO
+        // ==========================================
+        function renderPosts(filteredData = null) {
+            const data = filteredData || postosData;
+            const container = document.getElementById('postsList');
+
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <p>Nenhum posto encontrado</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.map(posto => `
+                <div class="post-card" data-terminal="${posto.terminal}" onclick="selectPosto('${posto.terminal}')">
+                    <div class="post-header">
+                        <div class="post-name">${posto.nomeFantasia}</div>
+                        <span class="post-badge ${getBadgeClass(posto.bandeira)}">${posto.bandeira}</span>
+                    </div>
+                    <div class="post-address">
+                        <span class="post-address-icon">📍</span>
+                        <span>${formatAddress(posto.endereco)}</span>
+                    </div>
+                    <div class="post-prices">
+                        <div class="price-item">
+                            <div class="price-type">Gasolina</div>
+                            <div class="price-value ${!posto.precos?.gasolina ? 'no-data' : ''}">
+                                ${posto.precos?.gasolina ? `R$ ${posto.precos.gasolina.toFixed(2)}` : 'N/D'}
+                            </div>
                         </div>
-                        <div class="popup-price">
-                            <div class="popup-price-label">Etanol*</div>
-                            <div class="popup-price-value">${etanolDisplay}</div>
+                        <div class="price-item">
+                            <div class="price-type">Etanol</div>
+                            <div class="price-value ${!posto.precos?.etanol ? 'no-data' : ''}">
+                                ${posto.precos?.etanol ? `R$ ${posto.precos.etanol.toFixed(2)}` : 'N/D'}
+                            </div>
                         </div>
                     </div>
-                    <a href="${mapsUrl}" target="_blank" class="popup-btn">
-                        🧭 Traçar Rota
-                    </a>
-                    <div style="font-size: 0.65rem; color: #999; margin-top: 8px; text-align: center;">
-                        *Preços médios ANP - podem variar no posto
+                    <div class="post-footer">
+                        <div class="post-hours ${isOpen24h(posto.horarioFuncionamento) ? 'open' : ''}">
+                            🕐 ${posto.horarioFuncionamento || 'Não informado'}
+                        </div>
+                        ${posto.distancia ? `<div class="post-distance">${posto.distancia.toFixed(1)} km</div>` : ''}
                     </div>
                 </div>
-            `;
+            `).join('');
         }
 
-        // ========================================
-        // MINHA LOCALIZAÇÃO
-        // ========================================
-        function goToMyLocation() {
+        function renderMarkers() {
+            // Limpar markers existentes
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            // Calcular range de preços para cores
+            const gasolinaPrecos = postosData
+                .filter(p => p.precos?.gasolina)
+                .map(p => p.precos.gasolina);
+            
+            const minPreco = Math.min(...gasolinaPrecos);
+            const maxPreco = Math.max(...gasolinaPrecos);
+            const range = maxPreco - minPreco;
+
+            postosData.forEach(posto => {
+                if (!posto.coordenadas) return;
+
+                // Determinar cor do marker
+                let colorClass = 'medium-price';
+                if (posto.precos?.gasolina) {
+                    const normalized = (posto.precos.gasolina - minPreco) / range;
+                    if (normalized <= 0.33) colorClass = 'low-price';
+                    else if (normalized >= 0.66) colorClass = 'high-price';
+                }
+
+                const icon = L.divIcon({
+                    className: `custom-marker ${colorClass}`,
+                    html: `<div style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">⛽</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+
+                const marker = L.marker(posto.coordenadas, { icon })
+                    .addTo(map)
+                    .on('click', () => selectPosto(posto.terminal));
+
+                // Popup simples
+                const popupContent = `
+                    <div class="popup-content">
+                        <div class="popup-name">${posto.nomeFantasia}</div>
+                        <div class="popup-price">
+                            ${posto.precos?.gasolina ? `Gasolina: R$ ${posto.precos.gasolina.toFixed(2)}` : 'Preço não disponível'}
+                        </div>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+
+                markers.push(marker);
+            });
+
+            // Ajustar bounds do mapa
+            if (markers.length > 0) {
+                const group = L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        function updateStats() {
+            const total = postosData.length;
+            const gasolinaPrecos = postosData.filter(p => p.precos?.gasolina).map(p => p.precos.gasolina);
+            const etanolPrecos = postosData.filter(p => p.precos?.etanol).map(p => p.precos.etanol);
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statGasolina').textContent = gasolinaPrecos.length 
+                ? `R$ ${Math.min(...gasolinaPrecos).toFixed(2)}` 
+                : '--';
+            document.getElementById('statEtanol').textContent = etanolPrecos.length 
+                ? `R$ ${Math.min(...etanolPrecos).toFixed(2)}` 
+                : '--';
+        }
+
+        // ==========================================
+        // SELEÇÃO E INFO PANEL
+        // ==========================================
+        function selectPosto(terminal) {
+            const posto = postosData.find(p => p.terminal === terminal);
+            if (!posto) return;
+
+            selectedPosto = posto;
+
+            // Atualizar cards
+            document.querySelectorAll('.post-card').forEach(card => {
+                card.classList.toggle('active', card.dataset.terminal === terminal);
+            });
+
+            // Centralizar mapa
+            if (posto.coordenadas) {
+                map.setView(posto.coordenadas, 15);
+            }
+
+            // Mostrar info panel
+            showInfoPanel(posto);
+
+            // Scroll para o card na lista
+            const card = document.querySelector(`.post-card[data-terminal="${terminal}"]`);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function showInfoPanel(posto) {
+            const panel = document.getElementById('infoPanel');
+            
+            document.getElementById('infoName').textContent = posto.nomeFantasia;
+            document.getElementById('infoAddress').innerHTML = `
+                📍 ${formatAddress(posto.endereco)}<br>
+                🕐 ${posto.horarioFuncionamento || 'Horário não informado'}
+            `;
+            document.getElementById('infoContact').innerHTML = `
+                ${posto.contato?.telefone ? `📞 ${posto.contato.telefone}` : ''}
+                ${posto.contato?.email ? `<br>✉️ ${posto.contato.email}` : ''}
+            `;
+
+            document.getElementById('infoPrices').innerHTML = `
+                <div class="info-price-card">
+                    <div class="info-price-type">Gasolina</div>
+                    <div class="info-price-value">${posto.precos?.gasolina ? `R$ ${posto.precos.gasolina.toFixed(2)}` : 'N/D'}</div>
+                </div>
+                <div class="info-price-card">
+                    <div class="info-price-type">Etanol</div>
+                    <div class="info-price-value">${posto.precos?.etanol ? `R$ ${posto.precos.etanol.toFixed(2)}` : 'N/D'}</div>
+                </div>
+                <div class="info-price-card">
+                    <div class="info-price-type">Diesel</div>
+                    <div class="info-price-value">${posto.precos?.diesel ? `R$ ${posto.precos.diesel.toFixed(2)}` : 'N/D'}</div>
+                </div>
+                <div class="info-price-card">
+                    <div class="info-price-type">GNV</div>
+                    <div class="info-price-value">${posto.precos?.gnv ? `R$ ${posto.precos.gnv.toFixed(2)}` : 'N/D'}</div>
+                </div>
+            `;
+
+            // Configurar botões
+            document.getElementById('btnRoute').onclick = () => openRoute(posto);
+            document.getElementById('btnCall').onclick = () => callPosto(posto);
+
+            panel.classList.add('active');
+        }
+
+        function closeInfoPanel() {
+            document.getElementById('infoPanel').classList.remove('active');
+            selectedPosto = null;
+            document.querySelectorAll('.post-card').forEach(c => c.classList.remove('active'));
+        }
+
+        // ==========================================
+        // AÇÕES
+        // ==========================================
+        function openRoute(posto) {
+            const address = encodeURIComponent(formatAddress(posto.endereco) + ', Guarulhos, SP');
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${address}`;
+            window.open(url, '_blank');
+        }
+
+        function callPosto(posto) {
+            if (posto.contato?.telefone) {
+                const phone = posto.contato.telefone.replace(/\D/g, '');
+                window.open(`tel:${phone}`);
+            }
+        }
+
+        // ==========================================
+        // FILTROS E BUSCA
+        // ==========================================
+        function initEventListeners() {
+            // Busca
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                filterPosts();
+            });
+
+            // Filtros
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterPosts();
+                });
+            });
+
+            // Ordenação
+            document.getElementById('sortSelect').addEventListener('change', filterPosts);
+            document.getElementById('bandeira-filter').addEventListener('change', filterPosts);
+
+            // Controles do mapa
+            document.getElementById('zoomInBtn').addEventListener('click', () => map.zoomIn());
+            document.getElementById('zoomOutBtn').addEventListener('click', () => map.zoomOut());
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                map.setView(GUARULHOS_CENTER, DEFAULT_ZOOM);
+                closeInfoPanel();
+            });
+            document.getElementById('locateBtn').addEventListener('click', locateUser);
+        }
+
+        function filterPosts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter;
+            const sortBy = document.getElementById('sortSelect').value;
+            const bandeira = document.getElementById('bandeira-filter').value;
+
+            let filtered = [...postosData];
+
+            // Filtro de busca
+            if (searchTerm) {
+                filtered = filtered.filter(p => 
+                    p.nomeFantasia.toLowerCase().includes(searchTerm) ||
+                    p.endereco?.rua?.toLowerCase().includes(searchTerm) ||
+                    p.endereco?.bairro?.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Filtro de bandeira
+            if (bandeira) {
+                filtered = filtered.filter(p => p.bandeira === bandeira);
+            }
+
+            // Filtros especiais
+            if (activeFilter === '24h') {
+                filtered = filtered.filter(p => isOpen24h(p.horarioFuncionamento));
+            } else if (activeFilter === 'low-price') {
+                filtered = filtered.filter(p => p.precos?.gasolina)
+                    .sort((a, b) => a.precos.gasolina - b.precos.gasolina)
+                    .slice(0, 10);
+            }
+
+            // Ordenação
+            if (sortBy === 'name') {
+                filtered.sort((a, b) => a.nomeFantasia.localeCompare(b.nomeFantasia));
+            } else if (sortBy === 'price-asc') {
+                filtered.sort((a, b) => (a.precos?.gasolina || 999) - (b.precos?.gasolina || 999));
+            } else if (sortBy === 'price-desc') {
+                filtered.sort((a, b) => (b.precos?.gasolina || 0) - (a.precos?.gasolina || 0));
+            } else if (sortBy === 'distance' && userLocation) {
+                filtered.sort((a, b) => (a.distancia || 999) - (b.distancia || 999));
+            }
+
+            renderPosts(filtered);
+        }
+
+        function locateUser() {
             if (!navigator.geolocation) {
-                alert('Geolocalização não suportada neste navegador.');
+                alert('Geolocalização não suportada pelo navegador');
                 return;
             }
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    const { latitude, longitude } = position.coords;
-
-                    // Mover mapa
-                    map.setView([latitude, longitude], 15);
-
-                    // Remover marcador anterior se existir
-                    if (userMarker) {
-                        map.removeLayer(userMarker);
-                    }
-
-                    // Adicionar marcador do usuário
+                    userLocation = [position.coords.latitude, position.coords.longitude];
+                    
+                    // Adicionar marker de localização
                     const userIcon = L.divIcon({
-                        className: 'user-marker',
-                        html: '<div style="background: #1a73e8; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(26,115,232,0.5);"></div>',
-                        iconSize: [16, 16],
-                        iconAnchor: [8, 8]
+                        className: '',
+                        html: '<div style="background: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
                     });
+                    L.marker(userLocation, { icon: userIcon }).addTo(map);
 
-                    userMarker = L.marker([latitude, longitude], { icon: userIcon })
-                        .addTo(map)
-                        .bindPopup('📍 Você está aqui')
-                        .openPopup();
+                    // Calcular distâncias
+                    postosData = postosData.map(posto => ({
+                        ...posto,
+                        distancia: posto.coordenadas ? calculateDistance(userLocation, posto.coordenadas) : null
+                    }));
+
+                    map.setView(userLocation, 14);
+                    filterPosts();
                 },
                 (error) => {
-                    console.error('Erro ao obter localização:', error);
-                    alert('Não foi possível obter sua localização.');
+                    alert('Não foi possível obter sua localização');
                 }
             );
         }
 
-        // ========================================
+        // ==========================================
         // UTILITÁRIOS
-        // ========================================
-        function formatCurrency(value) {
-            if (value === null || value === undefined) return 'R$ --';
-            return `R$ ${value.toFixed(2).replace('.', ',')}`;
+        // ==========================================
+        function formatAddress(endereco) {
+            if (!endereco) return 'Endereço não disponível';
+            const parts = [
+                endereco.logradouro,
+                endereco.rua,
+                endereco.numero,
+                endereco.bairro
+            ].filter(Boolean);
+            return parts.join(', ').replace(/,\s*,/g, ',');
         }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '--';
-            const date = new Date(dateStr + 'T00:00:00');
-            return date.toLocaleDateString('pt-BR');
+        function getBadgeClass(bandeira) {
+            const classes = {
+                'BR': 'badge-br',
+                'IPIRANGA': 'badge-ipiranga',
+                'SHELL': 'badge-shell',
+                'PETROBRAS': 'badge-petrobras',
+                'RAIZEN': 'badge-raizen',
+                'BANDEIRA BRANCA': 'badge-branca'
+            };
+            return classes[bandeira] || 'badge-branca';
         }
 
-        // ========================================
-        // INICIALIZAÇÃO
-        // ========================================
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Buscar preços da ANP primeiro
-            await fetchANPPrices();
-            
-            // Inicializar mapa
-            initMap();
-        });
+        function isOpen24h(horario) {
+            if (!horario) return false;
+            const h = horario.toLowerCase();
+            return h.includes('24') || h.includes('24h') || h.includes('24 horas');
+        }
+
+        function calculateDistance(coord1, coord2) {
+            const R = 6371; // km
+            const dLat = (coord2[0] - coord1[0]) * Math.PI / 180;
+            const dLon = (coord2[1] - coord1[1]) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(coord1[0] * Math.PI / 180) * Math.cos(coord2[0] * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function hideLoading() {
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }, 500);
+        }
+
+        function showError(message) {
+            console.error(message);
+        }
     </script>
 </body>
 </html>
