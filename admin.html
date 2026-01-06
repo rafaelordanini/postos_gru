@@ -528,41 +528,55 @@
                     // Pular se não tem terminal ou nome
                     if (!terminal && !nomeFantasia) continue;
                     
-                    const posto = {
-                        id: parseInt(terminal) || Date.now() + i,
-                        terminal: terminal,
-                        nomeFantasia: nomeFantasia || `Posto ${terminal}`,
-                        razaoSocial: getCell(row, colMap.razaoSocial),
-                        cnpj: getCell(row, colMap.cnpj),
-                        telefone: getCell(row, colMap.telefone),
-                        email: getCell(row, colMap.email),
-                        endereco: {
-                            logradouro: `${getCell(row, colMap.logradouro)} ${getCell(row, colMap.endereco)}`.trim(),
-                            numero: getCell(row, colMap.numero) || 'S/N',
-                            bairro: getCell(row, colMap.bairro) || 'Centro',
-                            cidade: getCell(row, colMap.cidade) || 'Guarulhos',
-                            estado: getCell(row, colMap.uf) || 'SP',
-                            cep: getCell(row, colMap.cep)
-                        },
-                        coordenadas: {
-                            // Coordenadas serão geocodificadas depois ou usar padrão
-                            lat: -23.4538 + (Math.random() - 0.5) * 0.05,
-                            lng: -46.5333 + (Math.random() - 0.5) * 0.05
-                        },
-                        precos: {
-                            gasolina: 0,
-                            etanol: 0
-                        },
-                        bandeira: normalizarBandeira(getCell(row, colMap.bandeira)),
-                        horarioFuncionamento: getCell(row, colMap.horario),
-                        is24h: verificar24h(getCell(row, colMap.horario)),
-                        servicos: ['Calibragem'],
-                        ultimaAtualizacaoPreco: null,
-                        dataImportacao: new Date().toISOString()
-                    };
-                    
-                    novosPostos.push(posto);
-                }
+                  // Dentro do loop que processa cada posto:
+
+const posto = {
+    id: parseInt(terminal) || Date.now() + i,
+    terminal: terminal,
+    nomeFantasia: nomeFantasia || `Posto ${terminal}`,
+    razaoSocial: getCell(row, colMap.razaoSocial),
+    cnpj: getCell(row, colMap.cnpj),
+    telefone: getCell(row, colMap.telefone),
+    email: getCell(row, colMap.email),
+    endereco: {
+        logradouro: `${getCell(row, colMap.logradouro)} ${getCell(row, colMap.endereco)}`.trim(),
+        numero: getCell(row, colMap.numero) || 'S/N',
+        bairro: getCell(row, colMap.bairro) || 'Centro',
+        cidade: getCell(row, colMap.cidade) || 'Guarulhos',
+        estado: getCell(row, colMap.uf) || 'SP',
+        cep: getCell(row, colMap.cep)
+    },
+    coordenadas: null, // Será calculado ao renderizar no mapa
+    precos: {
+        gasolina: 0,
+        etanol: 0
+    },
+    bandeira: normalizarBandeira(getCell(row, colMap.bandeira)),
+    horarioFuncionamento: getCell(row, colMap.horario),
+    is24h: verificar24h(getCell(row, colMap.horario)),
+    servicos: ['Calibragem'],
+    ultimaAtualizacaoPreco: null,
+    dataImportacao: new Date().toISOString()
+};
+
+// Gerar coordenadas baseadas no bairro
+const bairro = posto.endereco.bairro;
+const coordsBairro = obterCoordenadasPorBairro(bairro);
+
+if (coordsBairro) {
+    posto.coordenadas = {
+        lat: coordsBairro.lat + (Math.random() - 0.5) * 0.005,
+        lng: coordsBairro.lng + (Math.random() - 0.5) * 0.005
+    };
+} else {
+    // Fallback para centro de Guarulhos com distribuição
+    posto.coordenadas = {
+        lat: -23.4538 + (Math.random() - 0.5) * 0.04,
+        lng: -46.5333 + (Math.random() - 0.5) * 0.04
+    };
+}
+
+novosPostos.push(posto);
                 
                 console.log('Postos processados:', novosPostos.length);
                 
