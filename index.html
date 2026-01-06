@@ -4,22 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Postos Credenciados - Câmara Municipal de Guarulhos</title>
-    
-    <!-- Fontes e Ícones -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    
-    <!-- Estilos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner">
-            <i class="fas fa-gas-pump fa-spin"></i>
+            <i class="fas fa-spinner fa-spin"></i>
             <p>Carregando dados...</p>
         </div>
     </div>
@@ -37,17 +32,20 @@
                 </div>
             </div>
             <div class="header-right">
-                <span id="lastUpdate" class="last-update">Carregando...</span>
-                <button class="btn-refresh" onclick="refreshData()" title="Atualizar dados">
+                <span class="last-update" id="lastUpdate">Carregando...</span>
+                <button class="btn-refresh" onclick="refreshData()" title="Atualizar">
                     <i class="fas fa-sync-alt"></i>
                 </button>
+                <a href="admin.html" class="btn-refresh" title="Administração" style="text-decoration: none;">
+                    <i class="fas fa-cog"></i>
+                </a>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Preços ANP -->
+        <!-- ANP Section -->
         <section class="anp-section">
             <div class="section-header">
                 <h2><i class="fas fa-chart-line"></i> Preços de Referência ANP</h2>
@@ -55,19 +53,15 @@
             </div>
             <div class="anp-cards">
                 <div class="anp-card gasolina">
-                    <div class="anp-icon">
-                        <i class="fas fa-gas-pump"></i>
-                    </div>
-                    <div class="anp-info">
+                    <div class="anp-icon"><i class="fas fa-gas-pump"></i></div>
+                    <div>
                         <span class="anp-label">Gasolina Comum</span>
                         <span class="anp-value" id="anpGasolina">R$ --</span>
                     </div>
                 </div>
                 <div class="anp-card etanol">
-                    <div class="anp-icon">
-                        <i class="fas fa-leaf"></i>
-                    </div>
-                    <div class="anp-info">
+                    <div class="anp-icon"><i class="fas fa-leaf"></i></div>
+                    <div>
                         <span class="anp-label">Etanol</span>
                         <span class="anp-value" id="anpEtanol">R$ --</span>
                     </div>
@@ -75,16 +69,13 @@
             </div>
         </section>
 
-        <!-- Filtros -->
+        <!-- Filters -->
         <section class="filters-section">
             <div class="search-box">
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Buscar posto por nome, endereço ou bairro...">
-                <button class="btn-clear-search" onclick="clearSearch()" title="Limpar busca">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button class="btn-clear-search" onclick="clearSearch()"><i class="fas fa-times"></i></button>
             </div>
-            
             <div class="filters-row">
                 <div class="filter-group">
                     <label>Bairro:</label>
@@ -92,7 +83,6 @@
                         <option value="all">Todos</option>
                     </select>
                 </div>
-                
                 <div class="filter-group">
                     <label>Ordenar por:</label>
                     <select id="sortBy">
@@ -102,41 +92,32 @@
                         <option value="distance">Distância</option>
                     </select>
                 </div>
-                
                 <button class="btn-filter" onclick="applyFilters()">
                     <i class="fas fa-filter"></i> Filtrar
                 </button>
             </div>
         </section>
 
-        <!-- Estatísticas -->
+        <!-- Stats -->
         <section class="stats-section">
             <div class="stats-grid">
                 <div class="stat-card primary">
-                    <div class="stat-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
-                    <div class="stat-info">
+                    <div class="stat-icon"><i class="fas fa-gas-pump"></i></div>
+                    <div>
                         <span class="stat-value" id="totalPostos">0</span>
                         <span class="stat-label">Postos Credenciados</span>
                     </div>
                 </div>
-                
                 <div class="stat-card success">
-                    <div class="stat-icon">
-                        <i class="fas fa-arrow-down"></i>
-                    </div>
-                    <div class="stat-info">
+                    <div class="stat-icon"><i class="fas fa-arrow-down"></i></div>
+                    <div>
                         <span class="stat-value" id="maisBaratoValor">R$ --</span>
                         <span class="stat-label" id="maisBaratoNome">Mais Barato (Gasolina)</span>
                     </div>
                 </div>
-                
                 <div class="stat-card danger">
-                    <div class="stat-icon">
-                        <i class="fas fa-arrow-up"></i>
-                    </div>
-                    <div class="stat-info">
+                    <div class="stat-icon"><i class="fas fa-arrow-up"></i></div>
+                    <div>
                         <span class="stat-value" id="maisCaroValor">R$ --</span>
                         <span class="stat-label" id="maisCaroNome">Mais Caro (Gasolina)</span>
                     </div>
@@ -144,13 +125,13 @@
             </div>
         </section>
 
-        <!-- Lista de Postos -->
+        <!-- Postos Section -->
         <section class="postos-section">
             <div class="section-header">
                 <h2><i class="fas fa-list"></i> Lista de Postos</h2>
                 <div class="view-toggle">
                     <button class="view-btn" onclick="setView('grid')" title="Grade">
-                        <i class="fas fa-th"></i>
+                        <i class="fas fa-th-large"></i>
                     </button>
                     <button class="view-btn" onclick="setView('list')" title="Lista">
                         <i class="fas fa-list"></i>
@@ -161,73 +142,59 @@
                 </div>
             </div>
             
-            <!-- Container do Mapa -->
-            <div id="mapContainer" class="map-container">
+            <!-- Map Container -->
+            <div class="map-container" id="mapContainer">
                 <div id="map"></div>
             </div>
             
-            <!-- Container dos Cards/Lista -->
-            <div id="postosContainer" class="postos-grid" style="display: none;"></div>
+            <!-- Postos Container (grid/list) -->
+            <div id="postosContainer" style="display: none;"></div>
         </section>
     </main>
 
-    <!-- Modal Posto -->
-    <div id="postoModal" class="modal">
+    <!-- Modal -->
+    <div class="modal" id="postoModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Detalhes do Posto</h2>
-                <button class="modal-close" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
             </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Conteúdo dinâmico -->
-            </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 
-    <!-- Chat IA -->
-    <div id="chatContainer" class="chat-container">
+    <!-- Chat -->
+    <div class="chat-container" id="chatContainer">
         <div class="chat-header" onclick="toggleChat()">
             <div class="chat-header-title">
                 <i class="fas fa-robot"></i>
                 <span>Assistente IA</span>
             </div>
-            <button class="chat-minimize">
-                <i class="fas fa-minus"></i>
-            </button>
+            <button class="chat-minimize"><i class="fas fa-minus"></i></button>
         </div>
-        
         <div class="chat-body">
             <div class="chat-messages" id="chatMessages">
                 <div class="message bot">
-                    <div class="message-avatar">
-                        <i class="fas fa-robot"></i>
-                    </div>
+                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
                     <div class="message-content">
-                        <p>Olá! 👋 Sou o assistente virtual da Câmara Municipal de Guarulhos.</p>
-                        <p>Posso ajudar com informações sobre postos credenciados, preços de combustíveis e o contrato Prime.</p>
+                        Olá! 👋 Sou o assistente virtual da Câmara Municipal de Guarulhos.<br><br>
+                        Posso ajudar com informações sobre postos credenciados, preços de combustíveis e o contrato Prime.
                     </div>
                 </div>
             </div>
-            
             <div class="chat-suggestions">
                 <button onclick="askQuickQuestion('Qual o posto mais barato?')">💰 Mais barato</button>
-                <button onclick="askQuickQuestion('Quais postos estão com preço acima da ANP?')">🔴 Acima ANP</button>
-                <button onclick="askQuickQuestion('O que significa as cores no mapa?')">🗺️ Legenda</button>
+                <button onclick="askQuickQuestion('Quais postos estão acima da ANP?')">🔴 Acima ANP</button>
+                <button onclick="askQuickQuestion('O que significam as cores do mapa?')">🗺️ Legenda</button>
             </div>
-            
             <div class="chat-input-container">
                 <input type="text" id="chatInput" placeholder="Digite sua pergunta..." onkeypress="handleChatKeypress(event)">
-                <button onclick="sendMessage()">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+                <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
     
-    <!-- Botão flutuante do chat (quando minimizado) -->
-    <button id="chatToggleBtn" class="chat-toggle-btn" onclick="toggleChat()" style="display: none;">
+    <button class="chat-toggle-btn" id="chatToggleBtn" onclick="toggleChat()" style="display: none;">
         <i class="fas fa-comments"></i>
         <span class="chat-badge">1</span>
     </button>
@@ -235,237 +202,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="data.js"></script>
+    <script src="CONTRATO.js"></script>
     <script src="app.js"></script>
-// ==========================================
-// INICIALIZAÇÃO DO MAPA
-// ==========================================
-
-let map = null;
-let markers = [];
-let markerCluster = null;
-
-function inicializarMapa() {
-    console.log('🗺️ Inicializando mapa...');
-    
-    // Centro de Guarulhos
-    const centroGuarulhos = [-23.4538, -46.5333];
-    
-    // Criar mapa
-    map = L.map('map', {
-        center: centroGuarulhos,
-        zoom: 13,
-        zoomControl: true
-    });
-    
-    // Adicionar camada de tiles (OpenStreetMap)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-    }).addTo(map);
-    
-    // Adicionar marcador da Câmara Municipal
-    const camaraIcon = L.divIcon({
-        html: '<div style="background: #1e40af; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"><i class="fas fa-landmark"></i></div>',
-        className: 'custom-marker',
-        iconSize: [40, 40],
-        iconAnchor: [20, 40]
-    });
-    
-    L.marker(centroGuarulhos, { icon: camaraIcon })
-        .addTo(map)
-        .bindPopup('<strong>Câmara Municipal de Guarulhos</strong><br>Centro');
-    
-    console.log('✅ Mapa inicializado');
-    
-    // Carregar e exibir postos
-    renderizarPostosNoMapa();
-}
-
-function renderizarPostosNoMapa() {
-    console.log('📍 Renderizando postos no mapa...');
-    console.log('Total de postos:', postosData.length);
-    
-    // Limpar marcadores anteriores
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
-    
-    if (postosData.length === 0) {
-        console.log('⚠️ Nenhum posto para exibir');
-        return;
-    }
-    
-    // Criar grupo de bounds para ajustar zoom
-    const bounds = L.latLngBounds();
-    let postosComCoordenadas = 0;
-    
-    postosData.forEach((posto, index) => {
-        // Garantir que o posto tem coordenadas válidas
-        let lat, lng;
-        
-        if (posto.coordenadas && posto.coordenadas.lat && posto.coordenadas.lng) {
-            lat = parseFloat(posto.coordenadas.lat);
-            lng = parseFloat(posto.coordenadas.lng);
-        } else {
-            // Gerar coordenadas baseado no bairro
-            const coords = obterCoordenadasPorEndereco(posto.endereco);
-            lat = coords.lat;
-            lng = coords.lng;
-            
-            // Salvar coordenadas no posto para cache
-            posto.coordenadas = { lat, lng };
-        }
-        
-        // Validar coordenadas (deve estar em Guarulhos)
-        if (isNaN(lat) || isNaN(lng) || lat < -24 || lat > -23 || lng < -47 || lng > -46) {
-            console.warn(`⚠️ Coordenadas inválidas para ${posto.nomeFantasia}, usando fallback`);
-            lat = -23.4538 + (Math.random() - 0.5) * 0.03;
-            lng = -46.5333 + (Math.random() - 0.5) * 0.03;
-        }
-        
-        postosComCoordenadas++;
-        
-        // Criar ícone personalizado baseado na bandeira
-        const corBandeira = getBandeiraCor(posto.bandeira);
-        
-        const icon = L.divIcon({
-            html: `<div style="
-                background: ${corBandeira}; 
-                color: white; 
-                border-radius: 50%; 
-                width: 32px; 
-                height: 32px; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
-                border: 2px solid white; 
-                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-                font-size: 14px;
-            "><i class="fas fa-gas-pump"></i></div>`,
-            className: 'posto-marker',
-            iconSize: [32, 32],
-            iconAnchor: [16, 32],
-            popupAnchor: [0, -32]
-        });
-        
-        // Criar marcador
-        const marker = L.marker([lat, lng], { icon: icon });
-        
-        // Popup com informações do posto
-        const enderecoCompleto = posto.endereco ? 
-            `${posto.endereco.logradouro || ''}, ${posto.endereco.numero || 'S/N'} - ${posto.endereco.bairro || ''}` : 
-            'Endereço não informado';
-        
-        const popupContent = `
-            <div style="min-width: 200px;">
-                <h4 style="margin: 0 0 8px 0; color: #1e40af; font-size: 14px;">${posto.nomeFantasia || 'Posto'}</h4>
-                <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">
-                    <i class="fas fa-map-marker-alt" style="width: 16px;"></i> ${enderecoCompleto}
-                </p>
-                <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">
-                    <i class="fas fa-flag" style="width: 16px;"></i> ${posto.bandeira || 'Bandeira Branca'}
-                </p>
-                ${posto.telefone ? `<p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">
-                    <i class="fas fa-phone" style="width: 16px;"></i> ${posto.telefone}
-                </p>` : ''}
-                ${posto.is24h ? '<p style="margin: 4px 0 0 0; font-size: 11px; color: #059669;"><i class="fas fa-clock"></i> Aberto 24h</p>' : ''}
-            </div>
-        `;
-        
-        marker.bindPopup(popupContent);
-        marker.addTo(map);
-        markers.push(marker);
-        
-        // Adicionar ao bounds
-        bounds.extend([lat, lng]);
-    });
-    
-    console.log(`✅ ${postosComCoordenadas} postos renderizados no mapa`);
-    
-    // Ajustar zoom para mostrar todos os postos
-    if (postosComCoordenadas > 0) {
-        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
-    }
-    
-    // Salvar postos com coordenadas atualizadas
-    salvarPostos(postosData);
-}
-
-// ==========================================
-// ATUALIZAR ESTATÍSTICAS
-// ==========================================
-
-function atualizarEstatisticas() {
-    // Total de postos
-    document.getElementById('totalPostos').textContent = postosData.length;
-    
-    // Preços (da ANP ou dos postos)
-    const precos = carregarPrecosANP();
-    
-    // Menor e maior preço de gasolina dos postos
-    const postosComPreco = postosData.filter(p => p.precos && p.precos.gasolina > 0);
-    
-    if (postosComPreco.length > 0) {
-        const precoMin = Math.min(...postosComPreco.map(p => p.precos.gasolina));
-        const precoMax = Math.max(...postosComPreco.map(p => p.precos.gasolina));
-        
-        document.getElementById('menorPreco').textContent = formatarPreco(precoMin);
-        document.getElementById('maiorPreco').textContent = formatarPreco(precoMax);
-    } else {
-        // Usar preços da ANP como referência
-        document.getElementById('menorPreco').textContent = 'R$ --';
-        document.getElementById('maiorPreco').textContent = 'R$ --';
-    }
-    
-    // Atualizar preços médios no topo
-    const precoGasolinaEl = document.getElementById('precoGasolina');
-    const precoEtanolEl = document.getElementById('precoEtanol');
-    
-    if (precoGasolinaEl) precoGasolinaEl.textContent = formatarPreco(precos.gasolina);
-    if (precoEtanolEl) precoEtanolEl.textContent = formatarPreco(precos.etanol);
-}
-
-// ==========================================
-// PREENCHER FILTRO DE BAIRROS
-// ==========================================
-
-function preencherFiltroBairros() {
-    const select = document.getElementById('filtroBairro');
-    if (!select) return;
-    
-    // Obter bairros únicos
-    const bairros = [...new Set(postosData.map(p => p.endereco?.bairro).filter(b => b))].sort();
-    
-    // Limpar opções existentes (exceto "Todos")
-    select.innerHTML = '<option value="">Todos</option>';
-    
-    // Adicionar bairros
-    bairros.forEach(bairro => {
-        const option = document.createElement('option');
-        option.value = bairro;
-        option.textContent = bairro;
-        select.appendChild(option);
-    });
-}
-
-// ==========================================
-// INICIALIZAÇÃO
-// ==========================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Iniciando aplicação...');
-    
-    // Carregar dados
-    carregarPostos();
-    carregarPrecosANP();
-    
-    // Inicializar mapa
-    setTimeout(() => {
-        inicializarMapa();
-        atualizarEstatisticas();
-        preencherFiltroBairros();
-    }, 100);
-});
-
-    
 </body>
 </html>
