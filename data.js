@@ -3,7 +3,7 @@
 // ==========================================
 
 // Configuração da API Gemini
-const GEMINI_API_KEY = 'SUA_API_KEY_AQUI'; // Substitua pela sua chave
+const GEMINI_API_KEY = 'AIzaSyAHbzal0e8Nvt3JHEn6TnQ9VX_pRb1z-TU'; // Substitua pela sua chave
 
 // Dados ANP (simulados - em produção, buscar da API)
 let anpData = {
