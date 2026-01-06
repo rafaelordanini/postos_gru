@@ -64,13 +64,13 @@ const STORAGE_KEYS = {
 };
 
 // ==========================================
-// BUSCAR PREÇOS ANP - VERSÃO CORRIGIDA
+// BUSCAR PREÇOS ANP - DO SEU SITE anp-gru.vercel.app
 // ==========================================
 
 async function carregarDadosANP() {
-    console.log('🔍 Buscando preços ANP...');
+    console.log('🔍 Buscando preços ANP de anp-gru.vercel.app...');
     
-    // Verificar cache
+    // Verificar cache (válido por 1 hora)
     const cached = localStorage.getItem(STORAGE_KEYS.ANP_DATA);
     if (cached) {
         try {
@@ -78,39 +78,36 @@ async function carregarDadosANP() {
             const agora = new Date().getTime();
             const cacheTime = new Date(dados.timestamp || 0).getTime();
             
-            // Cache válido por 6 horas
-            if (agora - cacheTime < 6 * 60 * 60 * 1000 && dados.gasolinaComum) {
+            // Cache válido por 1 hora
+            if (agora - cacheTime < 1 * 60 * 60 * 1000 && dados.gasolinaComum) {
                 console.log('✅ Usando cache ANP:', dados);
                 anpData = dados;
                 window.anpData = anpData;
                 return anpData;
             }
-        } catch (e) {}
+        } catch (e) {
+            console.warn('Cache inválido, buscando novos dados...');
+        }
     }
     
-    // Buscar via API
+    // Buscar do seu site anp-gru.vercel.app
     try {
-        const response = await fetch('https://api.allorigins.win/raw?url=' + 
-            encodeURIComponent('https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-concorrencia/precos/precos-revenda-e-de-distribuicao-combustiveis/shlp/semanal/municipios/sao-paulo/guarulhos'));
+        const response = await fetch('https://anp-gru.vercel.app/prices.json');
         
         if (response.ok) {
-            const html = await response.text();
+            const dados = await response.json();
             
-            // Buscar gasolina
-            const regexGasolina = /gasolina[^0-9]*?(\d+)[,.](\d{2,3})/gi;
-            const matchGas = regexGasolina.exec(html);
-            
-            // Buscar etanol
-            const regexEtanol = /etanol[^0-9]*?(\d+)[,.](\d{2,3})/gi;
-            const matchEtanol = regexEtanol.exec(html);
-            
-            if (matchGas || matchEtanol) {
+            if (dados.success && dados.data) {
                 anpData = {
-                    gasolinaComum: matchGas ? parseFloat(`${matchGas[1]}.${matchGas[2]}`) : 6.06,
-                    etanol: matchEtanol ? parseFloat(`${matchEtanol[1]}.${matchEtanol[2]}`) : 3.97,
-                    dataAtualizacao: new Date().toISOString(),
-                    semana: `Semana de ${new Date().toLocaleDateString('pt-BR')}`,
-                    fonte: 'ANP',
+                    gasolinaComum: dados.data.gasolinaComum,
+                    etanol: dados.data.etanol,
+                    diesel: dados.data.diesel,
+                    gnv: dados.data.gnv,
+                    dataAtualizacao: dados.updatedAt,
+                    periodo: `${formatarDataBR(dados.periodStart)} a ${formatarDataBR(dados.periodEnd)}`,
+                    semana: `Semana ${formatarDataBR(dados.periodStart)} a ${formatarDataBR(dados.periodEnd)}`,
+                    fonte: 'ANP via anp-gru.vercel.app',
+                    sourceUrl: dados.sourceUrl,
                     timestamp: new Date().toISOString()
                 };
                 
@@ -121,26 +118,37 @@ async function carregarDadosANP() {
             }
         }
     } catch (error) {
-        console.warn('⚠️ Erro ao buscar ANP:', error);
+        console.error('❌ Erro ao buscar preços ANP:', error);
     }
     
-    // Fallback com valores de referência de Guarulhos (Janeiro 2026)
+    // SEM FALLBACK - Se não conseguiu, retorna null
     anpData = {
-        gasolinaComum: 6.06,
-        etanol: 3.97,
-        dataAtualizacao: new Date().toISOString(),
-        semana: 'Média semanal - Guarulhos/SP',
-        fonte: 'ANP (referência)',
+        gasolinaComum: null,
+        etanol: null,
+        diesel: null,
+        gnv: null,
+        dataAtualizacao: null,
+        semana: null,
+        fonte: null,
         timestamp: new Date().toISOString()
     };
     
-    localStorage.setItem(STORAGE_KEYS.ANP_DATA, JSON.stringify(anpData));
     window.anpData = anpData;
-    console.log('📊 Usando preços de referência ANP:', anpData);
+    console.warn('⚠️ Preços ANP indisponíveis');
     
     return anpData;
 }
 
+// Função auxiliar para formatar data
+function formatarDataBR(dataISO) {
+    if (!dataISO) return '--';
+    try {
+        const [ano, mes, dia] = dataISO.split('-');
+        return `${dia}/${mes}/${ano}`;
+    } catch (e) {
+        return dataISO;
+    }
+}
 // ==========================================
 // NORMALIZAÇÃO PARA MATCHING DE NOMES
 // ==========================================
