@@ -1,20 +1,35 @@
 // ==========================================
-// ADMIN - Gerenciamento de Postos (CORRIGIDO)
+// ADMIN - Gerenciamento de Postos
 // ==========================================
 
 let adminPostos = [];
 
 document.addEventListener('DOMContentLoaded', function() {
-    initAdmin();
+    console.log('🔧 DOM Loaded - Iniciando admin...');
+    
+    // Aguardar data.js carregar
+    setTimeout(initAdmin, 100);
 });
 
 function initAdmin() {
     console.log('🔧 Iniciando painel admin...');
     
+    // Verificar se funções estão disponíveis
+    if (typeof processarAbastecimentosCSV !== 'function') {
+        console.error('❌ processarAbastecimentosCSV não está definida!');
+        showAdminNotification('Erro: Função de processamento não carregada. Recarregue a página.', 'error');
+        return;
+    }
+    
     // Carregar dados
-    carregarPostos();
-    carregarAbastecimentos();
-    adminPostos = [...postosData];
+    if (typeof carregarPostos === 'function') {
+        carregarPostos();
+    }
+    if (typeof carregarAbastecimentos === 'function') {
+        carregarAbastecimentos();
+    }
+    
+    adminPostos = [...(window.postosData || [])];
     
     // Atualizar interface
     atualizarStatus();
@@ -28,17 +43,17 @@ function initAdmin() {
 
 function atualizarStatus() {
     const statusEl = document.getElementById('statusInfo');
-    if (statusEl) {
-        const ultima = getUltimaAtualizacao();
-        const stats = getEstatisticas();
-        
-        statusEl.innerHTML = `
-            <strong>${postosData.length}</strong> postos cadastrados<br>
-            <strong>${stats.postosComPreco}</strong> postos com preço<br>
-            <strong>${abastecimentosData.length}</strong> abastecimentos<br>
-            <small>Última atualização: ${ultima ? new Date(ultima).toLocaleString('pt-BR') : 'Nunca'}</small>
-        `;
-    }
+    if (!statusEl) return;
+    
+    const ultima = typeof getUltimaAtualizacao === 'function' ? getUltimaAtualizacao() : null;
+    const stats = typeof getEstatisticas === 'function' ? getEstatisticas() : { totalPostos: 0, postosComPreco: 0, totalAbastecimentos: 0 };
+    
+    statusEl.innerHTML = `
+        <strong>${window.postosData?.length || 0}</strong> postos cadastrados<br>
+        <strong>${stats.postosComPreco}</strong> postos com preço<br>
+        <strong>${window.abastecimentosData?.length || 0}</strong> abastecimentos<br>
+        <small>Última atualização: ${ultima ? new Date(ultima).toLocaleString('pt-BR') : 'Nunca'}</small>
+    `;
 }
 
 function setupDropZones() {
@@ -97,10 +112,8 @@ async function processarArquivo(file, tipo) {
         } else if (tipo === 'estabelecimentos') {
             if (ext === 'xlsx' || ext === 'xls') {
                 await processarPlanilhaEstabelecimentos(file);
-            } else if (ext === 'csv') {
-                await processarCSVEstabelecimentos(file);
             } else {
-                throw new Error('Formato não suportado. Use .xlsx, .xls ou .csv');
+                throw new Error('Para estabelecimentos, use arquivo Excel (.xlsx)');
             }
         }
     } catch (error) {
@@ -123,27 +136,37 @@ async function processarCSVAbastecimentos(file) {
             try {
                 const csvContent = e.target.result;
                 
-                console.log('📄 CSV carregado, processando...');
+                console.log('📄 CSV carregado, tamanho:', csvContent.length);
+                
+                // Verificar se a função existe
+                if (typeof window.processarAbastecimentosCSV !== 'function') {
+                    throw new Error('Função processarAbastecimentosCSV não encontrada');
+                }
                 
                 // Processar CSV
-                const abastecimentos = processarAbastecimentosCSV(csvContent);
+                const abastecimentos = window.processarAbastecimentosCSV(csvContent);
                 
-                if (abastecimentos.length === 0) {
+                if (!abastecimentos || abastecimentos.length === 0) {
                     throw new Error('Nenhum abastecimento válido encontrado no arquivo.');
                 }
                 
+                console.log(`📊 ${abastecimentos.length} abastecimentos lidos`);
+                
                 // Atualizar preços dos postos
-                atualizarPrecosComAbastecimentos(abastecimentos);
+                if (typeof window.atualizarPrecosComAbastecimentos === 'function') {
+                    window.atualizarPrecosComAbastecimentos(abastecimentos);
+                }
                 
                 // Atualizar interface
-                adminPostos = [...postosData];
+                adminPostos = [...(window.postosData || [])];
                 atualizarStatus();
                 renderizarPostos();
                 
-                showAdminNotification(`✅ ${abastecimentos.length} abastecimentos processados!`, 'success');
+                showAdminNotification(`✅ ${abastecimentos.length} abastecimentos processados! Preços atualizados.`, 'success');
                 resolve(abastecimentos);
                 
             } catch (error) {
+                console.error('Erro:', error);
                 reject(error);
             }
         };
@@ -163,7 +186,6 @@ async function processarExcelAbastecimentos(file) {
         
         reader.onload = function(e) {
             try {
-                // Verificar se XLSX está disponível
                 if (typeof XLSX === 'undefined') {
                     throw new Error('Biblioteca XLSX não carregada. Use arquivo CSV.');
                 }
@@ -178,15 +200,15 @@ async function processarExcelAbastecimentos(file) {
                 const csvContent = XLSX.utils.sheet_to_csv(sheet);
                 
                 // Processar como CSV
-                const abastecimentos = processarAbastecimentosCSV(csvContent);
+                const abastecimentos = window.processarAbastecimentosCSV(csvContent);
                 
-                if (abastecimentos.length === 0) {
+                if (!abastecimentos || abastecimentos.length === 0) {
                     throw new Error('Nenhum abastecimento válido encontrado.');
                 }
                 
-                atualizarPrecosComAbastecimentos(abastecimentos);
+                window.atualizarPrecosComAbastecimentos(abastecimentos);
                 
-                adminPostos = [...postosData];
+                adminPostos = [...(window.postosData || [])];
                 atualizarStatus();
                 renderizarPostos();
                 
@@ -224,7 +246,6 @@ async function processarPlanilhaEstabelecimentos(file) {
                 const sheet = workbook.Sheets[sheetName];
                 const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
                 
-                // Encontrar cabeçalho
                 let headerIndex = -1;
                 for (let i = 0; i < Math.min(10, json.length); i++) {
                     const row = json[i];
@@ -243,19 +264,22 @@ async function processarPlanilhaEstabelecimentos(file) {
                 
                 const headers = json[headerIndex].map(h => String(h || '').toLowerCase().trim());
                 
+                const findCol = (names) => {
+                    for (let i = 0; i < headers.length; i++) {
+                        for (const name of names) {
+                            if (headers[i].includes(name)) return i;
+                        }
+                    }
+                    return -1;
+                };
+                
                 const colMap = {
-                    terminal: findColIndex(headers, ['terminal', 'cod']),
-                    nomeFantasia: findColIndex(headers, ['nome fantasia', 'fantasia']),
-                    cnpj: findColIndex(headers, ['cnpj']),
-                    cep: findColIndex(headers, ['cep']),
-                    logradouro: findColIndex(headers, ['logradouro', 'tipo logradouro']),
-                    endereco: findColIndex(headers, ['endereco', 'endereço', 'rua']),
-                    numero: findColIndex(headers, ['numero', 'número']),
-                    bairro: findColIndex(headers, ['bairro']),
-                    cidade: findColIndex(headers, ['cidade', 'municipio']),
-                    uf: findColIndex(headers, ['uf', 'estado']),
-                    telefone: findColIndex(headers, ['telefone']),
-                    bandeira: findColIndex(headers, ['bandeira'])
+                    terminal: findCol(['terminal', 'cod']),
+                    nomeFantasia: findCol(['nome fantasia', 'fantasia']),
+                    bairro: findCol(['bairro']),
+                    logradouro: findCol(['logradouro']),
+                    endereco: findCol(['endereco', 'rua']),
+                    bandeira: findCol(['bandeira'])
                 };
                 
                 const novosPostos = [];
@@ -264,37 +288,34 @@ async function processarPlanilhaEstabelecimentos(file) {
                     const row = json[i];
                     if (!row || row.length === 0) continue;
                     
-                    const terminal = getCellValue(row, colMap.terminal);
-                    const nomeFantasia = getCellValue(row, colMap.nomeFantasia);
+                    const getCell = (idx) => idx >= 0 && row[idx] ? String(row[idx]).trim() : '';
+                    
+                    const terminal = getCell(colMap.terminal);
+                    const nomeFantasia = getCell(colMap.nomeFantasia);
                     
                     if (!terminal && !nomeFantasia) continue;
                     
-                    const bairro = getCellValue(row, colMap.bairro) || 'Centro';
-                    const coords = obterCoordenadasPorBairro(bairro);
+                    const bairro = getCell(colMap.bairro) || 'Centro';
+                    const coords = window.obterCoordenadasPorBairro ? 
+                        window.obterCoordenadasPorBairro(bairro) : 
+                        { lat: -23.4538, lng: -46.5333 };
                     
                     novosPostos.push({
                         id: parseInt(terminal) || (Date.now() + i),
                         terminal: terminal,
                         nomeFantasia: nomeFantasia || `Posto ${terminal}`,
-                        cnpj: getCellValue(row, colMap.cnpj),
-                        telefone: getCellValue(row, colMap.telefone),
                         endereco: {
-                            logradouro: `${getCellValue(row, colMap.logradouro)} ${getCellValue(row, colMap.endereco)}`.trim(),
-                            numero: getCellValue(row, colMap.numero) || 'S/N',
+                            logradouro: `${getCell(colMap.logradouro)} ${getCell(colMap.endereco)}`.trim(),
                             bairro: bairro,
-                            cidade: getCellValue(row, colMap.cidade) || 'Guarulhos',
-                            estado: getCellValue(row, colMap.uf) || 'SP',
-                            cep: getCellValue(row, colMap.cep)
+                            cidade: 'Guarulhos',
+                            estado: 'SP'
                         },
                         coordenadas: coords ? {
                             lat: coords.lat + (Math.random() - 0.5) * 0.008,
                             lng: coords.lng + (Math.random() - 0.5) * 0.008
-                        } : {
-                            lat: -23.4538 + (Math.random() - 0.5) * 0.04,
-                            lng: -46.5333 + (Math.random() - 0.5) * 0.04
-                        },
+                        } : { lat: -23.4538, lng: -46.5333 },
                         precos: { gasolina: 0, etanol: 0 },
-                        bandeira: getCellValue(row, colMap.bandeira) || 'BANDEIRA BRANCA',
+                        bandeira: getCell(colMap.bandeira) || 'BANDEIRA BRANCA',
                         ativo: true
                     });
                 }
@@ -303,9 +324,12 @@ async function processarPlanilhaEstabelecimentos(file) {
                     throw new Error('Nenhum posto válido encontrado.');
                 }
                 
-                postosData = novosPostos;
+                window.postosData = novosPostos;
                 adminPostos = novosPostos;
-                salvarPostos(novosPostos);
+                
+                if (typeof window.salvarPostos === 'function') {
+                    window.salvarPostos(novosPostos);
+                }
                 
                 atualizarStatus();
                 renderizarPostos();
@@ -323,26 +347,6 @@ async function processarPlanilhaEstabelecimentos(file) {
     });
 }
 
-async function processarCSVEstabelecimentos(file) {
-    showAdminNotification('Para estabelecimentos, use arquivo Excel (.xlsx)', 'error');
-}
-
-function findColIndex(headers, possibleNames) {
-    for (let i = 0; i < headers.length; i++) {
-        const header = headers[i];
-        for (const name of possibleNames) {
-            if (header && header.includes(name)) return i;
-        }
-    }
-    return -1;
-}
-
-function getCellValue(row, index) {
-    if (index === -1 || !row || index >= row.length) return '';
-    const value = row[index];
-    return value !== undefined && value !== null ? String(value).trim() : '';
-}
-
 // ==========================================
 // RENDERIZAÇÃO
 // ==========================================
@@ -351,7 +355,9 @@ function renderizarPostos() {
     const container = document.getElementById('postosTable');
     if (!container) return;
     
-    if (adminPostos.length === 0) {
+    const postos = window.postosData || [];
+    
+    if (postos.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-gas-pump"></i>
@@ -371,25 +377,28 @@ function renderizarPostos() {
                     <th>Endereço</th>
                     <th>Gasolina</th>
                     <th>Etanol</th>
-                    <th>Status</th>
+                    <th>Última Atualização</th>
                     <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
     `;
     
-    adminPostos.forEach(posto => {
-        const statusGas = getStatusPreco(posto.precos?.gasolina, anpData.gasolinaComum);
-        const statusEta = getStatusPreco(posto.precos?.etanol, anpData.etanol);
+    const anp = window.anpData || { gasolinaComum: 6.02, etanol: 4.26 };
+    
+    postos.forEach(posto => {
+        const statusGas = getStatusPreco(posto.precos?.gasolina, anp.gasolinaComum);
+        const statusEta = getStatusPreco(posto.precos?.etanol, anp.etanol);
+        const bandeiraCor = typeof getBandeiraCor === 'function' ? getBandeiraCor(posto.bandeira) : '#6B7280';
         
         html += `
             <tr>
                 <td>
                     <strong>${posto.nomeFantasia || '-'}</strong>
-                    <br><small>${posto.terminal || ''}</small>
+                    ${posto.terminal ? `<br><small>Terminal: ${posto.terminal}</small>` : ''}
                 </td>
                 <td>
-                    <span class="badge" style="background: ${getBandeiraCor(posto.bandeira)}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
+                    <span style="background: ${bandeiraCor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
                         ${posto.bandeira || 'N/A'}
                     </span>
                 </td>
@@ -406,10 +415,10 @@ function renderizarPostos() {
                     ${statusEta.icon}
                 </td>
                 <td>
-                    ${posto.ultimaAtualizacaoPreco ? `<small>${posto.ultimaAtualizacaoPreco}</small>` : '<small>Sem dados</small>'}
+                    ${posto.ultimaAtualizacaoPreco ? `<small>${posto.ultimaAtualizacaoPreco}</small>` : '<small style="color:#999">Sem dados</small>'}
                 </td>
                 <td>
-                    <button onclick="editarPosto(${posto.id})" class="btn-edit" title="Editar">
+                    <button onclick="editarPosto(${posto.id})" class="btn-edit" title="Editar preços">
                         <i class="fas fa-edit"></i>
                     </button>
                     <button onclick="excluirPosto(${posto.id})" class="btn-delete" title="Excluir">
@@ -430,13 +439,14 @@ function getStatusPreco(preco, limite) {
     
     const diff = ((preco - limite) / limite) * 100;
     
-    if (diff > 3) {
-        return { class: 'preco-alto', icon: '🔴' };
-    } else if (diff > 1) {
-        return { class: 'preco-medio', icon: '🟡' };
-    } else {
-        return { class: 'preco-baixo', icon: '🟢' };
+    if (diff > 5) {
+        return { class: 'preco-alto', icon: ' 🔴' };
+    } else if (diff > 2) {
+        return { class: 'preco-medio', icon: ' 🟡' };
+    } else if (diff < -2) {
+        return { class: 'preco-baixo', icon: ' 🟢' };
     }
+    return { class: '', icon: '' };
 }
 
 // ==========================================
@@ -444,46 +454,54 @@ function getStatusPreco(preco, limite) {
 // ==========================================
 
 function editarPosto(id) {
-    const posto = adminPostos.find(p => p.id === id);
-    if (!posto) return;
+    const postos = window.postosData || [];
+    const posto = postos.find(p => p.id === id || p.id === parseInt(id));
+    if (!posto) {
+        showAdminNotification('Posto não encontrado', 'error');
+        return;
+    }
     
     const novoPrecoGas = prompt(`Preço Gasolina para ${posto.nomeFantasia}:`, posto.precos?.gasolina?.toFixed(2) || '');
-    const novoPrecoEta = prompt(`Preço Etanol para ${posto.nomeFantasia}:`, posto.precos?.etanol?.toFixed(2) || '');
-    
-    let atualizado = false;
-    
     if (novoPrecoGas !== null && novoPrecoGas !== '') {
         const valor = parseFloat(novoPrecoGas.replace(',', '.'));
         if (!isNaN(valor) && valor > 0) {
             posto.precos.gasolina = valor;
-            atualizado = true;
         }
     }
     
+    const novoPrecoEta = prompt(`Preço Etanol para ${posto.nomeFantasia}:`, posto.precos?.etanol?.toFixed(2) || '');
     if (novoPrecoEta !== null && novoPrecoEta !== '') {
         const valor = parseFloat(novoPrecoEta.replace(',', '.'));
         if (!isNaN(valor) && valor > 0) {
             posto.precos.etanol = valor;
-            atualizado = true;
         }
     }
     
-    if (atualizado) {
-        posto.ultimaAtualizacaoPreco = new Date().toISOString().split('T')[0];
-        salvarPostos(postosData);
-        renderizarPostos();
-        showAdminNotification('Posto atualizado!', 'success');
+    posto.ultimaAtualizacaoPreco = new Date().toLocaleDateString('pt-BR');
+    
+    if (typeof window.salvarPostos === 'function') {
+        window.salvarPostos(window.postosData);
     }
+    
+    renderizarPostos();
+    showAdminNotification('Preços atualizados!', 'success');
 }
 
 function excluirPosto(id) {
     if (!confirm('Excluir este posto?')) return;
     
-    const index = postosData.findIndex(p => p.id === id);
+    const postos = window.postosData || [];
+    const index = postos.findIndex(p => p.id === id || p.id === parseInt(id));
+    
     if (index > -1) {
-        postosData.splice(index, 1);
-        adminPostos = [...postosData];
-        salvarPostos(postosData);
+        postos.splice(index, 1);
+        window.postosData = postos;
+        adminPostos = [...postos];
+        
+        if (typeof window.salvarPostos === 'function') {
+            window.salvarPostos(postos);
+        }
+        
         atualizarStatus();
         renderizarPostos();
         showAdminNotification('Posto excluído!', 'success');
@@ -491,17 +509,29 @@ function excluirPosto(id) {
 }
 
 function limparTodosDadosAdmin() {
-    if (!confirm('ATENÇÃO: Isso excluirá TODOS os dados. Continuar?')) return;
+    if (!confirm('ATENÇÃO: Isso excluirá TODOS os dados (postos e abastecimentos). Continuar?')) return;
     
-    limparTodosDados();
+    if (typeof window.limparTodosDados === 'function') {
+        window.limparTodosDados();
+    }
+    
+    window.postosData = [];
+    window.abastecimentosData = [];
     adminPostos = [];
+    
     atualizarStatus();
     renderizarPostos();
-    showAdminNotification('Dados limpos!', 'success');
+    showAdminNotification('Todos os dados foram limpos!', 'success');
 }
 
 function exportarJSON() {
-    const dataStr = JSON.stringify({ postos: postosData, abastecimentos: abastecimentosData }, null, 2);
+    const dados = {
+        postos: window.postosData || [],
+        abastecimentos: window.abastecimentosData || [],
+        exportadoEm: new Date().toISOString()
+    };
+    
+    const dataStr = JSON.stringify(dados, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     
     const link = document.createElement('a');
@@ -525,6 +555,7 @@ function showAdminNotification(message, type = 'info') {
     notification.innerHTML = `
         <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
         <span>${message}</span>
+        <button onclick="this.parentElement.remove()" style="background:none;border:none;color:white;cursor:pointer;margin-left:10px;">✕</button>
     `;
     
     Object.assign(notification.style, {
@@ -540,15 +571,18 @@ function showAdminNotification(message, type = 'info') {
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
-        animation: 'slideIn 0.3s ease'
+        maxWidth: '400px'
     });
     
     document.body.appendChild(notification);
     
     setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 300);
-    }, 4000);
+        if (notification.parentElement) {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
 }
 
 function showAdminLoading(show) {
@@ -590,3 +624,5 @@ window.editarPosto = editarPosto;
 window.excluirPosto = excluirPosto;
 window.limparTodosDadosAdmin = limparTodosDadosAdmin;
 window.exportarJSON = exportarJSON;
+
+console.log('✅ admin.js carregado');
