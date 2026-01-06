@@ -789,8 +789,47 @@ function renderizarStatus() {
     `;
 }
 
+// ==========================================
+// RENDERIZAR INTERFACE - CORRIGIDO
+// ==========================================
+
+function renderizarStatus() {
+    const container = document.getElementById('statusInfo');
+    if (!container) return;
+    
+    const postosComPreco = postosAdmin.filter(p => p.precos?.gasolina > 0 || p.precos?.etanol > 0);
+    const ultimaAtualizacao = localStorage.getItem('cmg_last_update');
+    const anp = JSON.parse(localStorage.getItem('cmg_anp_data') || '{}');
+    
+    container.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px;">
+            <div style="text-align: center; padding: 15px; background: #e0f2fe; border-radius: 8px;">
+                <div style="font-size: 2rem; font-weight: bold; color: #0369a1;">${postosAdmin.length}</div>
+                <div style="color: #666;">postos cadastrados</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #d1fae5; border-radius: 8px;">
+                <div style="font-size: 2rem; font-weight: bold; color: #047857;">${postosComPreco.length}</div>
+                <div style="color: #666;">com preço</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #fef3c7; border-radius: 8px;">
+                <div style="font-size: 2rem; font-weight: bold; color: #b45309;">${abastecimentosAdmin.length}</div>
+                <div style="color: #666;">abastecimentos</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #f3e8ff; border-radius: 8px;">
+                <div style="font-size: 1.2rem; font-weight: bold; color: #7c3aed;">
+                    ${anp.gasolinaComum ? 'R$ ' + anp.gasolinaComum.toFixed(2) : '--'}
+                </div>
+                <div style="color: #666;">ANP Gasolina</div>
+            </div>
+        </div>
+        <div style="font-size: 0.85rem; color: #888;">
+            Última atualização: ${ultimaAtualizacao ? new Date(ultimaAtualizacao).toLocaleString('pt-BR') : '--'}
+        </div>
+    `;
+}
+
 function renderizarPostos() {
-    const postosTable = document.getElementById('postosTable');  // ID CORRETO
+    const postosTable = document.getElementById('postosTable');
     if (!postosTable) return;
     
     if (postosAdmin.length === 0) {
@@ -850,54 +889,6 @@ function renderizarPostos() {
         </p>
     `;
 }
-function renderizarPostos() {
-    const postosTable = document.getElementById('postosTable');
-    if (!tbody) return;
-    
-    if (postosAdmin.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center">Nenhum posto cadastrado</td>
-            </tr>
-        `;
-        return;
-    }
-    
-    // Ordenar por nome
-    const ordenados = [...postosAdmin].sort((a, b) => 
-        (a.nomeFantasia || '').localeCompare(b.nomeFantasia || '')
-    );
-    
-    tbody.innerHTML = ordenados.map(posto => `
-        <tr>
-            <td>
-                <strong>${posto.nomeFantasia || 'Sem nome'}</strong>
-                ${posto.razaoSocial ? `<br><small class="text-muted">${posto.razaoSocial}</small>` : ''}
-            </td>
-            <td>${posto.bandeira || '-'}</td>
-            <td>
-                ${posto.endereco?.logradouro || '-'}
-                ${posto.endereco?.bairro ? `<br><small>${posto.endereco.bairro}</small>` : ''}
-            </td>
-            <td class="${posto.precos?.gasolina > 0 ? 'preco-valor' : 'text-muted'}">
-                ${posto.precos?.gasolina > 0 ? `R$ ${posto.precos.gasolina.toFixed(2).replace('.', ',')}` : '--'}
-            </td>
-            <td class="${posto.precos?.etanol > 0 ? 'preco-valor' : 'text-muted'}">
-                ${posto.precos?.etanol > 0 ? `R$ ${posto.precos.etanol.toFixed(2).replace('.', ',')}` : '--'}
-            </td>
-            <td>${posto.ultimaAtualizacaoPreco || '--'}</td>
-            <td>
-                <button class="btn btn-sm btn-outline" onclick="editarPosto(${posto.id})">
-                    ✏️
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="excluirPosto(${posto.id})">
-                    🗑️
-                </button>
-            </td>
-        </tr>
-    `).join('');
-}
-
 // ==========================================
 // AÇÕES
 // ==========================================
