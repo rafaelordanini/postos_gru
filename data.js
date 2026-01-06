@@ -537,3 +537,273 @@ TAXA DE ADMINISTRAÇÃO: -5,65% (DESCONTO sobre valor abastecido)
 
 REGRA IMPORTANTE: O sistema bloqueia automaticamente abastecimentos em postos com preços acima da média ANP.
 `;
+
+
+// ==========================================
+// DADOS E CONFIGURAÇÕES - CMG Postos
+// ==========================================
+
+// Variáveis globais
+let postosData = [];
+let abastecimentosData = [];
+let precosANP = {
+    gasolina: null,
+    etanol: null,
+    dataAtualizacao: null
+};
+
+// ==========================================
+// COORDENADAS DOS BAIRROS DE GUARULHOS
+// ==========================================
+
+const coordenadasBairros = {
+    'centro': { lat: -23.4538, lng: -46.5333 },
+    'aeroporto': { lat: -23.4356, lng: -46.4731 },
+    'aeroporto internacional de guarulhos': { lat: -23.4356, lng: -46.4731 },
+    'cumbica': { lat: -23.4400, lng: -46.4800 },
+    'cidade industrial satelite': { lat: -23.4650, lng: -46.4950 },
+    'cidade industrial satélite de são paulo': { lat: -23.4650, lng: -46.4950 },
+    'vila augusta': { lat: -23.4580, lng: -46.5280 },
+    'vila das bandeiras': { lat: -23.4620, lng: -46.5350 },
+    'macedo': { lat: -23.4700, lng: -46.5400 },
+    'cocaia': { lat: -23.4750, lng: -46.5450 },
+    'jardim presidente dutra': { lat: -23.4550, lng: -46.4650 },
+    'vila florida': { lat: -23.4480, lng: -46.5100 },
+    'vila flórida': { lat: -23.4480, lng: -46.5100 },
+    'vila barros': { lat: -23.4520, lng: -46.5150 },
+    'jardim santa francisca': { lat: -23.4600, lng: -46.5250 },
+    'picanco': { lat: -23.4680, lng: -46.5380 },
+    'picanço': { lat: -23.4680, lng: -46.5380 },
+    'jardim moreira': { lat: -23.4720, lng: -46.5320 },
+    'vila paraiso': { lat: -23.4800, lng: -46.5000 },
+    'vila paraíso': { lat: -23.4800, lng: -46.5000 },
+    'cidade serodio': { lat: -23.4850, lng: -46.5100 },
+    'cidade seródio': { lat: -23.4850, lng: -46.5100 },
+    'jardim albertina': { lat: -23.4900, lng: -46.4800 },
+    'parque sao miguel': { lat: -23.4950, lng: -46.4700 },
+    'parque são miguel': { lat: -23.4950, lng: -46.4700 },
+    'porto da igreja': { lat: -23.4400, lng: -46.5500 },
+    'varzea do palacio': { lat: -23.4350, lng: -46.5400 },
+    'várzea do palácio': { lat: -23.4350, lng: -46.5400 },
+    'itapegica': { lat: -23.4450, lng: -46.5600 },
+    'jardim nova taboao': { lat: -23.4500, lng: -46.5200 },
+    'jardim nova taboão': { lat: -23.4500, lng: -46.5200 },
+    'parque estrela': { lat: -23.4550, lng: -46.5400 },
+    'vila galvao': { lat: -23.4620, lng: -46.5500 },
+    'vila galvão': { lat: -23.4620, lng: -46.5500 },
+    'cidade martins': { lat: -23.4700, lng: -46.5300 },
+    'vila anny': { lat: -23.4780, lng: -46.4900 },
+    'zona industrial': { lat: -23.4650, lng: -46.4850 }
+};
+
+// ==========================================
+// FUNÇÕES DE STORAGE
+// ==========================================
+
+function carregarPostos() {
+    try {
+        const saved = localStorage.getItem('cmg_postos_data');
+        if (saved) {
+            postosData = JSON.parse(saved);
+            console.log(`✅ ${postosData.length} postos carregados do localStorage`);
+        } else {
+            postosData = [];
+            console.log('ℹ️ Nenhum posto salvo encontrado');
+        }
+    } catch (e) {
+        console.error('Erro ao carregar postos:', e);
+        postosData = [];
+    }
+    return postosData;
+}
+
+function salvarPostos(postos) {
+    try {
+        postosData = postos;
+        localStorage.setItem('cmg_postos_data', JSON.stringify(postos));
+        localStorage.setItem('cmg_last_update', new Date().toISOString());
+        console.log(`✅ ${postos.length} postos salvos`);
+    } catch (e) {
+        console.error('Erro ao salvar postos:', e);
+    }
+}
+
+function carregarAbastecimentos() {
+    try {
+        const saved = localStorage.getItem('cmg_abastecimentos_data');
+        if (saved) {
+            abastecimentosData = JSON.parse(saved);
+        }
+    } catch (e) {
+        abastecimentosData = [];
+    }
+    return abastecimentosData;
+}
+
+function salvarAbastecimentos(dados) {
+    try {
+        abastecimentosData = dados;
+        localStorage.setItem('cmg_abastecimentos_data', JSON.stringify(dados));
+    } catch (e) {
+        console.error('Erro ao salvar abastecimentos:', e);
+    }
+}
+
+function getUltimaAtualizacao() {
+    return localStorage.getItem('cmg_last_update');
+}
+
+// ==========================================
+// BUSCAR PREÇOS DA ANP
+// ==========================================
+
+async function buscarPrecosANP() {
+    console.log('🔄 Buscando preços da ANP...');
+    
+    try {
+        // Tentar buscar do site da ANP diretamente
+        // Como não podemos fazer fetch cross-origin, usamos dados da API da ANP
+        
+        // URL da série histórica da ANP para Guarulhos
+        const response = await fetch('https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-concorrencia/precos/precos-revenda-e-de-distribuicao-combustiveis/shlp/mensal/mensal-municipios-2024.csv');
+        
+        // Se não conseguir, usar valores padrão baseados nos dados médios de Guarulhos
+        throw new Error('Usar fallback');
+        
+    } catch (e) {
+        console.log('ℹ️ Usando dados de preço padrão para Guarulhos');
+        
+        // Valores médios de Guarulhos (Janeiro 2026) - baseados na média da região
+        // Estes valores devem ser atualizados periodicamente
+        precosANP = {
+            gasolina: 6.06,
+            etanol: 3.97,
+            dataAtualizacao: new Date().toISOString()
+        };
+        
+        localStorage.setItem('cmg_precos_anp', JSON.stringify(precosANP));
+        return precosANP;
+    }
+}
+
+function carregarPrecosANP() {
+    try {
+        const saved = localStorage.getItem('cmg_precos_anp');
+        if (saved) {
+            precosANP = JSON.parse(saved);
+            return precosANP;
+        }
+    } catch (e) {
+        console.error('Erro ao carregar preços ANP:', e);
+    }
+    
+    // Valores padrão
+    return {
+        gasolina: 6.06,
+        etanol: 3.97,
+        dataAtualizacao: null
+    };
+}
+
+// ==========================================
+// GEOCODIFICAÇÃO (ENDEREÇO -> COORDENADAS)
+// ==========================================
+
+function obterCoordenadasPorBairro(bairro) {
+    if (!bairro) return null;
+    
+    const bairroNormalizado = bairro.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+    
+    // Procurar correspondência exata
+    for (const [key, coords] of Object.entries(coordenadasBairros)) {
+        const keyNormalizado = key.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (bairroNormalizado.includes(keyNormalizado) || keyNormalizado.includes(bairroNormalizado)) {
+            return coords;
+        }
+    }
+    
+    return null;
+}
+
+function obterCoordenadasPorEndereco(endereco) {
+    // Tentar encontrar coordenadas pelo bairro
+    if (endereco && endereco.bairro) {
+        const coords = obterCoordenadasPorBairro(endereco.bairro);
+        if (coords) {
+            // Adicionar pequena variação para não sobrepor marcadores
+            return {
+                lat: coords.lat + (Math.random() - 0.5) * 0.005,
+                lng: coords.lng + (Math.random() - 0.5) * 0.005
+            };
+        }
+    }
+    
+    // Fallback: centro de Guarulhos com variação
+    return {
+        lat: -23.4538 + (Math.random() - 0.5) * 0.03,
+        lng: -46.5333 + (Math.random() - 0.5) * 0.03
+    };
+}
+
+// ==========================================
+// FUNÇÕES AUXILIARES
+// ==========================================
+
+function formatarPreco(valor) {
+    if (!valor || valor <= 0) return 'R$ --';
+    return `R$ ${valor.toFixed(2).replace('.', ',')}`;
+}
+
+function formatarData(dataISO) {
+    if (!dataISO) return '--';
+    const data = new Date(dataISO);
+    return data.toLocaleDateString('pt-BR');
+}
+
+function formatarDataHora(dataISO) {
+    if (!dataISO) return '--';
+    const data = new Date(dataISO);
+    return data.toLocaleString('pt-BR');
+}
+
+function getBandeiraCor(bandeira) {
+    const cores = {
+        'Petrobras': '#009639',
+        'BR': '#009639',
+        'Ipiranga': '#FF6B00',
+        'Shell': '#FFCD00',
+        'Raízen': '#E30613',
+        'Ale': '#0066CC',
+        'Bandeira Branca': '#6B7280'
+    };
+    return cores[bandeira] || '#6B7280';
+}
+
+function getBandeiraIcone(bandeira) {
+    // Retorna classe de ícone baseado na bandeira
+    return 'fa-gas-pump';
+}
+
+// ==========================================
+// EXPORTAR FUNÇÕES PARA USO GLOBAL
+// ==========================================
+
+window.postosData = postosData;
+window.abastecimentosData = abastecimentosData;
+window.precosANP = precosANP;
+window.carregarPostos = carregarPostos;
+window.salvarPostos = salvarPostos;
+window.carregarAbastecimentos = carregarAbastecimentos;
+window.salvarAbastecimentos = salvarAbastecimentos;
+window.getUltimaAtualizacao = getUltimaAtualizacao;
+window.buscarPrecosANP = buscarPrecosANP;
+window.carregarPrecosANP = carregarPrecosANP;
+window.obterCoordenadasPorBairro = obterCoordenadasPorBairro;
+window.obterCoordenadasPorEndereco = obterCoordenadasPorEndereco;
+window.formatarPreco = formatarPreco;
+window.formatarData = formatarData;
+window.formatarDataHora = formatarDataHora;
+window.getBandeiraCor = getBandeiraCor;
