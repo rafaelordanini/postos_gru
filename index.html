@@ -4,208 +4,184 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Postos Credenciados - Câmara Municipal de Guarulhos</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fontes e Ícones -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-gas-pump fa-spin"></i>
+            <p>Carregando dados...</p>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <div class="logo-section">
+            <div class="header-left">
                 <div class="logo">
                     <i class="fas fa-gas-pump"></i>
                 </div>
-                <div class="title-section">
+                <div class="header-title">
                     <h1>Postos Credenciados</h1>
                     <p>Câmara Municipal de Guarulhos</p>
                 </div>
             </div>
-            <div class="header-actions">
-                <div class="last-update">
-                    <i class="fas fa-sync-alt"></i>
-                    <span id="lastUpdate">Atualizado: --</span>
-                </div>
+            <div class="header-right">
+                <span id="lastUpdate" class="last-update">Carregando...</span>
                 <button class="btn-refresh" onclick="refreshData()" title="Atualizar dados">
-                    <i class="fas fa-refresh"></i>
+                    <i class="fas fa-sync-alt"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Dashboard de Preços ANP -->
-    <section class="anp-dashboard">
-        <div class="anp-header">
-            <h2><i class="fas fa-chart-line"></i> Preços de Referência ANP</h2>
-            <span class="anp-subtitle">Média semanal - Guarulhos/SP</span>
-        </div>
-        <div class="anp-cards">
-            <div class="anp-card gasolina">
-                <div class="anp-card-icon">
-                    <i class="fas fa-gas-pump"></i>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Preços ANP -->
+        <section class="anp-section">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-line"></i> Preços de Referência ANP</h2>
+                <span class="anp-subtitle">Média semanal - Guarulhos/SP</span>
+            </div>
+            <div class="anp-cards">
+                <div class="anp-card gasolina">
+                    <div class="anp-icon">
+                        <i class="fas fa-gas-pump"></i>
+                    </div>
+                    <div class="anp-info">
+                        <span class="anp-label">Gasolina Comum</span>
+                        <span class="anp-value" id="anpGasolina">R$ --</span>
+                    </div>
                 </div>
-                <div class="anp-card-content">
-                    <span class="anp-card-label">Gasolina Comum</span>
-                    <span class="anp-card-price" id="anpGasolina">R$ --</span>
+                <div class="anp-card etanol">
+                    <div class="anp-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div class="anp-info">
+                        <span class="anp-label">Etanol</span>
+                        <span class="anp-value" id="anpEtanol">R$ --</span>
+                    </div>
                 </div>
             </div>
-            <div class="anp-card etanol">
-                <div class="anp-card-icon">
-                    <i class="fas fa-leaf"></i>
-                </div>
-                <div class="anp-card-content">
-                    <span class="anp-card-label">Etanol</span>
-                    <span class="anp-card-price" id="anpEtanol">R$ --</span>
-                </div>
-            </div>
-            <div class="anp-card diesel">
-                <div class="anp-card-icon">
-                    <i class="fas fa-truck"></i>
-                </div>
-                <div class="anp-card-content">
-                    <span class="anp-card-label">Diesel S10</span>
-                    <span class="anp-card-price" id="anpDiesel">R$ --</span>
-                </div>
-            </div>
-            <div class="anp-card gnv">
-                <div class="anp-card-icon">
-                    <i class="fas fa-wind"></i>
-                </div>
-                <div class="anp-card-content">
-                    <span class="anp-card-label">GNV</span>
-                    <span class="anp-card-price" id="anpGnv">R$ --</span>
-                </div>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Filtros e Busca -->
-    <section class="filters-section">
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Buscar posto por nome, endereço ou bairro...">
-            <button class="btn-clear" onclick="clearSearch()" title="Limpar busca">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="filters">
-            <div class="filter-group">
-                <label>Combustível:</label>
-                <select id="filterFuel">
-                    <option value="all">Todos</option>
-                    <option value="gasolina">Gasolina</option>
-                    <option value="etanol">Etanol</option>
-                    <option value="diesel">Diesel</option>
-                    <option value="gnv">GNV</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Bandeira:</label>
-                <select id="filterBrand">
-                    <option value="all">Todas</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Bairro:</label>
-                <select id="filterNeighborhood">
-                    <option value="all">Todos</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Ordenar por:</label>
-                <select id="sortBy">
-                    <option value="name">Nome</option>
-                    <option value="gasolina">Menor preço Gasolina</option>
-                    <option value="etanol">Menor preço Etanol</option>
-                    <option value="diesel">Menor preço Diesel</option>
-                    <option value="distance">Distância</option>
-                </select>
-            </div>
-            <button class="btn-filter" onclick="applyFilters()">
-                <i class="fas fa-filter"></i> Filtrar
-            </button>
-        </div>
-    </section>
-
-    <!-- Estatísticas -->
-    <section class="stats-section">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-map-marker-alt"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-value" id="totalPostos">0</span>
-                <span class="stat-label">Postos Credenciados</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-gas-pump"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-value" id="avgGasolina">R$ --</span>
-                <span class="stat-label">Média Gasolina</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-leaf"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-value" id="avgEtanol">R$ --</span>
-                <span class="stat-label">Média Etanol</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-value" id="postos24h">0</span>
-                <span class="stat-label">Postos 24h</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Lista de Postos -->
-    <section class="postos-section">
-        <div class="section-header">
-            <h2><i class="fas fa-list"></i> Lista de Postos</h2>
-            <div class="view-toggle">
-                <button class="view-btn active" onclick="setView('grid')" title="Visualização em grade">
-                    <i class="fas fa-th-large"></i>
-                </button>
-                <button class="view-btn" onclick="setView('list')" title="Visualização em lista">
-                    <i class="fas fa-list-ul"></i>
-                </button>
-                <button class="view-btn" onclick="setView('map')" title="Visualização no mapa">
-                    <i class="fas fa-map"></i>
+        <!-- Filtros -->
+        <section class="filters-section">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar posto por nome, endereço ou bairro...">
+                <button class="btn-clear-search" onclick="clearSearch()" title="Limpar busca">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-        </div>
-        
-        <div id="postosContainer" class="postos-grid">
-            <!-- Postos serão inseridos aqui via JavaScript -->
-        </div>
+            
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Bairro:</label>
+                    <select id="filterNeighborhood">
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Ordenar por:</label>
+                    <select id="sortBy">
+                        <option value="name">Nome</option>
+                        <option value="price_gas">Preço Gasolina</option>
+                        <option value="price_eth">Preço Etanol</option>
+                        <option value="distance">Distância</option>
+                    </select>
+                </div>
+                
+                <button class="btn-filter" onclick="applyFilters()">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+            </div>
+        </section>
 
-        <div id="mapContainer" class="map-container" style="display: none;">
-            <div id="map"></div>
-        </div>
-    </section>
+        <!-- Estatísticas -->
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalPostos">0</span>
+                        <span class="stat-label">Postos Credenciados</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card success">
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="maisBaratoValor">R$ --</span>
+                        <span class="stat-label" id="maisBaratoNome">Mais Barato (Gasolina)</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card danger">
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="maisCaroValor">R$ --</span>
+                        <span class="stat-label" id="maisCaroNome">Mais Caro (Gasolina)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <!-- Modal de Detalhes do Posto -->
+        <!-- Lista de Postos -->
+        <section class="postos-section">
+            <div class="section-header">
+                <h2><i class="fas fa-list"></i> Lista de Postos</h2>
+                <div class="view-toggle">
+                    <button class="view-btn" onclick="setView('grid')" title="Grade">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="view-btn" onclick="setView('list')" title="Lista">
+                        <i class="fas fa-list"></i>
+                    </button>
+                    <button class="view-btn active" onclick="setView('map')" title="Mapa">
+                        <i class="fas fa-map"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Container do Mapa -->
+            <div id="mapContainer" class="map-container">
+                <div id="map"></div>
+            </div>
+            
+            <!-- Container dos Cards/Lista -->
+            <div id="postosContainer" class="postos-grid" style="display: none;"></div>
+        </section>
+    </main>
+
+    <!-- Modal Posto -->
     <div id="postoModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Nome do Posto</h2>
+                <h2 id="modalTitle">Detalhes do Posto</h2>
                 <button class="modal-close" onclick="closeModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body" id="modalBody">
-                <!-- Conteúdo do modal -->
+                <!-- Conteúdo dinâmico -->
             </div>
         </div>
     </div>
@@ -213,15 +189,15 @@
     <!-- Chat IA -->
     <div id="chatContainer" class="chat-container">
         <div class="chat-header" onclick="toggleChat()">
-            <div class="chat-header-left">
+            <div class="chat-header-title">
                 <i class="fas fa-robot"></i>
-                <span>Assistente Virtual</span>
+                <span>Assistente IA</span>
             </div>
-            <div class="chat-header-right">
-                <span class="chat-status">Online</span>
-                <i class="fas fa-chevron-down chat-toggle-icon"></i>
-            </div>
+            <button class="chat-minimize">
+                <i class="fas fa-minus"></i>
+            </button>
         </div>
+        
         <div class="chat-body">
             <div class="chat-messages" id="chatMessages">
                 <div class="message bot">
@@ -230,61 +206,34 @@
                     </div>
                     <div class="message-content">
                         <p>Olá! 👋 Sou o assistente virtual da Câmara Municipal de Guarulhos.</p>
-                        <p>Posso ajudar com:</p>
-                        <ul>
-                            <li>🔍 Buscar postos credenciados</li>
-                            <li>💰 Comparar preços de combustíveis</li>
-                            <li>📋 Informações do contrato com a Prime</li>
-                            <li>⚠️ Regras e penalidades</li>
-                            <li>📍 Encontrar postos próximos</li>
-                        </ul>
-                        <p>Como posso ajudar?</p>
+                        <p>Posso ajudar com informações sobre postos credenciados, preços de combustíveis e o contrato Prime.</p>
                     </div>
                 </div>
             </div>
-            <div class="quick-actions">
-                <button class="quick-action" onclick="askQuickQuestion('Qual o posto com gasolina mais barata?')">💰 Mais barato</button>
-                <button class="quick-action" onclick="askQuickQuestion('Fale sobre o contrato com a Prime')">📋 Contrato</button>
-                <button class="quick-action" onclick="askQuickQuestion('Quais postos funcionam 24 horas?')">🕐 24 horas</button>
-                <button class="quick-action" onclick="askQuickQuestion('Qual o limite de abastecimento?')">⛽ Limites</button>
+            
+            <div class="chat-suggestions">
+                <button onclick="askQuickQuestion('Qual o posto mais barato?')">💰 Mais barato</button>
+                <button onclick="askQuickQuestion('Quais postos estão com preço acima da ANP?')">🔴 Acima ANP</button>
+                <button onclick="askQuickQuestion('O que significa as cores no mapa?')">🗺️ Legenda</button>
             </div>
+            
             <div class="chat-input-container">
                 <input type="text" id="chatInput" placeholder="Digite sua pergunta..." onkeypress="handleChatKeypress(event)">
-                <button class="btn-send" onclick="sendMessage()">
+                <button onclick="sendMessage()">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
         </div>
     </div>
-
-    <!-- Chat Toggle Button (quando minimizado) -->
-    <button id="chatToggleBtn" class="chat-toggle-btn" onclick="toggleChat()">
+    
+    <!-- Botão flutuante do chat (quando minimizado) -->
+    <button id="chatToggleBtn" class="chat-toggle-btn" onclick="toggleChat()" style="display: none;">
         <i class="fas fa-comments"></i>
-        <span class="chat-notification">1</span>
+        <span class="chat-badge">1</span>
     </button>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Carregando dados...</p>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <p>&copy; 2025 Câmara Municipal de Guarulhos. Todos os direitos reservados.</p>
-            <p>Dados de preços baseados na ANP - Agência Nacional do Petróleo</p>
-        </div>
-    </footer>
-
-    <!-- Leaflet para mapas -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
     <!-- Scripts -->
-    <script src="contrato.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="data.js"></script>
     <script src="app.js"></script>
 </body>
