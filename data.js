@@ -2,7 +2,7 @@
 // CONFIGURAÇÕES E CONSTANTES
 // ==========================================
 
-const GEMINI_API_KEY = 'AIzaSyAHbzal0e8Nvt3JHEn6TnQ9VX_pRb1z-TU'; // Substitua pela sua chave
+const GEMINI_API_KEY = 'AIzaSyAHbzal0e8Nvt3JHEn6TnQ9VX_pRb1z-TU';
 
 // Sede da Câmara Municipal de Guarulhos
 const SEDE_CAMARA = {
@@ -11,544 +11,16 @@ const SEDE_CAMARA = {
     endereco: 'Av. Monteiro Lobato, 734 - Macedo, Guarulhos - SP'
 };
 
-// URL da API ANP
-const ANP_API_URL = 'https://anp-gru.vercel.app/';
+// URLs das APIs
+const API_POSTOS_URL = './postos.json';
+const API_PRECOS_URL = './precos-postos.json';
 
-// Dados ANP (serão carregados da API)
-let anpData = {
-    gasolinaComum: null,
-    etanol: null,
-    dataAtualizacao: null
-};
-
-// Dados dos postos (carregados do localStorage ou padrão)
-let postosData = [];
-
-// ==========================================
-// CARREGAR DADOS ANP DA API
-// ==========================================
-
-async function carregarDadosANP() {
-    try {
-        const response = await fetch(ANP_API_URL);
-        if (!response.ok) throw new Error('Erro ao carregar ANP');
-        
-        const data = await response.json();
-        
-        // Mapear dados da API (ajuste conforme estrutura real da API)
-        anpData = {
-            gasolinaComum: data.gasolinaComum || data.gasolina || data.gasoline,
-            etanol: data.etanol || data.alcool || data.ethanol,
-            dataAtualizacao: data.dataAtualizacao || new Date().toISOString()
-        };
-        
-        console.log('Dados ANP carregados:', anpData);
-        return anpData;
-        
-    } catch (error) {
-        console.error('Erro ao carregar ANP:', error);
-        // Fallback para valores padrão se API falhar
-        anpData = {
-            gasolinaComum: 6.06,
-            etanol: 3.97,
-            dataAtualizacao: new Date().toISOString()
-        };
-        return anpData;
-    }
-}
-
-// ==========================================
-// PERSISTÊNCIA DE DADOS (localStorage)
-// ==========================================
-
-const STORAGE_KEYS = {
-    POSTOS: 'cmg_postos_data',
-    ABASTECIMENTOS: 'cmg_abastecimentos_data',
-    LAST_UPDATE: 'cmg_last_update'
-};
-
-function salvarPostos(postos) {
-    try {
-        localStorage.setItem(STORAGE_KEYS.POSTOS, JSON.stringify(postos));
-        localStorage.setItem(STORAGE_KEYS.LAST_UPDATE, new Date().toISOString());
-        postosData = postos;
-        console.log(`${postos.length} postos salvos no localStorage`);
-        return true;
-    } catch (error) {
-        console.error('Erro ao salvar postos:', error);
-        return false;
-    }
-}
-
-function carregarPostos() {
-    try {
-        const dados = localStorage.getItem(STORAGE_KEYS.POSTOS);
-        if (dados) {
-            postosData = JSON.parse(dados);
-            console.log(`${postosData.length} postos carregados do localStorage`);
-            return postosData;
-        }
-    } catch (error) {
-        console.error('Erro ao carregar postos:', error);
-    }
-    
-    // Se não há dados salvos, usar dados padrão
-    postosData = getPostosPadrao();
-    return postosData;
-}
-
-function salvarAbastecimentos(abastecimentos) {
-    try {
-        localStorage.setItem(STORAGE_KEYS.ABASTECIMENTOS, JSON.stringify(abastecimentos));
-        console.log(`${abastecimentos.length} abastecimentos salvos`);
-        return true;
-    } catch (error) {
-        console.error('Erro ao salvar abastecimentos:', error);
-        return false;
-    }
-}
-
-function carregarAbastecimentos() {
-    try {
-        const dados = localStorage.getItem(STORAGE_KEYS.ABASTECIMENTOS);
-        if (dados) {
-            return JSON.parse(dados);
-        }
-    } catch (error) {
-        console.error('Erro ao carregar abastecimentos:', error);
-    }
-    return [];
-}
-
-function getUltimaAtualizacao() {
-    return localStorage.getItem(STORAGE_KEYS.LAST_UPDATE);
-}
-
-// ==========================================
-// ATUALIZAR PREÇO DE UM POSTO
-// ==========================================
-
-function atualizarPrecoPosto(postoId, combustivel, novoPreco) {
-    const posto = postosData.find(p => p.id === postoId);
-    if (!posto) return false;
-    
-    posto.precos[combustivel] = parseFloat(novoPreco);
-    posto.ultimaAtualizacaoPreco = new Date().toISOString();
-    
-    salvarPostos(postosData);
-    return true;
-}
-
-// ==========================================
-// DADOS PADRÃO DOS POSTOS
-// ==========================================
-
-function getPostosPadrao() {
-    return [
-        {
-            id: 1,
-            nomeFantasia: "Auto Posto Duque Guarulhos",
-            bandeira: "Ipiranga",
-            cnpj: "12.345.678/0001-01",
-            telefone: "(11) 2408-1234",
-            endereco: {
-                logradouro: "Av. Duque de Caxias",
-                numero: "1500",
-                bairro: "Centro",
-                cidade: "Guarulhos",
-                estado: "SP",
-                cep: "07000-000"
-            },
-            coordenadas: { lat: -23.4629, lng: -46.5339 },
-            precos: { gasolina: 5.79, etanol: 3.69 },
-            is24h: true,
-            servicos: ["Calibragem", "Loja de Conveniência", "Banheiro"],
-            horarioFuncionamento: null,
-            ultimaAtualizacaoPreco: "2026-01-06T08:00:00Z"
-        },
-        {
-            id: 2,
-            nomeFantasia: "Posto Shell Guarulhos",
-            bandeira: "Shell",
-            cnpj: "23.456.789/0001-02",
-            telefone: "(11) 2409-2345",
-            endereco: {
-                logradouro: "Av. Guarulhos",
-                numero: "2300",
-                bairro: "Vila Galvão",
-                cidade: "Guarulhos",
-                estado: "SP",
-                cep: "07050-000"
-            },
-            coordenadas: { lat: -23.4712, lng: -46.5478 },
-            precos: { gasolina: 5.89, etanol: 3.79 },
-            is24h: true,
-            servicos: ["Calibragem", "Loja de Conveniência", "Troca de Óleo"],
-            horarioFuncionamento: null,
-            ultimaAtualizacaoPreco: "2026-01-06T08:00:00Z"
-        },
-        {
-            id: 3,
-            nomeFantasia: "Posto BR Aeroporto",
-            bandeira: "Petrobras",
-            cnpj: "34.567.890/0001-03",
-            telefone: "(11) 2445-3456",
-            endereco: {
-                logradouro: "Rod. Hélio Smidt",
-                numero: "500",
-                bairro: "Cumbica",
-                cidade: "Guarulhos",
-                estado: "SP",
-                cep: "07190-000"
-            },
-            coordenadas: { lat: -23.4356, lng: -46.4731 },
-            precos: { gasolina: 6.19, etanol: 3.99 },
-            is24h: true,
-            servicos: ["Calibragem", "Loja de Conveniência", "Lavagem"],
-            horarioFuncionamento: null,
-            ultimaAtualizacaoPreco: "2026-01-06T08:00:00Z"
-        },
-        {
-            id: 4,
-            nomeFantasia: "Auto Posto Bonsucesso",
-            bandeira: "Ipiranga",
-            cnpj: "45.678.901/0001-04",
-            telefone: "(11) 2087-4567",
-            endereco: {
-                logradouro: "Av. Bonsucesso",
-                numero: "800",
-                bairro: "Bonsucesso",
-                cidade: "Guarulhos",
-                estado: "SP",
-                cep: "07175-000"
-            },
-            coordenadas: { lat: -23.4298, lng: -46.4892 },
-            precos: { gasolina: 5.85, etanol: 3.75 },
-            is24h: false,
-            servicos: ["Calibragem", "Banheiro"],
-            horarioFuncionamento: {
-                segunda: { abertura: "06:00", fechamento: "22:00" },
-                terca: { abertura: "06:00", fechamento: "22:00" },
-                quarta: { abertura: "06:00", fechamento: "22:00" },
-                quinta: { abertura: "06:00", fechamento: "22:00" },
-                sexta: { abertura: "06:00", fechamento: "22:00" },
-                sabado: { abertura: "07:00", fechamento: "20:00" },
-                domingo: { abertura: "08:00", fechamento: "18:00" }
-            },
-            ultimaAtualizacaoPreco: "2026-01-06T08:00:00Z"
-        },
-        {
-            id: 5,
-            nomeFantasia: "Posto Presidente Dutra",
-            bandeira: "Ale",
-            cnpj: "56.789.012/0001-05",
-            telefone: "(11) 2421-5678",
-            endereco: {
-                logradouro: "Rod. Presidente Dutra",
-                numero: "Km 225",
-                bairro: "Itapegica",
-                cidade: "Guarulhos",
-                estado: "SP",
-                cep: "07220-000"
-            },
-            coordenadas: { lat: -23.4156, lng: -46.5012 },
-            precos: { gasolina: 5.69, etanol: 3.59 },
-            is24h: true,
-            servicos: ["Calibragem", "Loja de Conveniência", "Restaurante", "Estacionamento"],
-            horarioFuncionamento: null,
-            ultimaAtualizacaoPreco: "2026-01-06T08:00:00Z"
-        },
-        {
-            id: 6,
-            nomeFantasia: "Posto Taboão",
-            bandeira: "Petrobras",
-            cnpj: "67.890.123/0001-06",
-            telefone: "(11) 2456-6789",
-            endereco: {
-                logradouro: "Av. Taboão",
-                numero: "1200",
-                bairro: "Taboão",
-                cidade: "Guarulhos",
-                estado: "SP",
-                cep: "07140-000"
-            },
-            coordenadas: { lat: -23.4523, lng: -46.5189 },
-            precos: { gasolina: 5.95, etanol: 3.85 },
-            is24h: false,
-            servicos: ["Calibragem", "Loja de Conveniência"],
-            horarioFuncionamento: {
-                segunda: { abertura: "06:00", fechamento: "22:00" },
-                terca: { abertura: "06:00", fechamento: "22:00" },
-                quarta: { abertura: "06:00", fechamento: "22:00" },
-                quinta: { abertura: "06:00", fechamento: "22:00" },
-                sexta: { abertura: "06:00", fechamento: "22:00" },
-                sabado: { abertura: "06:00", fechamento: "22:00" },
-                domingo: { abertura: "07:00", fechamento: "20:00" }
-            },
-            ultimaAtualizacaoPreco: "2026-01-06T08:00:00Z"
-        },
-        {
-            id: 7,
-            nomeFantasia: "Auto Posto Macedo",
-            bandeira: "Shell",
-            cnpj: "78.901.234/0001-07",
-            telefone: "(11) 2467-7890",
-            endereco: {
-                logradouro: "Av. Monteiro Lobato",
-                numero: "1000",
-                bairro: "Macedo",
-                cidade: "Guarulhos",
-                estado: "SP",
-                cep: "07112-000"
-            },
-            coordenadas: { lat: -23.4589, lng: -46.5267 },
-            precos: { gasolina: 5.99, etanol: 3.89 },
-            is24h: false,
-            servicos: ["Calibragem", "Troca de Óleo", "Banheiro"],
-            horarioFuncionamento: {
-                segunda: { abertura: "06:00", fechamento: "23:00" },
-                terca: { abertura: "06:00", fechamento: "23:00" },
-                quarta: { abertura: "06:00", fechamento: "23:00" },
-                quinta: { abertura: "06:00", fechamento: "23:00" },
-                sexta: { abertura: "06:00", fechamento: "23:00" },
-                sabado: { abertura: "06:00", fechamento: "22:00" },
-                domingo: { abertura: "07:00", fechamento: "20:00" }
-            },
-            ultimaAtualizacaoPreco: "2026-01-06T08:00:00Z"
-        },
-        {
-            id: 8,
-            nomeFantasia: "Posto Gopoúva",
-            bandeira: "Ipiranga",
-            cnpj: "89.012.345/0001-08",
-            telefone: "(11) 2478-8901",
-            endereco: {
-                logradouro: "Av. Gopoúva",
-                numero: "650",
-                bairro: "Gopoúva",
-                cidade: "Guarulhos",
-                estado: "SP",
-                cep: "07040-000"
-            },
-            coordenadas: { lat: -23.4678, lng: -46.5456 },
-            precos: { gasolina: 5.75, etanol: 3.65 },
-            is24h: false,
-            servicos: ["Calibragem", "Loja de Conveniência"],
-            horarioFuncionamento: {
-                segunda: { abertura: "06:00", fechamento: "22:00" },
-                terca: { abertura: "06:00", fechamento: "22:00" },
-                quarta: { abertura: "06:00", fechamento: "22:00" },
-                quinta: { abertura: "06:00", fechamento: "22:00" },
-                sexta: { abertura: "06:00", fechamento: "22:00" },
-                sabado: { abertura: "07:00", fechamento: "20:00" },
-                domingo: { abertura: "08:00", fechamento: "18:00" }
-            },
-            ultimaAtualizacaoPreco: "2026-01-06T08:00:00Z"
-        },
-        {
-            id: 9,
-            nomeFantasia: "Posto Vila Rio",
-            bandeira: "Petrobras",
-            cnpj: "90.123.456/0001-09",
-            telefone: "(11) 2489-9012",
-            endereco: {
-                logradouro: "Av. Paulo Faccini",
-                numero: "1800",
-                bairro: "Vila Rio de Janeiro",
-                cidade: "Guarulhos",
-                estado: "SP",
-                cep: "07042-000"
-            },
-            coordenadas: { lat: -23.4745, lng: -46.5534 },
-            precos: { gasolina: 6.09, etanol: 3.95 },
-            is24h: false,
-            servicos: ["Calibragem", "Banheiro", "Loja de Conveniência"],
-            horarioFuncionamento: {
-                segunda: { abertura: "06:00", fechamento: "22:00" },
-                terca: { abertura: "06:00", fechamento: "22:00" },
-                quarta: { abertura: "06:00", fechamento: "22:00" },
-                quinta: { abertura: "06:00", fechamento: "22:00" },
-                sexta: { abertura: "06:00", fechamento: "22:00" },
-                sabado: { abertura: "07:00", fechamento: "20:00" },
-                domingo: null
-            },
-            ultimaAtualizacaoPreco: "2026-01-06T08:00:00Z"
-        },
-        {
-            id: 10,
-            nomeFantasia: "Auto Posto Jardim São Paulo",
-            bandeira: "Ale",
-            cnpj: "01.234.567/0001-10",
-            telefone: "(11) 2490-0123",
-            endereco: {
-                logradouro: "Av. Otávio Braga de Mesquita",
-                numero: "2500",
-                bairro: "Jardim São Paulo",
-                cidade: "Guarulhos",
-                estado: "SP",
-                cep: "07130-000"
-            },
-            coordenadas: { lat: -23.4412, lng: -46.5078 },
-            precos: { gasolina: 5.65, etanol: 3.55 },
-            is24h: false,
-            servicos: ["Calibragem", "Banheiro"],
-            horarioFuncionamento: {
-                segunda: { abertura: "06:00", fechamento: "21:00" },
-                terca: { abertura: "06:00", fechamento: "21:00" },
-                quarta: { abertura: "06:00", fechamento: "21:00" },
-                quinta: { abertura: "06:00", fechamento: "21:00" },
-                sexta: { abertura: "06:00", fechamento: "21:00" },
-                sabado: { abertura: "07:00", fechamento: "18:00" },
-                domingo: null
-            },
-            ultimaAtualizacaoPreco: "2026-01-06T08:00:00Z"
-        }
-    ];
-}
-
-// ==========================================
-// FUNÇÕES AUXILIARES
-// ==========================================
-
-function calcularDistancia(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
-
-function getPostoById(id) {
-    return postosData.find(p => p.id === parseInt(id));
-}
-
-function getBairros() {
-    const bairros = [...new Set(postosData.map(p => p.endereco.bairro))];
-    return bairros.sort();
-}
-
-function filterPostos(filtros) {
-    return postosData.filter(posto => {
-        if (filtros.busca) {
-            const busca = filtros.busca.toLowerCase();
-            const matchNome = posto.nomeFantasia.toLowerCase().includes(busca);
-            const matchEndereco = posto.endereco.logradouro.toLowerCase().includes(busca);
-            const matchBairro = posto.endereco.bairro.toLowerCase().includes(busca);
-            if (!matchNome && !matchEndereco && !matchBairro) return false;
-        }
-        
-        if (filtros.bairro && filtros.bairro !== 'all') {
-            if (posto.endereco.bairro !== filtros.bairro) return false;
-        }
-        
-        return true;
-    });
-}
-
-function sortPostos(postos, criterio) {
-    const sorted = [...postos];
-    
-    switch(criterio) {
-        case 'name':
-            return sorted.sort((a, b) => a.nomeFantasia.localeCompare(b.nomeFantasia));
-        case 'price_gas':
-            return sorted.sort((a, b) => (a.precos.gasolina || 999) - (b.precos.gasolina || 999));
-        case 'price_eth':
-            return sorted.sort((a, b) => (a.precos.etanol || 999) - (b.precos.etanol || 999));
-        case 'distance':
-            return sortByDistanciaFromSede(sorted);
-        default:
-            return sorted;
-    }
-}
-
-function sortByDistanciaFromSede(postos) {
-    return [...postos].sort((a, b) => {
-        const distA = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, a.coordenadas.lat, a.coordenadas.lng);
-        const distB = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, b.coordenadas.lat, b.coordenadas.lng);
-        return distA - distB;
-    });
-}
-
-function getEstatisticas() {
-    const postosComGasolina = postosData.filter(p => p.precos.gasolina > 0);
-    const postosComEtanol = postosData.filter(p => p.precos.etanol > 0);
-    
-    // Mais barato e mais caro
-    let maisBaratoGasolina = null;
-    let maisCaroGasolina = null;
-    let maisBaratoEtanol = null;
-    let maisCaroEtanol = null;
-    
-    if (postosComGasolina.length > 0) {
-        maisBaratoGasolina = postosComGasolina.reduce((min, p) => 
-            p.precos.gasolina < min.precos.gasolina ? p : min
-        );
-        maisCaroGasolina = postosComGasolina.reduce((max, p) => 
-            p.precos.gasolina > max.precos.gasolina ? p : max
-        );
-    }
-    
-    if (postosComEtanol.length > 0) {
-        maisBaratoEtanol = postosComEtanol.reduce((min, p) => 
-            p.precos.etanol < min.precos.etanol ? p : min
-        );
-        maisCaroEtanol = postosComEtanol.reduce((max, p) => 
-            p.precos.etanol > max.precos.etanol ? p : max
-        );
-    }
-    
-    return {
-        totalPostos: postosData.length,
-        maisBaratoGasolina,
-        maisCaroGasolina,
-        maisBaratoEtanol,
-        maisCaroEtanol
-    };
-}
-
-// ==========================================
-// CONTRATO PRIME (para IA)
-// ==========================================
-
-const CONTRATO_PRIME = `
-CONTRATO ADMINISTRATIVO Nº 08/2025
-Contratante: Câmara Municipal de Guarulhos
-Contratada: PRIME CONSULTORIA E ASSESSORIA EMPRESARIAL LTDA
-
-OBJETO: Gerenciamento da frota de 40 veículos oficiais através de sistema de cartões magnéticos.
-
-FROTA:
-- 39 veículos Chevrolet Onix Plus
-- 1 veículo Chevrolet Spin
-
-LIMITES:
-- Consumo mensal máximo: 12.000 litros
-- Preço máximo: Média ANP semanal para Guarulhos
-
-COMBUSTÍVEIS AUTORIZADOS:
-- Gasolina Comum
-- Etanol
-
-TAXA DE ADMINISTRAÇÃO: -5,65% (DESCONTO sobre valor abastecido)
-
-REGRA IMPORTANTE: O sistema bloqueia automaticamente abastecimentos em postos com preços acima da média ANP.
-`;
-
-
-// ==========================================
-// DADOS E CONFIGURAÇÕES - CMG Postos
-// ==========================================
-
-// Variáveis globais
+// Dados globais
 let postosData = [];
 let abastecimentosData = [];
-let precosANP = {
-    gasolina: null,
-    etanol: null,
+let anpData = {
+    gasolinaComum: 6.06,
+    etanol: 3.97,
     dataAtualizacao: null
 };
 
@@ -560,9 +32,11 @@ const coordenadasBairros = {
     'centro': { lat: -23.4538, lng: -46.5333 },
     'aeroporto': { lat: -23.4356, lng: -46.4731 },
     'aeroporto internacional de guarulhos': { lat: -23.4356, lng: -46.4731 },
+    'aeroporto de guarulhos': { lat: -23.4356, lng: -46.4731 },
     'cumbica': { lat: -23.4400, lng: -46.4800 },
     'cidade industrial satelite': { lat: -23.4650, lng: -46.4950 },
     'cidade industrial satélite de são paulo': { lat: -23.4650, lng: -46.4950 },
+    'cidade industrial satélite': { lat: -23.4650, lng: -46.4950 },
     'vila augusta': { lat: -23.4580, lng: -46.5280 },
     'vila das bandeiras': { lat: -23.4620, lng: -46.5350 },
     'macedo': { lat: -23.4700, lng: -46.5400 },
@@ -597,116 +71,254 @@ const coordenadasBairros = {
 };
 
 // ==========================================
+// STORAGE KEYS
+// ==========================================
+
+const STORAGE_KEYS = {
+    POSTOS: 'cmg_postos_data',
+    ABASTECIMENTOS: 'cmg_abastecimentos_data',
+    LAST_UPDATE: 'cmg_last_update',
+    ANP_DATA: 'cmg_anp_data'
+};
+
+// ==========================================
+// FUNÇÕES DE CARREGAMENTO
+// ==========================================
+
+async function carregarDadosANP() {
+    console.log('🔄 Carregando dados ANP...');
+    
+    try {
+        // Tentar carregar do localStorage primeiro
+        const cached = localStorage.getItem(STORAGE_KEYS.ANP_DATA);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            // Verificar se tem menos de 24h
+            const cacheTime = new Date(parsed.dataAtualizacao);
+            const now = new Date();
+            const diffHours = (now - cacheTime) / (1000 * 60 * 60);
+            
+            if (diffHours < 24) {
+                anpData = parsed;
+                console.log('✅ Dados ANP carregados do cache');
+                return anpData;
+            }
+        }
+    } catch (e) {
+        console.warn('Cache ANP inválido');
+    }
+    
+    // Valores padrão atualizados para Guarulhos (Janeiro 2026)
+    anpData = {
+        gasolinaComum: 6.06,
+        etanol: 3.97,
+        dataAtualizacao: new Date().toISOString()
+    };
+    
+    localStorage.setItem(STORAGE_KEYS.ANP_DATA, JSON.stringify(anpData));
+    console.log('✅ Dados ANP definidos:', anpData);
+    
+    return anpData;
+}
+
+async function carregarPostosDoJSON() {
+    console.log('🔄 Carregando postos do JSON...');
+    
+    try {
+        const response = await fetch(API_POSTOS_URL);
+        if (!response.ok) throw new Error('Erro ao carregar JSON');
+        
+        const json = await response.json();
+        
+        if (json.success && json.data) {
+            // Processar cada posto do JSON
+            postosData = json.data.map((posto, index) => {
+                const bairro = posto.endereco?.bairro || 'Centro';
+                const coords = obterCoordenadasPorBairro(bairro);
+                
+                return {
+                    id: parseInt(posto.terminal) || (Date.now() + index),
+                    terminal: posto.terminal,
+                    nomeFantasia: posto.nomeFantasia || 'Posto',
+                    razaoSocial: posto.razaoSocial,
+                    cnpj: posto.cnpj,
+                    telefone: posto.contato?.telefone || '',
+                    email: posto.contato?.email || '',
+                    endereco: {
+                        logradouro: `${posto.endereco?.logradouro || ''} ${posto.endereco?.rua || ''}`.trim(),
+                        numero: posto.endereco?.numero || 'S/N',
+                        bairro: bairro,
+                        cidade: posto.endereco?.cidade || 'Guarulhos',
+                        estado: posto.endereco?.uf || 'SP',
+                        cep: posto.endereco?.cep || ''
+                    },
+                    coordenadas: coords ? {
+                        lat: coords.lat + (Math.random() - 0.5) * 0.008,
+                        lng: coords.lng + (Math.random() - 0.5) * 0.008
+                    } : {
+                        lat: -23.4538 + (Math.random() - 0.5) * 0.04,
+                        lng: -46.5333 + (Math.random() - 0.5) * 0.04
+                    },
+                    precos: {
+                        gasolina: 0,
+                        etanol: 0
+                    },
+                    bandeira: posto.bandeira || 'BANDEIRA BRANCA',
+                    horarioFuncionamento: posto.horarioFuncionamento,
+                    is24h: verificar24h(posto.horarioFuncionamento),
+                    ultimaTransacao: posto.ultimaTransacao,
+                    ativo: posto.ativo !== false,
+                    ultimaAtualizacaoPreco: null
+                };
+            });
+            
+            console.log(`✅ ${postosData.length} postos carregados do JSON`);
+            
+            // Carregar preços
+            await carregarPrecosDoJSON();
+            
+            // Salvar no localStorage
+            salvarPostos(postosData);
+            
+            return postosData;
+        }
+    } catch (error) {
+        console.warn('⚠️ Erro ao carregar JSON, tentando localStorage:', error);
+    }
+    
+    // Fallback para localStorage
+    return carregarPostos();
+}
+
+async function carregarPrecosDoJSON() {
+    console.log('🔄 Carregando preços do JSON...');
+    
+    try {
+        const response = await fetch(API_PRECOS_URL);
+        if (!response.ok) throw new Error('Erro ao carregar preços');
+        
+        const json = await response.json();
+        
+        if (json.success && json.data) {
+            // Mapear preços para os postos
+            json.data.forEach(precoInfo => {
+                const posto = postosData.find(p => p.terminal === precoInfo.terminal);
+                if (posto && precoInfo.precos) {
+                    posto.precos = {
+                        gasolina: precoInfo.precos.gasolina || 0,
+                        etanol: precoInfo.precos.etanol || 0
+                    };
+                    posto.ultimaAtualizacaoPreco = precoInfo.dataUltimoAbastecimento;
+                }
+            });
+            
+            console.log('✅ Preços carregados e mapeados');
+        }
+    } catch (error) {
+        console.warn('⚠️ Erro ao carregar preços:', error);
+    }
+}
+
+function verificar24h(horario) {
+    if (!horario) return false;
+    const h = horario.toLowerCase();
+    return h.includes('24') || h.includes('24h') || h.includes('24 horas');
+}
+
+// ==========================================
 // FUNÇÕES DE STORAGE
 // ==========================================
 
 function carregarPostos() {
     try {
-        const saved = localStorage.getItem('cmg_postos_data');
+        const saved = localStorage.getItem(STORAGE_KEYS.POSTOS);
         if (saved) {
             postosData = JSON.parse(saved);
             console.log(`✅ ${postosData.length} postos carregados do localStorage`);
-        } else {
-            postosData = [];
-            console.log('ℹ️ Nenhum posto salvo encontrado');
+            return postosData;
         }
     } catch (e) {
         console.error('Erro ao carregar postos:', e);
-        postosData = [];
     }
+    
+    postosData = [];
     return postosData;
 }
 
 function salvarPostos(postos) {
     try {
         postosData = postos;
-        localStorage.setItem('cmg_postos_data', JSON.stringify(postos));
-        localStorage.setItem('cmg_last_update', new Date().toISOString());
+        localStorage.setItem(STORAGE_KEYS.POSTOS, JSON.stringify(postos));
+        localStorage.setItem(STORAGE_KEYS.LAST_UPDATE, new Date().toISOString());
         console.log(`✅ ${postos.length} postos salvos`);
+        return true;
     } catch (e) {
         console.error('Erro ao salvar postos:', e);
+        return false;
     }
 }
 
 function carregarAbastecimentos() {
     try {
-        const saved = localStorage.getItem('cmg_abastecimentos_data');
+        const saved = localStorage.getItem(STORAGE_KEYS.ABASTECIMENTOS);
         if (saved) {
             abastecimentosData = JSON.parse(saved);
+            return abastecimentosData;
         }
     } catch (e) {
-        abastecimentosData = [];
+        console.error('Erro ao carregar abastecimentos:', e);
     }
+    
+    abastecimentosData = [];
     return abastecimentosData;
 }
 
 function salvarAbastecimentos(dados) {
     try {
         abastecimentosData = dados;
-        localStorage.setItem('cmg_abastecimentos_data', JSON.stringify(dados));
+        localStorage.setItem(STORAGE_KEYS.ABASTECIMENTOS, JSON.stringify(dados));
+        console.log(`✅ ${dados.length} abastecimentos salvos`);
+        return true;
     } catch (e) {
         console.error('Erro ao salvar abastecimentos:', e);
+        return false;
     }
 }
 
 function getUltimaAtualizacao() {
-    return localStorage.getItem('cmg_last_update');
+    return localStorage.getItem(STORAGE_KEYS.LAST_UPDATE);
+}
+
+function limparTodosDados() {
+    localStorage.removeItem(STORAGE_KEYS.POSTOS);
+    localStorage.removeItem(STORAGE_KEYS.ABASTECIMENTOS);
+    localStorage.removeItem(STORAGE_KEYS.LAST_UPDATE);
+    postosData = [];
+    abastecimentosData = [];
+    console.log('🗑️ Todos os dados foram limpos');
 }
 
 // ==========================================
-// BUSCAR PREÇOS DA ANP
+// ATUALIZAÇÃO DE PREÇOS
 // ==========================================
 
-async function buscarPrecosANP() {
-    console.log('🔄 Buscando preços da ANP...');
-    
-    try {
-        // Tentar buscar do site da ANP diretamente
-        // Como não podemos fazer fetch cross-origin, usamos dados da API da ANP
-        
-        // URL da série histórica da ANP para Guarulhos
-        const response = await fetch('https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-concorrencia/precos/precos-revenda-e-de-distribuicao-combustiveis/shlp/mensal/mensal-municipios-2024.csv');
-        
-        // Se não conseguir, usar valores padrão baseados nos dados médios de Guarulhos
-        throw new Error('Usar fallback');
-        
-    } catch (e) {
-        console.log('ℹ️ Usando dados de preço padrão para Guarulhos');
-        
-        // Valores médios de Guarulhos (Janeiro 2026) - baseados na média da região
-        // Estes valores devem ser atualizados periodicamente
-        precosANP = {
-            gasolina: 6.06,
-            etanol: 3.97,
-            dataAtualizacao: new Date().toISOString()
-        };
-        
-        localStorage.setItem('cmg_precos_anp', JSON.stringify(precosANP));
-        return precosANP;
-    }
-}
-
-function carregarPrecosANP() {
-    try {
-        const saved = localStorage.getItem('cmg_precos_anp');
-        if (saved) {
-            precosANP = JSON.parse(saved);
-            return precosANP;
-        }
-    } catch (e) {
-        console.error('Erro ao carregar preços ANP:', e);
+function atualizarPrecoPosto(postoId, combustivel, novoPreco) {
+    const posto = postosData.find(p => p.id === postoId || p.id === parseInt(postoId));
+    if (!posto) {
+        console.warn('Posto não encontrado:', postoId);
+        return false;
     }
     
-    // Valores padrão
-    return {
-        gasolina: 6.06,
-        etanol: 3.97,
-        dataAtualizacao: null
-    };
+    posto.precos[combustivel] = parseFloat(novoPreco);
+    posto.ultimaAtualizacaoPreco = new Date().toISOString();
+    
+    salvarPostos(postosData);
+    console.log(`✅ Preço atualizado: ${posto.nomeFantasia} - ${combustivel}: R$ ${novoPreco}`);
+    return true;
 }
 
 // ==========================================
-// GEOCODIFICAÇÃO (ENDEREÇO -> COORDENADAS)
+// GEOCODIFICAÇÃO
 // ==========================================
 
 function obterCoordenadasPorBairro(bairro) {
@@ -717,7 +329,6 @@ function obterCoordenadasPorBairro(bairro) {
         .replace(/[\u0300-\u036f]/g, '')
         .trim();
     
-    // Procurar correspondência exata
     for (const [key, coords] of Object.entries(coordenadasBairros)) {
         const keyNormalizado = key.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         if (bairroNormalizado.includes(keyNormalizado) || keyNormalizado.includes(bairroNormalizado)) {
@@ -729,28 +340,125 @@ function obterCoordenadasPorBairro(bairro) {
 }
 
 function obterCoordenadasPorEndereco(endereco) {
-    // Tentar encontrar coordenadas pelo bairro
     if (endereco && endereco.bairro) {
         const coords = obterCoordenadasPorBairro(endereco.bairro);
         if (coords) {
-            // Adicionar pequena variação para não sobrepor marcadores
             return {
-                lat: coords.lat + (Math.random() - 0.5) * 0.005,
-                lng: coords.lng + (Math.random() - 0.5) * 0.005
+                lat: coords.lat + (Math.random() - 0.5) * 0.008,
+                lng: coords.lng + (Math.random() - 0.5) * 0.008
             };
         }
     }
     
-    // Fallback: centro de Guarulhos com variação
     return {
-        lat: -23.4538 + (Math.random() - 0.5) * 0.03,
-        lng: -46.5333 + (Math.random() - 0.5) * 0.03
+        lat: -23.4538 + (Math.random() - 0.5) * 0.04,
+        lng: -46.5333 + (Math.random() - 0.5) * 0.04
     };
 }
 
 // ==========================================
 // FUNÇÕES AUXILIARES
 // ==========================================
+
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+function getPostoById(id) {
+    return postosData.find(p => p.id === parseInt(id) || p.id === id);
+}
+
+function getBairros() {
+    const bairros = [...new Set(postosData.map(p => p.endereco?.bairro).filter(b => b))];
+    return bairros.sort();
+}
+
+function filterPostos(filtros) {
+    return postosData.filter(posto => {
+        if (filtros.busca) {
+            const busca = filtros.busca.toLowerCase();
+            const matchNome = posto.nomeFantasia?.toLowerCase().includes(busca);
+            const matchEndereco = posto.endereco?.logradouro?.toLowerCase().includes(busca);
+            const matchBairro = posto.endereco?.bairro?.toLowerCase().includes(busca);
+            if (!matchNome && !matchEndereco && !matchBairro) return false;
+        }
+        
+        if (filtros.bairro && filtros.bairro !== 'all' && filtros.bairro !== '') {
+            if (posto.endereco?.bairro !== filtros.bairro) return false;
+        }
+        
+        return true;
+    });
+}
+
+function sortPostos(postos, criterio) {
+    const sorted = [...postos];
+    
+    switch(criterio) {
+        case 'name':
+            return sorted.sort((a, b) => (a.nomeFantasia || '').localeCompare(b.nomeFantasia || ''));
+        case 'price_gas':
+            return sorted.sort((a, b) => (a.precos?.gasolina || 999) - (b.precos?.gasolina || 999));
+        case 'price_eth':
+            return sorted.sort((a, b) => (a.precos?.etanol || 999) - (b.precos?.etanol || 999));
+        case 'distance':
+            return sortByDistanciaFromSede(sorted);
+        default:
+            return sorted;
+    }
+}
+
+function sortByDistanciaFromSede(postos) {
+    return [...postos].sort((a, b) => {
+        const distA = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, a.coordenadas?.lat || 0, a.coordenadas?.lng || 0);
+        const distB = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, b.coordenadas?.lat || 0, b.coordenadas?.lng || 0);
+        return distA - distB;
+    });
+}
+
+function getEstatisticas() {
+    const postosComGasolina = postosData.filter(p => p.precos?.gasolina > 0);
+    const postosComEtanol = postosData.filter(p => p.precos?.etanol > 0);
+    
+    let maisBaratoGasolina = null;
+    let maisCaroGasolina = null;
+    let maisBaratoEtanol = null;
+    let maisCaroEtanol = null;
+    
+    if (postosComGasolina.length > 0) {
+        maisBaratoGasolina = postosComGasolina.reduce((min, p) => 
+            p.precos.gasolina < min.precos.gasolina ? p : min
+        );
+        maisCaroGasolina = postosComGasolina.reduce((max, p) => 
+            p.precos.gasolina > max.precos.gasolina ? p : max
+        );
+    }
+    
+    if (postosComEtanol.length > 0) {
+        maisBaratoEtanol = postosComEtanol.reduce((min, p) => 
+            p.precos.etanol < min.precos.etanol ? p : min
+        );
+        maisCaroEtanol = postosComEtanol.reduce((max, p) => 
+            p.precos.etanol > max.precos.etanol ? p : max
+        );
+    }
+    
+    return {
+        totalPostos: postosData.length,
+        postosComPreco: postosComGasolina.length,
+        maisBaratoGasolina,
+        maisCaroGasolina,
+        maisBaratoEtanol,
+        maisCaroEtanol
+    };
+}
 
 function formatarPreco(valor) {
     if (!valor || valor <= 0) return 'R$ --';
@@ -763,47 +471,52 @@ function formatarData(dataISO) {
     return data.toLocaleDateString('pt-BR');
 }
 
-function formatarDataHora(dataISO) {
-    if (!dataISO) return '--';
-    const data = new Date(dataISO);
-    return data.toLocaleString('pt-BR');
-}
-
 function getBandeiraCor(bandeira) {
+    if (!bandeira) return '#6B7280';
+    
+    const b = bandeira.toUpperCase();
     const cores = {
-        'Petrobras': '#009639',
+        'PETROBRAS': '#009639',
         'BR': '#009639',
-        'Ipiranga': '#FF6B00',
-        'Shell': '#FFCD00',
-        'Raízen': '#E30613',
-        'Ale': '#0066CC',
-        'Bandeira Branca': '#6B7280'
+        'IPIRANGA': '#FF6B00',
+        'SHELL': '#FFCD00',
+        'RAIZEN': '#E30613',
+        'RAÍZEN': '#E30613',
+        'ALE': '#0066CC',
+        'BANDEIRA BRANCA': '#6B7280',
+        'N/A': '#6B7280'
     };
-    return cores[bandeira] || '#6B7280';
-}
-
-function getBandeiraIcone(bandeira) {
-    // Retorna classe de ícone baseado na bandeira
-    return 'fa-gas-pump';
+    
+    return cores[b] || '#6B7280';
 }
 
 // ==========================================
-// EXPORTAR FUNÇÕES PARA USO GLOBAL
+// EXPORTAR PARA GLOBAL
 // ==========================================
 
 window.postosData = postosData;
 window.abastecimentosData = abastecimentosData;
-window.precosANP = precosANP;
+window.anpData = anpData;
+window.SEDE_CAMARA = SEDE_CAMARA;
+window.coordenadasBairros = coordenadasBairros;
+
+window.carregarDadosANP = carregarDadosANP;
+window.carregarPostosDoJSON = carregarPostosDoJSON;
 window.carregarPostos = carregarPostos;
 window.salvarPostos = salvarPostos;
 window.carregarAbastecimentos = carregarAbastecimentos;
 window.salvarAbastecimentos = salvarAbastecimentos;
 window.getUltimaAtualizacao = getUltimaAtualizacao;
-window.buscarPrecosANP = buscarPrecosANP;
-window.carregarPrecosANP = carregarPrecosANP;
+window.limparTodosDados = limparTodosDados;
+window.atualizarPrecoPosto = atualizarPrecoPosto;
 window.obterCoordenadasPorBairro = obterCoordenadasPorBairro;
 window.obterCoordenadasPorEndereco = obterCoordenadasPorEndereco;
+window.calcularDistancia = calcularDistancia;
+window.getPostoById = getPostoById;
+window.getBairros = getBairros;
+window.filterPostos = filterPostos;
+window.sortPostos = sortPostos;
+window.getEstatisticas = getEstatisticas;
 window.formatarPreco = formatarPreco;
 window.formatarData = formatarData;
-window.formatarDataHora = formatarDataHora;
 window.getBandeiraCor = getBandeiraCor;
