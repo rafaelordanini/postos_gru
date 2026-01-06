@@ -1072,6 +1072,323 @@
         .legend-above { background: #ef4444; }
         .legend-nodata { background: #3b82f6; }
 
+        /* ==========================================
+           CHAT AI STYLES
+           ========================================== */
+        .chat-fab {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+            z-index: 1001;
+            transition: all 0.3s;
+        }
+
+        .chat-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .chat-fab.hidden {
+            display: none;
+        }
+
+        .chat-panel {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 380px;
+            height: 520px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            z-index: 1002;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .chat-panel.active {
+            display: flex;
+            animation: chatSlideUp 0.3s ease;
+        }
+
+        @keyframes chatSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #fff;
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .chat-header-text h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .chat-header-text span {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .chat-close {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .chat-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8fafc;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .chat-message {
+            margin-bottom: 12px;
+            display: flex;
+            gap: 8px;
+            animation: messageIn 0.3s ease;
+        }
+
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .chat-message.bot .message-avatar {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: #fff;
+        }
+
+        .chat-message.user .message-avatar {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+
+        .message-content {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .chat-message.bot .message-content {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px 15px 15px 5px;
+            color: #334155;
+        }
+
+        .chat-message.user .message-content {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: #fff;
+            border-radius: 15px 15px 5px 15px;
+        }
+
+        .message-content a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+
+        .chat-message.user .message-content a {
+            color: #e0e7ff;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 10px 14px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% {
+                transform: translateY(-5px);
+                opacity: 1;
+            }
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            background: #fff;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .chat-send {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .chat-send:hover {
+            transform: scale(1.05);
+        }
+
+        .chat-send:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .quick-action {
+            padding: 6px 12px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-action:hover {
+            background: #8b5cf6;
+            border-color: #8b5cf6;
+            color: #fff;
+        }
+
         /* Image Modal */
         .image-modal {
             position: fixed;
@@ -1328,6 +1645,14 @@
             .images-gallery {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            .chat-panel {
+                width: calc(100% - 20px);
+                right: 10px;
+                left: 10px;
+                bottom: 10px;
+                height: 70vh;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1352,6 +1677,13 @@
             .sort-select {
                 font-size: 0.7rem;
                 min-width: 100px;
+            }
+
+            .chat-fab {
+                bottom: 15px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
             }
         }
     </style>
@@ -1613,6 +1945,41 @@
         </div>
     </div>
 
+    <!-- Chat FAB Button -->
+    <button class="chat-fab" id="chatFab" onclick="toggleChat()">
+        🤖
+    </button>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="chat-avatar">🤖</div>
+                <div class="chat-header-text">
+                    <h3>Assistente de Postos</h3>
+                    <span>Powered by Gemini AI</span>
+                </div>
+            </div>
+            <button class="chat-close" onclick="toggleChat()">×</button>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be added here -->
+        </div>
+
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Pergunte sobre os postos..." onkeypress="handleChatKeypress(event)">
+                <button class="chat-send" id="chatSend" onclick="sendMessage()">➤</button>
+            </div>
+            <div class="quick-actions">
+                <button class="quick-action" onclick="askQuickQuestion('Qual o posto com gasolina mais barata?')">💰 Gasolina barata</button>
+                <button class="quick-action" onclick="askQuickQuestion('Quais postos funcionam 24 horas?')">🕐 Postos 24h</button>
+                <button class="quick-action" onclick="askQuickQuestion('Compare os preços com a média ANP')">📊 Comparar ANP</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // ==========================================
@@ -1623,7 +1990,7 @@
         const GUARULHOS_CENTER = [-23.4538, -46.5333];
         const DEFAULT_ZOOM = 12;
         
-        // ⚠️ SUBSTITUA PELA SUA API KEY DO GEMINI
+        // ⚠️ COLOQUE SUA API KEY DO GEMINI AQUI
         const GEMINI_API_KEY = 'AIzaSyAHbzal0e8Nvt3JHEn6TnQ9VX_pRb1z-TU';
 
         let map;
@@ -1638,6 +2005,7 @@
         let currentBandeira = '';
         let postoImages = {};
         let geocodeCache = {};
+        let chatHistory = [];
 
         // ==========================================
         // INICIALIZAÇÃO
@@ -1648,6 +2016,7 @@
             initMap();
             await loadAllData();
             initEventListeners();
+            initChat();
             hideLoading();
         });
 
@@ -1663,6 +2032,296 @@
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 maxZoom: 19
             }).addTo(map);
+        }
+
+        // ==========================================
+        // CHAT AI COM GEMINI
+        // ==========================================
+        function initChat() {
+            addBotMessage("Olá! 👋 Sou o assistente virtual dos Postos Credenciados de Guarulhos. Posso ajudar você a encontrar os melhores preços, postos mais próximos e muito mais!\n\nO que você gostaria de saber?");
+        }
+
+        function toggleChat() {
+            const panel = document.getElementById('chatPanel');
+            const fab = document.getElementById('chatFab');
+            
+            if (panel.classList.contains('active')) {
+                panel.classList.remove('active');
+                fab.classList.remove('hidden');
+            } else {
+                panel.classList.add('active');
+                fab.classList.add('hidden');
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        function handleChatKeypress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function askQuickQuestion(question) {
+            document.getElementById('chatInput').value = question;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addUserMessage(message);
+            input.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                const response = await getAIResponse(message);
+                hideTypingIndicator();
+                addBotMessage(response);
+            } catch (error) {
+                hideTypingIndicator();
+                addBotMessage("Desculpe, ocorreu um erro ao processar sua pergunta. Tente novamente.");
+                console.error('Chat error:', error);
+            }
+        }
+
+        function addUserMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message user';
+            messageDiv.innerHTML = `
+                <div class="message-avatar">👤</div>
+                <div class="message-content">${escapeHtml(message)}</div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            chatHistory.push({ role: 'user', content: message });
+        }
+
+        function addBotMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message bot';
+            messageDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">${formatBotMessage(message)}</div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            chatHistory.push({ role: 'assistant', content: message });
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chat-message bot';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatBotMessage(message) {
+            // Convert markdown-like formatting
+            return message
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>');
+        }
+
+        async function getAIResponse(userMessage) {
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === 'SUA_API_KEY_AQUI') {
+                return getLocalResponse(userMessage);
+            }
+
+            try {
+                // Prepare context with posts data
+                const context = preparePostsContext();
+                
+                const prompt = `Você é um assistente virtual especializado em postos de combustíveis credenciados da Câmara Municipal de Guarulhos. 
+
+DADOS DOS POSTOS:
+${context}
+
+DADOS ANP (Média Guarulhos):
+- Gasolina: R$ ${anpData?.gasolinaComum?.toFixed(2) || 'N/A'}
+- Etanol: R$ ${anpData?.etanol?.toFixed(2) || 'N/A'}
+
+INSTRUÇÕES:
+- Responda de forma clara e objetiva em português
+- Use emojis para tornar a resposta mais amigável
+- Quando listar postos, inclua nome, endereço e preço
+- Se perguntarem sobre postos mais baratos, ordene do menor para o maior preço
+- Se perguntarem sobre postos 24h, liste apenas os que funcionam 24 horas
+- Compare sempre os preços com a média ANP quando relevante
+
+PERGUNTA DO USUÁRIO: ${userMessage}`;
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: 1000
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API Error');
+                }
+
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                return text || getLocalResponse(userMessage);
+            } catch (error) {
+                console.error('Gemini API error:', error);
+                return getLocalResponse(userMessage);
+            }
+        }
+
+        function preparePostsContext() {
+            if (!postosData || postosData.length === 0) return "Nenhum posto carregado.";
+            
+            return postosData.slice(0, 20).map(posto => {
+                const gasolina = posto.precos?.gasolina;
+                const etanol = posto.precos?.etanol;
+                return `- ${posto.nomeFantasia || 'Posto'} | ${formatEnderecoCard(posto)} | Gasolina: ${gasolina ? 'R$ ' + gasolina.toFixed(2) : 'N/A'} | Etanol: ${etanol ? 'R$ ' + etanol.toFixed(2) : 'N/A'} | Horário: ${posto.horarioFuncionamento || 'N/A'}`;
+            }).join('\n');
+        }
+
+        function getLocalResponse(message) {
+            const msg = message.toLowerCase();
+            
+            // Gasolina mais barata
+            if (msg.includes('gasolina') && (msg.includes('barat') || msg.includes('menor') || msg.includes('econom'))) {
+                const postosComGasolina = postosData.filter(p => p.precos?.gasolina > 0)
+                    .sort((a, b) => a.precos.gasolina - b.precos.gasolina)
+                    .slice(0, 5);
+                
+                if (postosComGasolina.length === 0) {
+                    return "Não encontrei postos com preços de gasolina cadastrados no momento.";
+                }
+                
+                let response = "⛽ **Top 5 postos com gasolina mais barata:**\n\n";
+                postosComGasolina.forEach((p, i) => {
+                    response += `${i + 1}. **${p.nomeFantasia}**\n   📍 ${formatEnderecoCard(p)}\n   💰 R$ ${p.precos.gasolina.toFixed(2)}\n\n`;
+                });
+                
+                return response;
+            }
+            
+            // Etanol mais barato
+            if (msg.includes('etanol') && (msg.includes('barat') || msg.includes('menor'))) {
+                const postosComEtanol = postosData.filter(p => p.precos?.etanol > 0)
+                    .sort((a, b) => a.precos.etanol - b.precos.etanol)
+                    .slice(0, 5);
+                
+                if (postosComEtanol.length === 0) {
+                    return "Não encontrei postos com preços de etanol cadastrados no momento.";
+                }
+                
+                let response = "🌿 **Top 5 postos com etanol mais barato:**\n\n";
+                postosComEtanol.forEach((p, i) => {
+                    response += `${i + 1}. **${p.nomeFantasia}**\n   📍 ${formatEnderecoCard(p)}\n   💰 R$ ${p.precos.etanol.toFixed(2)}\n\n`;
+                });
+                
+                return response;
+            }
+            
+            // Postos 24h
+            if (msg.includes('24') || msg.includes('vinte e quatro') || msg.includes('madrugada')) {
+                const postos24h = postosData.filter(p => is24Hours(p));
+                
+                if (postos24h.length === 0) {
+                    return "Não encontrei postos com funcionamento 24 horas cadastrados.";
+                }
+                
+                let response = `🕐 **Postos que funcionam 24 horas (${postos24h.length} encontrados):**\n\n`;
+                postos24h.slice(0, 10).forEach((p, i) => {
+                    const gas = p.precos?.gasolina ? `R$ ${p.precos.gasolina.toFixed(2)}` : 'N/A';
+                    response += `${i + 1}. **${p.nomeFantasia}**\n   📍 ${formatEnderecoCard(p)}\n   ⛽ Gasolina: ${gas}\n\n`;
+                });
+                
+                return response;
+            }
+            
+            // Comparar com ANP
+            if (msg.includes('anp') || msg.includes('média') || msg.includes('comparar') || msg.includes('comparação')) {
+                if (!anpData) {
+                    return "Os dados da ANP não estão disponíveis no momento.";
+                }
+                
+                const abaixoANP = postosData.filter(p => {
+                    return p.precos?.gasolina && p.precos.gasolina < anpData.gasolinaComum;
+                }).length;
+                
+                const acimaANP = postosData.filter(p => {
+                    return p.precos?.gasolina && p.precos.gasolina >= anpData.gasolinaComum;
+                }).length;
+                
+                return `📊 **Comparação com a média ANP de Guarulhos:**\n\n` +
+                    `💹 Média ANP Gasolina: **R$ ${anpData.gasolinaComum.toFixed(2)}**\n` +
+                    `💹 Média ANP Etanol: **R$ ${anpData.etanol.toFixed(2)}**\n\n` +
+                    `✅ **${abaixoANP} postos** estão abaixo da média ANP\n` +
+                    `❌ **${acimaANP} postos** estão acima da média ANP\n\n` +
+                    `Use os filtros na lateral para ver apenas postos abaixo ou acima da média!`;
+            }
+            
+            // Quantos postos
+            if (msg.includes('quantos') || msg.includes('total') || msg.includes('número')) {
+                return `📋 **Estatísticas dos Postos Credenciados:**\n\n` +
+                    `⛽ Total de postos: **${postosData.length}**\n` +
+                    `✅ Abaixo da média ANP: **${document.getElementById('countGreen').textContent}**\n` +
+                    `❌ Acima da média ANP: **${document.getElementById('countRed').textContent}**\n` +
+                    `❓ Sem preço informado: **${document.getElementById('countBlue').textContent}**`;
+            }
+            
+            // Resposta padrão
+            return "Posso ajudar você com:\n\n" +
+                "💰 **Gasolina mais barata** - encontrar os melhores preços\n" +
+                "🌿 **Etanol mais barato** - encontrar etanol em conta\n" +
+                "🕐 **Postos 24 horas** - que funcionam a noite toda\n" +
+                "📊 **Comparar com ANP** - ver quem está acima ou abaixo da média\n" +
+                "📋 **Estatísticas** - números gerais dos postos\n\n" +
+                "Pergunte algo específico!";
         }
 
         // ==========================================
@@ -1711,17 +2370,16 @@
                 return null;
             }
 
-            // Verifica cache
             if (geocodeCache[address]) {
                 return geocodeCache[address];
             }
 
             try {
-                const prompt = `Você é um geocodificador. Dada o endereço abaixo, retorne APENAS as coordenadas geográficas no formato JSON exato: {"lat": -XX.XXXX, "lng": -XX.XXXX}
+                const prompt = `Você é um geocodificador. Dado o endereço abaixo, retorne APENAS as coordenadas geográficas no formato JSON exato: {"lat": -XX.XXXX, "lng": -XX.XXXX}
 
 Endereço: ${address}
 
-Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir determinar as coordenadas exatas, use as coordenadas aproximadas do bairro mencionado em Guarulhos, SP.`;
+Retorne APENAS o JSON, sem explicações. Se não conseguir as coordenadas exatas, use aproximadas do bairro em Guarulhos, SP.`;
 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
@@ -1741,30 +2399,24 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                     })
                 });
 
-                if (!response.ok) {
-                    throw new Error('Erro na API Gemini');
-                }
+                if (!response.ok) throw new Error('API Error');
 
                 const data = await response.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (text) {
-                    // Extrai JSON do texto
                     const jsonMatch = text.match(/\{[\s\S]*?\}/);
                     if (jsonMatch) {
                         const coords = JSON.parse(jsonMatch[0]);
-                        if (coords.lat && coords.lng) {
-                            // Valida se está em Guarulhos (aproximadamente)
-                            if (coords.lat > -24 && coords.lat < -23 && coords.lng > -47 && coords.lng < -46) {
-                                geocodeCache[address] = coords;
-                                saveGeocodeCache();
-                                return coords;
-                            }
+                        if (coords.lat && coords.lng && coords.lat > -24 && coords.lat < -23 && coords.lng > -47 && coords.lng < -46) {
+                            geocodeCache[address] = coords;
+                            saveGeocodeCache();
+                            return coords;
                         }
                     }
                 }
             } catch (error) {
-                console.warn('Erro ao geocodificar:', address, error);
+                console.warn('Geocode error:', address, error);
             }
 
             return null;
@@ -1781,10 +2433,8 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             }
 
             geoIndicator.className = 'geo-indicator loading';
-            geoStatus.textContent = 'Geocodificando...';
-
+            
             let geocoded = 0;
-            let fromCache = 0;
             let total = postosData.length;
 
             for (let i = 0; i < postosData.length; i++) {
@@ -1793,45 +2443,34 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                 
                 if (!address) continue;
 
-                // Verifica se já está no cache
+                geoStatus.textContent = `${i + 1}/${total}...`;
+
                 if (geocodeCache[address]) {
                     const coords = geocodeCache[address];
                     posto.coordenadas = [coords.lat, coords.lng];
                     posto.geocoded = true;
-                    fromCache++;
+                    geocoded++;
                     continue;
                 }
 
-                // Geocodifica com Gemini (com delay para não exceder rate limit)
                 const coords = await geocodeWithGemini(address);
                 
                 if (coords) {
                     posto.coordenadas = [coords.lat, coords.lng];
                     posto.geocoded = true;
                     geocoded++;
-                } else {
-                    // Usa coordenadas aproximadas por bairro
-                    posto.coordenadas = generateCoordinates(posto);
-                    posto.geocoded = false;
                 }
 
-                // Atualiza status
-                geoStatus.textContent = `${i + 1}/${total}...`;
-
-                // Pequeno delay entre requests para não exceder rate limit
                 if (!geocodeCache[address]) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, 300));
                 }
             }
 
-            // Atualiza marcadores
             renderMarkers();
+            renderPosts();
 
-            // Status final
             geoIndicator.className = 'geo-indicator success';
-            geoStatus.textContent = `${geocoded + fromCache} geocodificados`;
-            
-            console.log(`Geocodificação: ${geocoded} novos, ${fromCache} do cache, ${total - geocoded - fromCache} aproximados`);
+            geoStatus.textContent = `${geocoded} geocodificados`;
         }
 
         // ==========================================
@@ -1851,7 +2490,7 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                 renderMarkers();
                 updateStats();
                 
-                // Inicia geocodificação em background
+                // Geocodificação em background
                 geocodeAllPostos();
                 
             } catch (error) {
@@ -1875,10 +2514,10 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                 const precosJson = await precosRes.json();
 
                 postosData = Array.isArray(postosJson) ? postosJson : 
-                             (postosJson && postosJson.data && Array.isArray(postosJson.data)) ? postosJson.data : [];
+                             (postosJson?.data && Array.isArray(postosJson.data)) ? postosJson.data : [];
                 
                 precosData = Array.isArray(precosJson) ? precosJson :
-                             (precosJson && precosJson.data && Array.isArray(precosJson.data)) ? precosJson.data : [];
+                             (precosJson?.data && Array.isArray(precosJson.data)) ? precosJson.data : [];
 
             } catch (error) {
                 console.error('Erro ao carregar postos:', error);
@@ -1891,9 +2530,7 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             try {
                 const response = await fetch(API_ANP);
                 
-                if (!response.ok) {
-                    throw new Error('Erro ao buscar ANP');
-                }
+                if (!response.ok) throw new Error('Erro ao buscar ANP');
 
                 const json = await response.json();
 
@@ -1911,7 +2548,7 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                     updateANPIndicator(true);
                     updateANPDisplay();
                 } else {
-                    throw new Error('Estrutura de dados ANP inválida');
+                    throw new Error('Estrutura ANP inválida');
                 }
 
             } catch (error) {
@@ -1934,9 +2571,6 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                 if (anpData.periodEnd) {
                     const date = new Date(anpData.periodEnd);
                     document.getElementById('anpDate').textContent = date.toLocaleDateString('pt-BR');
-                } else if (anpData.updatedAt) {
-                    const date = new Date(anpData.updatedAt);
-                    document.getElementById('anpDate').textContent = date.toLocaleDateString('pt-BR');
                 }
             }
         }
@@ -1945,13 +2579,8 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             const indicator = document.getElementById('anpIndicator');
             const status = document.getElementById('anpStatus');
             
-            if (success) {
-                indicator.className = 'anp-indicator success';
-                status.textContent = 'ANP Conectado';
-            } else {
-                indicator.className = 'anp-indicator error';
-                status.textContent = message || 'ANP Offline';
-            }
+            indicator.className = success ? 'anp-indicator success' : 'anp-indicator error';
+            status.textContent = success ? 'ANP Conectado' : (message || 'ANP Offline');
         }
 
         function updateLoadingText(text) {
@@ -1969,33 +2598,19 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                 const preco = Array.isArray(precosData) ? 
                     precosData.find(p => p.terminal === posto.terminal) : null;
 
-                // Corrige o mapeamento invertido dos campos de endereço
                 let enderecoCorrigido = {};
                 
                 if (posto.endereco) {
                     const e = posto.endereco;
                     
-                    const tipoLogradouro = e.rua || '';
-                    const nomeLogradouro = e.numero || '';
-                    const numero = e.bairro || 'S/N';
-                    const bairro = e.uf || '';
-                    const cidade = 'Guarulhos';
-                    const uf = 'SP';
-                    
-                    let cep = e.logradouro || '';
-                    cep = cep.replace(/\D/g, '');
-                    if (cep.length === 8) {
-                        cep = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
-                    }
-                    
                     enderecoCorrigido = {
-                        tipoLogradouro: tipoLogradouro.trim(),
-                        logradouro: nomeLogradouro.trim(),
-                        numero: numero.trim(),
-                        bairro: bairro.trim(),
-                        cidade: cidade,
-                        uf: uf,
-                        cep: cep
+                        tipoLogradouro: (e.rua || '').trim(),
+                        logradouro: (e.numero || '').trim(),
+                        numero: (e.bairro || 'S/N').trim(),
+                        bairro: (e.uf || '').trim(),
+                        cidade: 'Guarulhos',
+                        uf: 'SP',
+                        cep: (e.logradouro || '').replace(/\D/g, '').replace(/(\d{5})(\d{3})/, '$1-$2')
                     };
                 }
 
@@ -2003,7 +2618,7 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                     ...posto,
                     endereco: enderecoCorrigido,
                     precos: preco?.precos || { gasolina: null, etanol: null, diesel: null, gnv: null },
-                    dataPreco: preco?.dataAtualizacao || preco?.dataUltimoAbastecimento || null,
+                    dataPreco: preco?.dataAtualizacao || null,
                     coordenadas: generateCoordinates({ ...posto, endereco: enderecoCorrigido })
                 };
             });
@@ -2018,25 +2633,12 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                 'Macedo': [-23.4700, -46.5400],
                 'Cumbica': [-23.4350, -46.4800],
                 'Aeroporto': [-23.4350, -46.4700],
-                'Vila das Bandeiras': [-23.4600, -46.5250],
-                'Jardim Presidente Dutra': [-23.4400, -46.5500],
-                'Jardim Nova Taboão': [-23.4480, -46.5380],
                 'Gopouva': [-23.4650, -46.5450],
                 'Bonsucesso': [-23.4750, -46.5150],
                 'Taboão': [-23.4550, -46.5600],
                 'Picanço': [-23.4500, -46.5050],
-                'Jardim São Paulo': [-23.4380, -46.5280],
-                'Ponte Grande': [-23.4720, -46.5380],
                 'Vila Galvão': [-23.4680, -46.5520],
-                'Torres Tibagy': [-23.4580, -46.5180],
-                'Jardim Tranquilidade': [-23.4420, -46.5420],
-                'Cidade Seródio': [-23.4350, -46.5650],
-                'Jardim Cumbica': [-23.4280, -46.4850],
                 'Pimentas': [-23.4150, -46.4650],
-                'São João': [-23.4050, -46.4750],
-                'Bela Vista': [-23.4250, -46.5550],
-                'Morros': [-23.4520, -46.4920],
-                'Jardim Moreira': [-23.4600, -46.5100],
                 'default': [-23.4538, -46.5333]
             };
 
@@ -2062,42 +2664,24 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                 return 'no-data';
             }
 
-            if (!anpData) {
-                return 'no-data';
-            }
+            if (!anpData) return 'no-data';
 
             let anpPrice = null;
-            if (tipo === 'gasolina') {
-                anpPrice = anpData.gasolinaComum;
-            } else if (tipo === 'etanol') {
-                anpPrice = anpData.etanol;
-            } else if (tipo === 'diesel') {
-                anpPrice = anpData.diesel;
-            } else if (tipo === 'gnv') {
-                anpPrice = anpData.gnv;
-            }
+            if (tipo === 'gasolina') anpPrice = anpData.gasolinaComum;
+            else if (tipo === 'etanol') anpPrice = anpData.etanol;
+            else if (tipo === 'diesel') anpPrice = anpData.diesel;
+            else if (tipo === 'gnv') anpPrice = anpData.gnv;
 
-            if (!anpPrice || isNaN(anpPrice) || anpPrice <= 0) {
-                return 'no-data';
-            }
+            if (!anpPrice || isNaN(anpPrice) || anpPrice <= 0) return 'no-data';
 
-            if (parseFloat(preco) < parseFloat(anpPrice)) {
-                return 'below-anp';
-            } else {
-                return 'above-anp';
-            }
+            return parseFloat(preco) < parseFloat(anpPrice) ? 'below-anp' : 'above-anp';
         }
 
-        // ==========================================
-        // CONTAGEM DE CORES
-        // ==========================================
         function updateColorCounts() {
             let green = 0, red = 0, blue = 0;
 
             postosData.forEach(posto => {
-                const gasolinaPreco = posto.precos?.gasolina;
-                const status = getPriceStatus(gasolinaPreco, 'gasolina');
-                
+                const status = getPriceStatus(posto.precos?.gasolina, 'gasolina');
                 if (status === 'below-anp') green++;
                 else if (status === 'above-anp') red++;
                 else blue++;
@@ -2108,53 +2692,32 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             document.getElementById('countBlue').textContent = blue;
         }
 
-        // ==========================================
-        // ATUALIZAÇÃO DE ESTATÍSTICAS
-        // ==========================================
         function updateStats() {
             document.getElementById('totalPostos').textContent = postosData.length;
 
-            const postosComGasolina = postosData.filter(p => 
-                p.precos?.gasolina !== null && 
-                p.precos?.gasolina !== undefined && 
-                !isNaN(p.precos.gasolina) &&
-                p.precos.gasolina > 0
-            );
+            const postosComGasolina = postosData.filter(p => p.precos?.gasolina > 0);
             
             if (postosComGasolina.length > 0) {
-                const menorGasolina = postosComGasolina.reduce((min, p) => 
-                    p.precos.gasolina < min.precos.gasolina ? p : min
-                );
+                const menorGasolina = postosComGasolina.reduce((min, p) => p.precos.gasolina < min.precos.gasolina ? p : min);
                 document.getElementById('menorGasolinaValor').textContent = `R$ ${menorGasolina.precos.gasolina.toFixed(2)}`;
                 document.getElementById('menorGasolinaNome').textContent = menorGasolina.nomeFantasia || 'Posto';
                 document.getElementById('menorGasolinaEndereco').textContent = formatEnderecoResumido(menorGasolina);
 
-                const maiorGasolina = postosComGasolina.reduce((max, p) => 
-                    p.precos.gasolina > max.precos.gasolina ? p : max
-                );
+                const maiorGasolina = postosComGasolina.reduce((max, p) => p.precos.gasolina > max.precos.gasolina ? p : max);
                 document.getElementById('maiorGasolinaValor').textContent = `R$ ${maiorGasolina.precos.gasolina.toFixed(2)}`;
                 document.getElementById('maiorGasolinaNome').textContent = maiorGasolina.nomeFantasia || 'Posto';
                 document.getElementById('maiorGasolinaEndereco').textContent = formatEnderecoResumido(maiorGasolina);
             }
 
-            const postosComEtanol = postosData.filter(p => 
-                p.precos?.etanol !== null && 
-                p.precos?.etanol !== undefined && 
-                !isNaN(p.precos.etanol) &&
-                p.precos.etanol > 0
-            );
+            const postosComEtanol = postosData.filter(p => p.precos?.etanol > 0);
             
             if (postosComEtanol.length > 0) {
-                const menorEtanol = postosComEtanol.reduce((min, p) => 
-                    p.precos.etanol < min.precos.etanol ? p : min
-                );
+                const menorEtanol = postosComEtanol.reduce((min, p) => p.precos.etanol < min.precos.etanol ? p : min);
                 document.getElementById('menorEtanolValor').textContent = `R$ ${menorEtanol.precos.etanol.toFixed(2)}`;
                 document.getElementById('menorEtanolNome').textContent = menorEtanol.nomeFantasia || 'Posto';
                 document.getElementById('menorEtanolEndereco').textContent = formatEnderecoResumido(menorEtanol);
 
-                const maiorEtanol = postosComEtanol.reduce((max, p) => 
-                    p.precos.etanol > max.precos.etanol ? p : max
-                );
+                const maiorEtanol = postosComEtanol.reduce((max, p) => p.precos.etanol > max.precos.etanol ? p : max);
                 document.getElementById('maiorEtanolValor').textContent = `R$ ${maiorEtanol.precos.etanol.toFixed(2)}`;
                 document.getElementById('maiorEtanolNome').textContent = maiorEtanol.nomeFantasia || 'Posto';
                 document.getElementById('maiorEtanolEndereco').textContent = formatEnderecoResumido(maiorEtanol);
@@ -2164,9 +2727,7 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
         function formatEnderecoResumido(posto) {
             if (!posto.endereco) return 'Endereço não disponível';
             const e = posto.endereco;
-            const rua = e.logradouro || '';
-            const bairro = e.bairro || '';
-            return `${rua}${bairro ? ' - ' + bairro : ''}`.trim() || 'Endereço não disponível';
+            return `${e.logradouro || ''}${e.bairro ? ' - ' + e.bairro : ''}`.trim() || 'Endereço não disponível';
         }
 
         function formatEnderecoCard(posto) {
@@ -2181,21 +2742,13 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                 partes.push(e.logradouro);
             }
             
-            if (e.numero && e.numero !== 'S/N' && e.numero !== 'S N') {
+            if (e.numero && e.numero !== 'S/N') {
                 partes[0] = partes[0] ? `${partes[0]}, ${e.numero}` : e.numero;
-            } else if (partes.length > 0) {
-                partes[0] = `${partes[0]}, S/N`;
             }
             
-            if (e.bairro) {
-                partes.push(e.bairro);
-            }
+            if (e.bairro) partes.push(e.bairro);
             
-            if (partes.length === 0) {
-                return 'Endereço não disponível';
-            }
-            
-            return partes.join(' - ');
+            return partes.length ? partes.join(' - ') : 'Endereço não disponível';
         }
 
         // ==========================================
@@ -2205,44 +2758,30 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             const container = document.getElementById('postsList');
             
             if (!Array.isArray(postosData) || postosData.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">🔍</div>
-                        <p>Nenhum posto encontrado</p>
-                    </div>
-                `;
+                container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>Nenhum posto encontrado</p></div>`;
                 return;
             }
 
             let filteredPosts = filterAndSortPosts();
 
             if (filteredPosts.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">🔍</div>
-                        <p>Nenhum posto com os filtros atuais</p>
-                    </div>
-                `;
+                container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>Nenhum posto com os filtros atuais</p></div>`;
                 return;
             }
 
             container.innerHTML = filteredPosts.map(posto => {
                 const endereco = formatEnderecoCard(posto);
                 const badgeClass = getBadgeClass(posto.bandeira);
-                
                 const gasolina = posto.precos?.gasolina;
                 const etanol = posto.precos?.etanol;
-                
                 const gasolinaStatus = getPriceStatus(gasolina, 'gasolina');
                 const etanolStatus = getPriceStatus(etanol, 'etanol');
-                
-                const hasImages = postoImages[posto.terminal] && postoImages[posto.terminal].length > 0;
-                const isGeocoded = posto.geocoded ? '📍' : '';
+                const hasImages = postoImages[posto.terminal]?.length > 0;
 
                 return `
                     <div class="post-card status-${gasolinaStatus}" data-terminal="${posto.terminal}" onclick="selectPosto('${posto.terminal}')">
                         <div class="post-header">
-                            <div class="post-name">${posto.nomeFantasia || 'Posto sem nome'} ${isGeocoded}</div>
+                            <div class="post-name">${posto.nomeFantasia || 'Posto sem nome'}</div>
                             <span class="post-badge ${badgeClass}">${posto.bandeira || 'Branca'}</span>
                         </div>
                         <div class="post-address">
@@ -2252,25 +2791,15 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                         <div class="post-prices">
                             <div class="price-item ${gasolinaStatus !== 'no-data' ? gasolinaStatus : ''}">
                                 <div class="price-type">Gasolina</div>
-                                ${gasolina && gasolina > 0 ? 
-                                    `<div class="price-value ${gasolinaStatus}">R$ ${gasolina.toFixed(2)}</div>
-                                     <div class="price-source">Último abast.</div>` :
-                                    `<div class="price-value no-data">--</div>`
-                                }
+                                ${gasolina > 0 ? `<div class="price-value ${gasolinaStatus}">R$ ${gasolina.toFixed(2)}</div><div class="price-source">Último abast.</div>` : `<div class="price-value no-data">--</div>`}
                             </div>
                             <div class="price-item ${etanolStatus !== 'no-data' ? etanolStatus : ''}">
                                 <div class="price-type">Etanol</div>
-                                ${etanol && etanol > 0 ? 
-                                    `<div class="price-value ${etanolStatus}">R$ ${etanol.toFixed(2)}</div>
-                                     <div class="price-source">Último abast.</div>` :
-                                    `<div class="price-value no-data">--</div>`
-                                }
+                                ${etanol > 0 ? `<div class="price-value ${etanolStatus}">R$ ${etanol.toFixed(2)}</div><div class="price-source">Último abast.</div>` : `<div class="price-value no-data">--</div>`}
                             </div>
                         </div>
                         <div class="post-footer">
-                            <div class="post-hours ${is24Hours(posto) ? 'open' : ''}">
-                                🕐 ${posto.horarioFuncionamento || 'Não informado'}
-                            </div>
+                            <div class="post-hours ${is24Hours(posto) ? 'open' : ''}">🕐 ${posto.horarioFuncionamento || 'Não informado'}</div>
                             ${hasImages ? `<div class="post-image-indicator">📷 ${postoImages[posto.terminal].length}</div>` : ''}
                         </div>
                     </div>
@@ -2293,23 +2822,17 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             }
 
             if (currentBandeira) {
-                filtered = filtered.filter(posto => 
-                    (posto.bandeira || '').toUpperCase().includes(currentBandeira.toUpperCase())
-                );
+                filtered = filtered.filter(posto => (posto.bandeira || '').toUpperCase().includes(currentBandeira.toUpperCase()));
             }
 
             if (currentColorFilter) {
-                filtered = filtered.filter(posto => {
-                    const gasolinaPreco = posto.precos?.gasolina;
-                    const status = getPriceStatus(gasolinaPreco, 'gasolina');
-                    return status === currentColorFilter;
-                });
+                filtered = filtered.filter(posto => getPriceStatus(posto.precos?.gasolina, 'gasolina') === currentColorFilter);
             }
 
             if (currentFilter === '24h') {
-                filtered = filtered.filter(posto => is24Hours(posto));
+                filtered = filtered.filter(is24Hours);
             } else if (currentFilter === 'low-price') {
-                filtered = filtered.filter(posto => posto.precos?.gasolina && posto.precos.gasolina > 0);
+                filtered = filtered.filter(p => p.precos?.gasolina > 0);
                 filtered.sort((a, b) => (a.precos?.gasolina || 999) - (b.precos?.gasolina || 999));
                 filtered = filtered.slice(0, 10);
             }
@@ -2331,7 +2854,7 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
 
         function is24Hours(posto) {
             const horario = (posto.horarioFuncionamento || '').toLowerCase();
-            return horario.includes('24') || horario.includes('24h') || horario.includes('24 h');
+            return horario.includes('24');
         }
 
         function getBadgeClass(bandeira) {
@@ -2341,7 +2864,7 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             if (b.includes('IPIRANGA')) return 'badge-ipiranga';
             if (b.includes('SHELL')) return 'badge-shell';
             if (b.includes('PETROBRAS')) return 'badge-petrobras';
-            if (b.includes('RAIZEN') || b.includes('RAÍZEN')) return 'badge-raizen';
+            if (b.includes('RAIZEN')) return 'badge-raizen';
             return 'badge-branca';
         }
 
@@ -2351,15 +2874,9 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
 
             if (!Array.isArray(postosData) || postosData.length === 0) return;
 
-            let filteredPosts = postosData;
-            
-            if (currentColorFilter) {
-                filteredPosts = postosData.filter(posto => {
-                    const gasolinaPreco = posto.precos?.gasolina;
-                    const status = getPriceStatus(gasolinaPreco, 'gasolina');
-                    return status === currentColorFilter;
-                });
-            }
+            let filteredPosts = currentColorFilter ? 
+                postosData.filter(p => getPriceStatus(p.precos?.gasolina) === currentColorFilter) : 
+                postosData;
 
             filteredPosts.forEach(posto => {
                 if (!posto.coordenadas) return;
@@ -2368,37 +2885,22 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                 const status = getPriceStatus(preco, 'gasolina');
                 
                 let markerClass = 'custom-marker';
-                if (status === 'below-anp') {
-                    markerClass += ' marker-below-anp';
-                } else if (status === 'above-anp') {
-                    markerClass += ' marker-above-anp';
-                } else {
-                    markerClass += ' marker-no-data';
-                }
+                if (status === 'below-anp') markerClass += ' marker-below-anp';
+                else if (status === 'above-anp') markerClass += ' marker-above-anp';
+                else markerClass += ' marker-no-data';
 
                 const icon = L.divIcon({
                     className: markerClass,
-                    html: posto.geocoded ? '📍' : '⛽',
+                    html: '⛽',
                     iconSize: [32, 32],
                     iconAnchor: [16, 16]
                 });
 
-                let popupPriceClass = 'no-data';
-                let popupPriceText = 'Preço não informado';
-                
-                if (preco && preco > 0) {
-                    popupPriceClass = status;
-                    popupPriceText = `Gasolina: R$ ${preco.toFixed(2)}`;
-                }
+                const popupText = preco > 0 ? `Gasolina: R$ ${preco.toFixed(2)}` : 'Preço não informado';
 
                 const marker = L.marker(posto.coordenadas, { icon })
                     .addTo(map)
-                    .bindPopup(`
-                        <div class="popup-content">
-                            <div class="popup-name">${posto.nomeFantasia || 'Posto'}</div>
-                            <div class="popup-price ${popupPriceClass}">${popupPriceText}</div>
-                        </div>
-                    `);
+                    .bindPopup(`<div class="popup-content"><div class="popup-name">${posto.nomeFantasia || 'Posto'}</div><div class="popup-price ${status}">${popupText}</div></div>`);
 
                 marker.on('click', () => selectPosto(posto.terminal));
                 markers.push(marker);
@@ -2415,15 +2917,10 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             selectedPosto = posto;
 
             document.querySelectorAll('.post-card').forEach(card => {
-                card.classList.remove('active');
-                if (card.dataset.terminal === terminal) {
-                    card.classList.add('active');
-                }
+                card.classList.toggle('active', card.dataset.terminal === terminal);
             });
 
-            if (posto.coordenadas) {
-                map.setView(posto.coordenadas, 15);
-            }
+            if (posto.coordenadas) map.setView(posto.coordenadas, 15);
 
             showInfoPanel(posto);
         }
@@ -2431,43 +2928,27 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
         function showInfoPanel(posto) {
             const panel = document.getElementById('infoPanel');
             
-            const endereco = formatEnderecoCard(posto) + (posto.endereco?.cep ? ` - CEP: ${posto.endereco.cep}` : '');
-
-            document.getElementById('infoName').textContent = (posto.nomeFantasia || 'Posto') + (posto.geocoded ? ' 📍' : '');
-            document.getElementById('infoAddress').textContent = endereco;
+            document.getElementById('infoName').textContent = posto.nomeFantasia || 'Posto';
+            document.getElementById('infoAddress').textContent = formatEnderecoCard(posto);
             document.getElementById('infoContact').textContent = `🕐 ${posto.horarioFuncionamento || 'Horário não informado'}`;
 
             const gasolina = posto.precos?.gasolina;
             const etanol = posto.precos?.etanol;
             const diesel = posto.precos?.diesel;
             const gnv = posto.precos?.gnv;
-            
-            const gasolinaStatus = getPriceStatus(gasolina, 'gasolina');
-            const etanolStatus = getPriceStatus(etanol, 'etanol');
-            const dieselStatus = getPriceStatus(diesel, 'diesel');
-            const gnvStatus = getPriceStatus(gnv, 'gnv');
 
-            document.getElementById('infoPrices').innerHTML = `
-                <div class="info-price-card ${gasolinaStatus !== 'no-data' ? gasolinaStatus : ''}">
-                    <div class="info-price-type">Gasolina</div>
-                    <div class="info-price-value ${gasolinaStatus}">${gasolina && gasolina > 0 ? `R$ ${gasolina.toFixed(2)}` : '--'}</div>
-                </div>
-                <div class="info-price-card ${etanolStatus !== 'no-data' ? etanolStatus : ''}">
-                    <div class="info-price-type">Etanol</div>
-                    <div class="info-price-value ${etanolStatus}">${etanol && etanol > 0 ? `R$ ${etanol.toFixed(2)}` : '--'}</div>
-                </div>
-                <div class="info-price-card ${dieselStatus !== 'no-data' ? dieselStatus : ''}">
-                    <div class="info-price-type">Diesel</div>
-                    <div class="info-price-value ${dieselStatus}">${diesel && diesel > 0 ? `R$ ${diesel.toFixed(2)}` : '--'}</div>
-                </div>
-                <div class="info-price-card ${gnvStatus !== 'no-data' ? gnvStatus : ''}">
-                    <div class="info-price-type">GNV</div>
-                    <div class="info-price-value ${gnvStatus}">${gnv && gnv > 0 ? `R$ ${gnv.toFixed(2)}` : '--'}</div>
-                </div>
-            `;
+            document.getElementById('infoPrices').innerHTML = ['gasolina', 'etanol', 'diesel', 'gnv'].map(tipo => {
+                const preco = posto.precos?.[tipo];
+                const status = getPriceStatus(preco, tipo);
+                return `
+                    <div class="info-price-card ${status !== 'no-data' ? status : ''}">
+                        <div class="info-price-type">${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</div>
+                        <div class="info-price-value ${status}">${preco > 0 ? `R$ ${preco.toFixed(2)}` : '--'}</div>
+                    </div>
+                `;
+            }).join('');
 
             renderImagesGallery(posto.terminal);
-
             panel.classList.add('active');
         }
 
@@ -2482,9 +2963,7 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
         // ==========================================
         function loadImagesFromStorage() {
             const stored = localStorage.getItem('postoImages');
-            if (stored) {
-                postoImages = JSON.parse(stored);
-            }
+            if (stored) postoImages = JSON.parse(stored);
         }
 
         function saveImagesToStorage() {
@@ -2495,94 +2974,37 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             const uploadArea = document.getElementById('uploadArea');
             const uploadInput = document.getElementById('uploadInput');
 
-            uploadArea.addEventListener('click', () => {
-                uploadInput.click();
-            });
-
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                handleFiles(files);
-            });
-
-            uploadInput.addEventListener('change', (e) => {
-                const files = e.target.files;
-                handleFiles(files);
-            });
+            uploadArea.addEventListener('click', () => uploadInput.click());
+            uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+            uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+            uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+            uploadInput.addEventListener('change', (e) => handleFiles(e.target.files));
         }
 
         function handleFiles(files) {
             if (!selectedPosto) return;
 
             const terminal = selectedPosto.terminal;
-            if (!postoImages[terminal]) {
-                postoImages[terminal] = [];
-            }
+            if (!postoImages[terminal]) postoImages[terminal] = [];
 
-            const progress = document.getElementById('uploadProgress');
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-
-            Array.from(files).forEach((file, index) => {
-                if (!file.type.startsWith('image/')) {
-                    showToast('Apenas imagens são permitidas', 'error');
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
+                    showToast('Arquivo inválido', 'error');
                     return;
                 }
-
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast('Imagem muito grande (máx. 5MB)', 'error');
-                    return;
-                }
-
-                progress.classList.add('active');
-                progressFill.style.width = '0%';
-                progressText.textContent = `Processando ${index + 1}/${files.length}...`;
 
                 const reader = new FileReader();
-                reader.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        const percent = (e.loaded / e.total) * 100;
-                        progressFill.style.width = percent + '%';
-                    }
-                };
-
                 reader.onload = (e) => {
-                    const imageData = {
+                    postoImages[terminal].push({
                         id: Date.now() + Math.random(),
                         src: e.target.result,
-                        date: new Date().toLocaleDateString('pt-BR'),
-                        fileName: file.name
-                    };
-
-                    postoImages[terminal].push(imageData);
+                        date: new Date().toLocaleDateString('pt-BR')
+                    });
                     saveImagesToStorage();
-
-                    progressFill.style.width = '100%';
-                    progressText.textContent = 'Concluído!';
-
-                    setTimeout(() => {
-                        progress.classList.remove('active');
-                        renderImagesGallery(terminal);
-                        renderPosts();
-                        showToast('Imagem adicionada!', 'success');
-                    }, 500);
+                    renderImagesGallery(terminal);
+                    renderPosts();
+                    showToast('Imagem adicionada!', 'success');
                 };
-
-                reader.onerror = () => {
-                    showToast('Erro ao processar imagem', 'error');
-                    progress.classList.remove('active');
-                };
-
                 reader.readAsDataURL(file);
             });
 
@@ -2593,17 +3015,12 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             const gallery = document.getElementById('imagesGallery');
             const images = postoImages[terminal] || [];
 
-            if (images.length === 0) {
-                gallery.innerHTML = '';
-                return;
-            }
-
             gallery.innerHTML = images.map(img => `
                 <div class="gallery-item">
-                    <img src="${img.src}" alt="Foto do posto" onclick="openImageModal('${img.src}')">
+                    <img src="${img.src}" alt="Foto" onclick="openImageModal('${img.src}')">
                     <div class="gallery-item-overlay">
-                        <button class="gallery-btn" onclick="openImageModal('${img.src}')" title="Ampliar">🔍</button>
-                        <button class="gallery-btn delete" onclick="deleteImage('${terminal}', '${img.id}')" title="Excluir">🗑️</button>
+                        <button class="gallery-btn" onclick="openImageModal('${img.src}')">🔍</button>
+                        <button class="gallery-btn delete" onclick="deleteImage('${terminal}', '${img.id}')">🗑️</button>
                     </div>
                     <div class="gallery-date">${img.date}</div>
                 </div>
@@ -2612,9 +3029,6 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
 
         function deleteImage(terminal, imageId) {
             event.stopPropagation();
-            
-            if (!postoImages[terminal]) return;
-
             postoImages[terminal] = postoImages[terminal].filter(img => img.id != imageId);
             saveImagesToStorage();
             renderImagesGallery(terminal);
@@ -2624,33 +3038,20 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
 
         function openImageModal(src) {
             event.stopPropagation();
-            const modal = document.getElementById('imageModal');
-            const modalImage = document.getElementById('modalImage');
-            modalImage.src = src;
-            modal.classList.add('active');
+            document.getElementById('modalImage').src = src;
+            document.getElementById('imageModal').classList.add('active');
         }
 
         function closeImageModal() {
             document.getElementById('imageModal').classList.remove('active');
         }
 
-        // ==========================================
-        // TOAST NOTIFICATION
-        // ==========================================
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
-            const toastIcon = document.getElementById('toastIcon');
-            const toastMessage = document.getElementById('toastMessage');
-
-            toast.className = `toast ${type}`;
-            toastIcon.textContent = type === 'success' ? '✓' : '✕';
-            toastMessage.textContent = message;
-
-            toast.classList.add('active');
-
-            setTimeout(() => {
-                toast.classList.remove('active');
-            }, 3000);
+            toast.className = `toast ${type} active`;
+            document.getElementById('toastIcon').textContent = type === 'success' ? '✓' : '✕';
+            document.getElementById('toastMessage').textContent = message;
+            setTimeout(() => toast.classList.remove('active'), 3000);
         }
 
         // ==========================================
@@ -2659,10 +3060,7 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
         function initEventListeners() {
             initUploadListeners();
 
-            document.getElementById('searchInput').addEventListener('input', () => {
-                renderPosts();
-                renderMarkers();
-            });
+            document.getElementById('searchInput').addEventListener('input', () => { renderPosts(); renderMarkers(); });
 
             document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -2677,31 +3075,16 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
             document.querySelectorAll('.filter-btn[data-color]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const wasActive = btn.classList.contains('active');
-                    
                     document.querySelectorAll('.filter-btn[data-color]').forEach(b => b.classList.remove('active'));
-                    
-                    if (wasActive) {
-                        currentColorFilter = null;
-                    } else {
-                        btn.classList.add('active');
-                        currentColorFilter = btn.dataset.color;
-                    }
-                    
+                    currentColorFilter = wasActive ? null : btn.dataset.color;
+                    if (!wasActive) btn.classList.add('active');
                     renderPosts();
                     renderMarkers();
                 });
             });
 
-            document.getElementById('sortSelect').addEventListener('change', (e) => {
-                currentSort = e.target.value;
-                renderPosts();
-            });
-
-            document.getElementById('bandeira-filter').addEventListener('change', (e) => {
-                currentBandeira = e.target.value;
-                renderPosts();
-                renderMarkers();
-            });
+            document.getElementById('sortSelect').addEventListener('change', (e) => { currentSort = e.target.value; renderPosts(); });
+            document.getElementById('bandeira-filter').addEventListener('change', (e) => { currentBandeira = e.target.value; renderPosts(); renderMarkers(); });
 
             document.getElementById('locateBtn').addEventListener('click', locateUser);
             document.getElementById('zoomInBtn').addEventListener('click', () => map.zoomIn());
@@ -2719,6 +3102,8 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                 if (e.key === 'Escape') {
                     closeImageModal();
                     closeInfoPanel();
+                    const chatPanel = document.getElementById('chatPanel');
+                    if (chatPanel.classList.contains('active')) toggleChat();
                 }
             });
         }
@@ -2736,24 +3121,15 @@ Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir d
                             iconSize: [18, 18],
                             iconAnchor: [9, 9]
                         });
-                        L.marker(userLocation, { icon: userIcon }).addTo(map)
-                            .bindPopup('Você está aqui').openPopup();
+                        L.marker(userLocation, { icon: userIcon }).addTo(map).bindPopup('Você está aqui').openPopup();
                     },
-                    (error) => {
-                        console.error('Erro ao obter localização:', error);
-                        showToast('Não foi possível obter sua localização', 'error');
-                    }
+                    () => showToast('Não foi possível obter sua localização', 'error')
                 );
             }
         }
 
-        // ==========================================
-        // LOADING
-        // ==========================================
         function hideLoading() {
-            setTimeout(() => {
-                document.getElementById('loadingOverlay').classList.add('hidden');
-            }, 500);
+            setTimeout(() => document.getElementById('loadingOverlay').classList.add('hidden'), 500);
         }
     </script>
 </body>
