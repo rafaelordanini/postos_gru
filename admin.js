@@ -639,6 +639,7 @@ async function atualizarPrecosANP() {
     console.log('🔍 Buscando preços ANP de anp-gru.vercel.app...');
     
     const container = document.getElementById('anp-precos');
+    
     if (!container) return;
     
     let dadosANP = {
@@ -739,37 +740,107 @@ async function atualizarPrecosANP() {
     `;
 }
 // ==========================================
-// RENDERIZAR INTERFACE
+// RENDERIZAR INTERFACE - CORRIGIDO
 // ==========================================
 
 function renderizarStatus() {
-    const container = document.getElementById('status-container');
+    const container = document.getElementById('statusInfo');  // ID CORRETO
     if (!container) return;
     
     const postosComPreco = postosAdmin.filter(p => p.precos?.gasolina > 0 || p.precos?.etanol > 0);
     const ultimaAtualizacao = localStorage.getItem('cmg_last_update');
+    const anp = JSON.parse(localStorage.getItem('cmg_anp_data') || '{}');
     
     container.innerHTML = `
-        <div class="status-item">
-            <span class="status-number">${postosAdmin.length}</span>
-            <span class="status-label">postos cadastrados</span>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px;">
+            <div style="text-align: center; padding: 15px; background: #e0f2fe; border-radius: 8px;">
+                <div style="font-size: 2rem; font-weight: bold; color: #0369a1;">${postosAdmin.length}</div>
+                <div style="color: #666;">postos cadastrados</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #d1fae5; border-radius: 8px;">
+                <div style="font-size: 2rem; font-weight: bold; color: #047857;">${postosComPreco.length}</div>
+                <div style="color: #666;">com preço</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #fef3c7; border-radius: 8px;">
+                <div style="font-size: 2rem; font-weight: bold; color: #b45309;">${abastecimentosAdmin.length}</div>
+                <div style="color: #666;">abastecimentos</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: #f3e8ff; border-radius: 8px;">
+                <div style="font-size: 1.2rem; font-weight: bold; color: #7c3aed;">
+                    ${anp.gasolinaComum ? 'R$ ' + anp.gasolinaComum.toFixed(2) : '--'}
+                </div>
+                <div style="color: #666;">ANP Gasolina</div>
+            </div>
         </div>
-        <div class="status-item">
-            <span class="status-number">${postosComPreco.length}</span>
-            <span class="status-label">postos com preço</span>
-        </div>
-        <div class="status-item">
-            <span class="status-number">${abastecimentosAdmin.length}</span>
-            <span class="status-label">abastecimentos</span>
-        </div>
-        <div class="status-item">
-            <span class="status-label">Última atualização: ${ultimaAtualizacao ? new Date(ultimaAtualizacao).toLocaleString('pt-BR') : '--'}</span>
+        <div style="font-size: 0.85rem; color: #888;">
+            Última atualização: ${ultimaAtualizacao ? new Date(ultimaAtualizacao).toLocaleString('pt-BR') : '--'}
         </div>
     `;
 }
 
 function renderizarPostos() {
-    const tbody = document.getElementById('postos-tbody');
+    const postosTable = document.getElementById('postosTable');  // ID CORRETO
+    if (!postosTable) return;
+    
+    if (postosAdmin.length === 0) {
+        postosTable.innerHTML = '<p style="text-align: center; padding: 20px; color: #888;">Nenhum posto cadastrado</p>';
+        return;
+    }
+    
+    const ordenados = [...postosAdmin].sort((a, b) => 
+        (a.nomeFantasia || '').localeCompare(b.nomeFantasia || '')
+    );
+    
+    postosTable.innerHTML = `
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                    <tr style="background: #f1f5f9; text-align: left;">
+                        <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;">Posto</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;">Bandeira</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;">Bairro</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;">Gasolina</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;">Etanol</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;">Atualização</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${ordenados.map(posto => `
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 10px;">
+                                <strong>${posto.nomeFantasia || 'Sem nome'}</strong>
+                                ${posto.razaoSocial ? `<br><small style="color: #888;">${posto.razaoSocial}</small>` : ''}
+                            </td>
+                            <td style="padding: 10px;">${posto.bandeira || '-'}</td>
+                            <td style="padding: 10px;">${posto.endereco?.bairro || '-'}</td>
+                            <td style="padding: 10px; font-weight: bold; color: ${posto.precos?.gasolina > 0 ? '#059669' : '#9ca3af'};">
+                                ${posto.precos?.gasolina > 0 ? 'R$ ' + posto.precos.gasolina.toFixed(2) : '--'}
+                            </td>
+                            <td style="padding: 10px; font-weight: bold; color: ${posto.precos?.etanol > 0 ? '#059669' : '#9ca3af'};">
+                                ${posto.precos?.etanol > 0 ? 'R$ ' + posto.precos.etanol.toFixed(2) : '--'}
+                            </td>
+                            <td style="padding: 10px; font-size: 0.8rem; color: #6b7280;">
+                                ${posto.ultimaAtualizacaoPreco || '--'}
+                            </td>
+                            <td style="padding: 10px;">
+                                <button onclick="excluirPosto(${posto.id})" 
+                                        style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        <p style="margin-top: 10px; font-size: 0.8rem; color: #888;">
+            Mostrando ${ordenados.length} postos
+        </p>
+    `;
+}
+function renderizarPostos() {
+    const postosTable = document.getElementById('postosTable');
     if (!tbody) return;
     
     if (postosAdmin.length === 0) {
