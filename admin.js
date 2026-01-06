@@ -299,21 +299,21 @@ function processarCSVAbastecimentos(csvContent) {
     const headersLower = headers.map(h => h.toLowerCase().replace(/["\s]/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
     console.log('Headers normalizados:', headersLower);
     
-    // Mapear colunas
-    const colMap = {
-        data: findColumn(headersLower, ['data']),
-        hora: findColumn(headersLower, ['hora']),
-        combustivel: findColumn(headersLower, ['combustivel', 'tipo_combustivel', 'tipocombustivel']),
-        qtde: findColumn(headersLower, ['qtde_combustivel', 'qtde', 'quantidade', 'litros', 'qtdecombustivel']),
-        valor: findColumn(headersLower, ['valor_abastecimento', 'valor', 'total', 'valorabastecimento', 'valortotal']),
-        cidade: findColumn(headersLower, ['cidade_posto', 'cidade', 'cidadeposto']),
-        nomePosto: findColumn(headersLower, ['nome_posto', 'posto', 'estabelecimento', 'nomeposto']),
-        endereco: findColumn(headersLower, ['endereco_posto', 'endereco', 'enderecoposto']),
-        placa: findColumn(headersLower, ['placa', 'placa_veiculo']),
-        condutor: findColumn(headersLower, ['nome_condutor', 'condutor', 'motorista', 'nomecondutor'])
-    };
-    
-    console.log('Mapeamento de colunas:', colMap);
+// Mapear colunas - CORRIGIDO
+const colMap = {
+    data: findColumnExact(headersLower, ['data']),
+    hora: findColumnExact(headersLower, ['hora']),
+    combustivel: findColumnExact(headersLower, ['combustivel', 'tipo_combustivel', 'tipocombustivel']),
+    qtde: findColumnExact(headersLower, ['qtde_combustivel_abastecido', 'qtde_combustivel', 'qtde', 'quantidade', 'litros', 'qtdecombustivel']),
+    valor: findColumnExact(headersLower, ['valor_abastecimento', 'valorabastecimento', 'valortotal', 'valor', 'total']),
+    cidade: findColumnExact(headersLower, ['cidade_posto', 'cidadeposto']),
+    nomePosto: findColumnExact(headersLower, ['nome_posto', 'nomeposto']),  // SEM 'posto' genérico!
+    endereco: findColumnExact(headersLower, ['endereco_posto', 'enderecoposto']),
+    placa: findColumnExact(headersLower, ['placa', 'placa_veiculo']),
+    condutor: findColumnExact(headersLower, ['nome_condutor', 'nomecondutor', 'condutor', 'motorista'])
+};
+
+console.log('Mapeamento de colunas:', colMap);
     
     // Processar linhas de dados
     for (let i = headerIndex + 1; i < linhas.length; i++) {
@@ -415,15 +415,26 @@ function parseCSVLine(linha) {
     return resultado;
 }
 
-function findColumn(headers, nomes) {
+function findColumnExact(headers, nomes) {
+    // Primeiro: busca exata
     for (let i = 0; i < headers.length; i++) {
         for (const nome of nomes) {
-            if (headers[i].includes(nome)) return i;
+            if (headers[i] === nome.replace(/_/g, '')) return i;
+        }
+    }
+    // Segundo: busca por inclusão (menos prioritário)
+    for (let i = 0; i < headers.length; i++) {
+        for (const nome of nomes) {
+            if (headers[i].includes(nome.replace(/_/g, ''))) return i;
         }
     }
     return -1;
 }
 
+// Manter a antiga para compatibilidade
+function findColumn(headers, nomes) {
+    return findColumnExact(headers, nomes);
+}
 function getCol(valores, index) {
     if (index < 0 || index >= valores.length) return '';
     return (valores[index] || '').trim().replace(/^"|"$/g, '');
