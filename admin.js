@@ -632,80 +632,112 @@ function processarExcelEstabelecimentos(conteudo) {
 }
 
 // ==========================================
-// PREÇOS ANP - CORRIGIDO
+// PREÇOS ANP - BUSCAR DE anp-gru.vercel.app
 // ==========================================
 
 async function atualizarPrecosANP() {
-    console.log('🔍 Buscando preços ANP...');
+    console.log('🔍 Buscando preços ANP de anp-gru.vercel.app...');
     
     const container = document.getElementById('anp-precos');
     if (!container) return;
     
-    // Valores de referência ANP para Guarulhos (atualizados)
-    // Fonte: ANP - Levantamento de Preços de Combustíveis
-    const precoReferencia = {
-        gasolinaComum: 6.06,  // Média Guarulhos
-        etanol: 3.97,         // Média Guarulhos
-        dataAtualizacao: new Date().toISOString(),
-        semana: 'Semana 01/2026',
-        fonte: 'ANP - Guarulhos/SP'
+    let dadosANP = {
+        gasolinaComum: null,
+        etanol: null,
+        diesel: null,
+        gnv: null,
+        periodo: null,
+        fonte: null
     };
     
-    // Tentar buscar dados atualizados
     try {
-        const response = await fetch('https://api.allorigins.win/raw?url=' + 
-            encodeURIComponent('https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-concorrencia/precos/precos-revenda-e-de-distribuicao-combustiveis/shlp/dsan/guarulhos-sp'));
+        const response = await fetch('https://anp-gru.vercel.app/prices.json');
         
         if (response.ok) {
-            const html = await response.text();
+            const dados = await response.json();
             
-            // Buscar preço gasolina
-            const regexGasolina = /gasolina\s*comum[^0-9]*?(\d)[,.](\d{2,3})/gi;
-            const matchGas = regexGasolina.exec(html);
-            
-            if (matchGas) {
-                precoReferencia.gasolinaComum = parseFloat(`${matchGas[1]}.${matchGas[2]}`);
-            }
-            
-            // Buscar preço etanol
-            const regexEtanol = /etanol[^0-9]*?(\d)[,.](\d{2,3})/gi;
-            const matchEtanol = regexEtanol.exec(html);
-            
-            if (matchEtanol) {
-                precoReferencia.etanol = parseFloat(`${matchEtanol[1]}.${matchEtanol[2]}`);
+            if (dados.success && dados.data) {
+                // Formatar período
+                let periodo = '';
+                if (dados.periodStart && dados.periodEnd) {
+                    const inicio = dados.periodStart.split('-').reverse().join('/');
+                    const fim = dados.periodEnd.split('-').reverse().join('/');
+                    periodo = `${inicio} a ${fim}`;
+                }
+                
+                dadosANP = {
+                    gasolinaComum: dados.data.gasolinaComum,
+                    etanol: dados.data.etanol,
+                    diesel: dados.data.diesel,
+                    gnv: dados.data.gnv,
+                    periodo: periodo,
+                    dataAtualizacao: dados.updatedAt,
+                    fonte: 'ANP via anp-gru.vercel.app',
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Salvar no localStorage
+                localStorage.setItem('cmg_anp_data', JSON.stringify(dadosANP));
+                window.anpData = dadosANP;
+                
+                console.log('✅ Preços ANP atualizados:', dadosANP);
             }
         }
-    } catch (e) {
-        console.warn('Usando preços de referência');
+    } catch (error) {
+        console.error('❌ Erro ao buscar preços ANP:', error);
     }
     
-    // Salvar no localStorage
-    localStorage.setItem('cmg_anp_data', JSON.stringify(precoReferencia));
-    window.anpData = precoReferencia;
+    // Renderizar interface - SEM FALLBACK (mostra "Indisponível" se falhar)
+    const gasolinaDisplay = dadosANP.gasolinaComum 
+        ? `R$ ${dadosANP.gasolinaComum.toFixed(2).replace('.', ',')}` 
+        : '<span class="text-muted">Indisponível</span>';
     
-    // Atualizar interface
+    const etanolDisplay = dadosANP.etanol 
+        ? `R$ ${dadosANP.etanol.toFixed(2).replace('.', ',')}` 
+        : '<span class="text-muted">Indisponível</span>';
+    
+    const dieselDisplay = dadosANP.diesel 
+        ? `R$ ${dadosANP.diesel.toFixed(2).replace('.', ',')}` 
+        : '<span class="text-muted">--</span>';
+    
+    const gnvDisplay = dadosANP.gnv 
+        ? `R$ ${dadosANP.gnv.toFixed(2).replace('.', ',')}` 
+        : '<span class="text-muted">--</span>';
+    
     container.innerHTML = `
         <div class="anp-card">
             <h4>📊 Preços Médios ANP - Guarulhos/SP</h4>
             <div class="anp-precos">
                 <div class="anp-preco">
                     <span class="label">Gasolina Comum</span>
-                    <span class="valor">R$ ${precoReferencia.gasolinaComum.toFixed(2).replace('.', ',')}</span>
+                    <span class="valor">${gasolinaDisplay}</span>
                 </div>
                 <div class="anp-preco">
                     <span class="label">Etanol</span>
-                    <span class="valor">R$ ${precoReferencia.etanol.toFixed(2).replace('.', ',')}</span>
+                    <span class="valor">${etanolDisplay}</span>
+                </div>
+                <div class="anp-preco">
+                    <span class="label">Diesel</span>
+                    <span class="valor">${dieselDisplay}</span>
+                </div>
+                <div class="anp-preco">
+                    <span class="label">GNV</span>
+                    <span class="valor">${gnvDisplay}</span>
                 </div>
             </div>
             <div class="anp-fonte">
-                Fonte: ${precoReferencia.fonte} | ${precoReferencia.semana}
+                ${dadosANP.fonte ? `Fonte: <a href="https://anp-gru.vercel.app" target="_blank">${dadosANP.fonte}</a>` : 'Fonte: --'}
+                ${dadosANP.periodo ? ` | Período: ${dadosANP.periodo}` : ''}
             </div>
+            ${!dadosANP.gasolinaComum ? `
+                <div class="anp-aviso" style="margin-top: 10px; padding: 8px; background: #fff3cd; border-radius: 4px; font-size: 0.85rem;">
+                    ⚠️ Não foi possível carregar os preços. 
+                    <a href="https://anp-gru.vercel.app" target="_blank">Consulte o site</a>
+                </div>
+            ` : ''}
         </div>
     `;
-    
-    console.log('✅ Preços ANP atualizados:', precoReferencia);
 }
-
 // ==========================================
 // RENDERIZAR INTERFACE
 // ==========================================
