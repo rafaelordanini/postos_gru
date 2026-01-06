@@ -1,549 +1,315 @@
-// ==========================================
-// ADMIN - Gerenciamento de Postos
-// ==========================================
-
-let adminPostos = [];
-
-// ==========================================
-// INICIALIZAÇÃO
-// ==========================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    initAdmin();
-});
-
-function initAdmin() {
-    console.log('🔧 Iniciando painel admin...');
-    
-    // Carregar dados existentes
-    carregarPostos();
-    adminPostos = [...postosData];
-    
-    // Atualizar interface
-    atualizarStatus();
-    renderizarPostos();
-    
-    // Configurar drag and drop
-    setupDropZones();
-    
-    console.log('✅ Admin inicializado');
-}
-
-function atualizarStatus() {
-    const statusEl = document.getElementById('statusInfo');
-    if (statusEl) {
-        const ultima = getUltimaAtualizacao();
-        statusEl.innerHTML = `
-            <strong>${postosData.length}</strong> postos cadastrados<br>
-            <small>Última atualização: ${ultima ? new Date(ultima).toLocaleString('pt-BR') : 'Nunca'}</small>
-        `;
-    }
-}
-
-// ==========================================
-// DRAG AND DROP
-// ==========================================
-
-function setupDropZones() {
-    const dropZones = document.querySelectorAll('.drop-zone');
-    
-    dropZones.forEach(zone => {
-        zone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            zone.classList.add('dragover');
-        });
-        
-        zone.addEventListener('dragleave', () => {
-            zone.classList.remove('dragover');
-        });
-        
-        zone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            zone.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                const tipo = zone.dataset.tipo;
-                processarArquivo(files[0], tipo);
-            }
-        });
-        
-        zone.addEventListener('click', () => {
-            const input = zone.querySelector('input[type="file"]');
-            if (input) input.click();
-        });
-    });
-}
-
-function handleFileSelect(input, tipo) {
-    if (input.files && input.files[0]) {
-        processarArquivo(input.files[0], tipo);
-    }
-}
-
-// ==========================================
-// PROCESSAMENTO DE ARQUIVOS
-// ==========================================
-
-async function processarArquivo(file, tipo) {
-    console.log(`📁 Processando arquivo: ${file.name} (${tipo})`);
-    
-    const ext = file.name.split('.').pop().toLowerCase();
-    
-    if (!['xlsx', 'xls', 'csv'].includes(ext)) {
-        showAdminNotification('Formato inválido. Use .xlsx, .xls ou .csv', 'error');
-        return;
-    }
-    
-    showAdminLoading(true);
-    
-    try {
-        if (tipo === 'estabelecimentos') {
-            await processarPlanilhaEstabelecimentos(file);
-        } else if (tipo === 'abastecimentos') {
-            await processarPlanilhaAbastecimentos(file);
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Postos Credenciados</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, #1e3a5f, #0d6efd);
+            color: white;
+            padding: 1.5rem 2rem;
         }
-    } catch (error) {
-        console.error('Erro ao processar arquivo:', error);
-        showAdminNotification('Erro ao processar arquivo: ' + error.message, 'error');
-    } finally {
-        showAdminLoading(false);
-    }
-}
-
-async function processarPlanilhaEstabelecimentos(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
         
-        reader.onload = function(e) {
-            try {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                
-                const sheetName = workbook.SheetNames[0];
-                const sheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                
-                console.log('📊 Linhas encontradas:', json.length);
-                
-                // Encontrar linha de cabeçalho
-                let headerIndex = -1;
-                for (let i = 0; i < Math.min(10, json.length); i++) {
-                    const row = json[i];
-                    if (row && row.some(cell => {
-                        const val = String(cell || '').toLowerCase();
-                        return val.includes('terminal') || val.includes('nome fantasia') || val.includes('cnpj');
-                    })) {
-                        headerIndex = i;
-                        break;
-                    }
-                }
-                
-                if (headerIndex === -1) {
-                    throw new Error('Cabeçalho não encontrado. Verifique se a planilha tem as colunas corretas.');
-                }
-                
-                const headers = json[headerIndex].map(h => String(h || '').toLowerCase().trim());
-                console.log('📋 Cabeçalhos:', headers);
-                
-                // Mapear colunas
-                const colMap = {
-                    terminal: findColumnIndex(headers, ['terminal', 'cod', 'codigo']),
-                    nomeFantasia: findColumnIndex(headers, ['nome fantasia', 'fantasia', 'nome']),
-                    razaoSocial: findColumnIndex(headers, ['razao social', 'razão social', 'razao']),
-                    cnpj: findColumnIndex(headers, ['cnpj', 'cpf/cnpj']),
-                    cep: findColumnIndex(headers, ['cep']),
-                    logradouro: findColumnIndex(headers, ['logradouro', 'tipo logradouro']),
-                    endereco: findColumnIndex(headers, ['endereco', 'endereço', 'rua']),
-                    numero: findColumnIndex(headers, ['numero', 'número', 'nro', 'num']),
-                    bairro: findColumnIndex(headers, ['bairro']),
-                    cidade: findColumnIndex(headers, ['cidade', 'municipio', 'município']),
-                    uf: findColumnIndex(headers, ['uf', 'estado']),
-                    telefone: findColumnIndex(headers, ['telefone', 'tel', 'fone']),
-                    email: findColumnIndex(headers, ['email', 'e-mail']),
-                    bandeira: findColumnIndex(headers, ['bandeira', 'rede']),
-                    horario: findColumnIndex(headers, ['horario', 'horário', 'funcionamento'])
-                };
-                
-                console.log('🗺️ Mapeamento de colunas:', colMap);
-                
-                // Processar linhas de dados
-                const novosPostos = [];
-                
-                for (let i = headerIndex + 1; i < json.length; i++) {
-                    const row = json[i];
-                    if (!row || row.length === 0) continue;
-                    
-                    const terminal = getCell(row, colMap.terminal);
-                    const nomeFantasia = getCell(row, colMap.nomeFantasia);
-                    
-                    // Pular linhas sem terminal ou nome
-                    if (!terminal && !nomeFantasia) continue;
-                    
-                    const bairro = getCell(row, colMap.bairro) || 'Centro';
-                    const coords = obterCoordenadasPorBairro(bairro);
-                    
-                    const posto = {
-                        id: parseInt(terminal) || (Date.now() + i),
-                        terminal: terminal,
-                        nomeFantasia: nomeFantasia || `Posto ${terminal}`,
-                        razaoSocial: getCell(row, colMap.razaoSocial),
-                        cnpj: getCell(row, colMap.cnpj),
-                        telefone: getCell(row, colMap.telefone),
-                        email: getCell(row, colMap.email),
-                        endereco: {
-                            logradouro: `${getCell(row, colMap.logradouro)} ${getCell(row, colMap.endereco)}`.trim(),
-                            numero: getCell(row, colMap.numero) || 'S/N',
-                            bairro: bairro,
-                            cidade: getCell(row, colMap.cidade) || 'Guarulhos',
-                            estado: getCell(row, colMap.uf) || 'SP',
-                            cep: getCell(row, colMap.cep)
-                        },
-                        coordenadas: coords ? {
-                            lat: coords.lat + (Math.random() - 0.5) * 0.008,
-                            lng: coords.lng + (Math.random() - 0.5) * 0.008
-                        } : {
-                            lat: -23.4538 + (Math.random() - 0.5) * 0.04,
-                            lng: -46.5333 + (Math.random() - 0.5) * 0.04
-                        },
-                        precos: { gasolina: 0, etanol: 0 },
-                        bandeira: normalizarBandeira(getCell(row, colMap.bandeira)),
-                        horarioFuncionamento: getCell(row, colMap.horario),
-                        is24h: verificar24hAdmin(getCell(row, colMap.horario)),
-                        ativo: true,
-                        dataImportacao: new Date().toISOString()
-                    };
-                    
-                    novosPostos.push(posto);
-                }
-                
-                console.log(`✅ ${novosPostos.length} postos processados`);
-                
-                if (novosPostos.length === 0) {
-                    throw new Error('Nenhum posto válido encontrado na planilha.');
-                }
-                
-                // Salvar
-                postosData = novosPostos;
-                adminPostos = novosPostos;
-                salvarPostos(novosPostos);
-                
-                atualizarStatus();
-                renderizarPostos();
-                
-                showAdminNotification(`${novosPostos.length} postos importados com sucesso!`, 'success');
-                resolve(novosPostos);
-                
-            } catch (error) {
-                reject(error);
-            }
-        };
-        
-        reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-        reader.readAsArrayBuffer(file);
-    });
-}
-
-async function processarPlanilhaAbastecimentos(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            try {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                
-                const sheetName = workbook.SheetNames[0];
-                const sheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(sheet);
-                
-                console.log('📊 Abastecimentos encontrados:', json.length);
-                
-                // Processar e atualizar preços dos postos
-                const precosAtualizados = {};
-                
-                json.forEach(row => {
-                    const terminal = row['Terminal'] || row['terminal'] || row['Posto'];
-                    const gasolina = parseFloat(row['Gasolina'] || row['Preço Gasolina'] || row['gasolina'] || 0);
-                    const etanol = parseFloat(row['Etanol'] || row['Preço Etanol'] || row['etanol'] || 0);
-                    
-                    if (terminal) {
-                        if (!precosAtualizados[terminal]) {
-                            precosAtualizados[terminal] = { gasolina: [], etanol: [] };
-                        }
-                        if (gasolina > 0) precosAtualizados[terminal].gasolina.push(gasolina);
-                        if (etanol > 0) precosAtualizados[terminal].etanol.push(etanol);
-                    }
-                });
-                
-                // Atualizar postos com média dos preços
-                let atualizados = 0;
-                Object.entries(precosAtualizados).forEach(([terminal, precos]) => {
-                    const posto = postosData.find(p => p.terminal === terminal);
-                    if (posto) {
-                        if (precos.gasolina.length > 0) {
-                            posto.precos.gasolina = precos.gasolina.reduce((a, b) => a + b) / precos.gasolina.length;
-                        }
-                        if (precos.etanol.length > 0) {
-                            posto.precos.etanol = precos.etanol.reduce((a, b) => a + b) / precos.etanol.length;
-                        }
-                        posto.ultimaAtualizacaoPreco = new Date().toISOString();
-                        atualizados++;
-                    }
-                });
-                
-                salvarPostos(postosData);
-                adminPostos = [...postosData];
-                renderizarPostos();
-                
-                showAdminNotification(`${atualizados} postos atualizados com preços!`, 'success');
-                resolve(json);
-                
-            } catch (error) {
-                reject(error);
-            }
-        };
-        
-        reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-        reader.readAsArrayBuffer(file);
-    });
-}
-
-// ==========================================
-// FUNÇÕES AUXILIARES
-// ==========================================
-
-function findColumnIndex(headers, possibleNames) {
-    for (let i = 0; i < headers.length; i++) {
-        const header = headers[i];
-        for (const name of possibleNames) {
-            if (header && header.includes(name)) {
-                return i;
-            }
+        .admin-header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-    }
-    return -1;
-}
-
-function getCell(row, index) {
-    if (index === -1 || !row || index >= row.length) return '';
-    const value = row[index];
-    return value !== undefined && value !== null ? String(value).trim() : '';
-}
-
-function normalizarBandeira(bandeira) {
-    if (!bandeira) return 'BANDEIRA BRANCA';
+        
+        .admin-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .admin-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .admin-section h2 {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-box {
+            background: #eff6ff;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #0d6efd;
+        }
+        
+        .import-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .drop-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f9fafb;
+        }
+        
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #0d6efd;
+            background: #eff6ff;
+        }
+        
+        .drop-zone i {
+            font-size: 2.5rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+        
+        .drop-zone h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .drop-zone p {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        
+        .drop-zone input[type="file"] {
+            display: none;
+        }
+        
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        
+        .admin-table th, .admin-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .admin-table th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+        
+        .admin-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        
+        .preco-alto { color: #dc2626; font-weight: 600; }
+        .preco-baixo { color: #059669; font-weight: 600; }
+        
+        .btn-edit, .btn-delete {
+            border: none;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 0.25rem;
+        }
+        
+        .btn-edit {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .btn-edit:hover { background: #bfdbfe; }
+        .btn-delete:hover { background: #fecaca; }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-success {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-success:hover { background: #047857; }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .admin-notification {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1f2937;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+        }
+        
+        .admin-notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .admin-notification.success { background: #059669; }
+        .admin-notification.error { background: #dc2626; }
+        
+        .admin-loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            font-size: 1.25rem;
+            color: #0d6efd;
+        }
+        
+        .admin-loading.active {
+            display: flex;
+        }
+        
+        .admin-loading i {
+            margin-right: 0.5rem;
+        }
+        
+        .back-link {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        
+        .back-link:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h1><i class="fas fa-cogs"></i> Painel Administrativo</h1>
+        <p>Gerenciamento de Postos Credenciados</p>
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Voltar ao mapa</a>
+    </header>
     
-    const b = bandeira.toUpperCase().trim();
-    
-    const mapeamento = {
-        'PETROBRAS': 'PETROBRAS',
-        'BR': 'BR',
-        'IPIRANGA': 'IPIRANGA',
-        'SHELL': 'SHELL',
-        'RAIZEN': 'RAÍZEN',
-        'RAÍZEN': 'RAÍZEN',
-        'ALE': 'ALE',
-        'BRANCA': 'BANDEIRA BRANCA',
-        'BANDEIRA BRANCA': 'BANDEIRA BRANCA',
-        'N/A': 'BANDEIRA BRANCA',
-        '': 'BANDEIRA BRANCA'
-    };
-    
-    return mapeamento[b] || b;
-}
-
-function verificar24hAdmin(horario) {
-    if (!horario) return false;
-    const h = String(horario).toLowerCase();
-    return h.includes('24') || h.includes('24h') || h.includes('24 horas');
-}
-
-// ==========================================
-// RENDERIZAÇÃO
-// ==========================================
-
-function renderizarPostos() {
-    const container = document.getElementById('postosTable');
-    if (!container) return;
-    
-    if (adminPostos.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-gas-pump"></i>
-                <p>Nenhum posto cadastrado</p>
-                <p>Importe uma planilha para começar</p>
+    <main class="admin-content">
+        <!-- Status -->
+        <section class="admin-section">
+            <h2><i class="fas fa-info-circle"></i> Status Atual</h2>
+            <div class="status-box" id="statusInfo">
+                Carregando...
             </div>
-        `;
-        return;
-    }
+        </section>
+        
+        <!-- Importação -->
+        <section class="admin-section">
+            <h2><i class="fas fa-file-import"></i> Importar Dados</h2>
+            
+            <div class="import-grid">
+                <!-- Estabelecimentos -->
+                <div class="drop-zone" data-tipo="estabelecimentos">
+                    <input type="file" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(this, 'estabelecimentos')">
+                    <i class="fas fa-building"></i>
+                    <h3>Planilha de Estabelecimentos</h3>
+                    <p>Arquivo Excel do sistema Prime</p>
+                    <p><small>Colunas: Terminal, Nome Fantasia, CNPJ, Endereço, Bairro, etc.</small></p>
+                </div>
+                
+                <!-- Abastecimentos -->
+                <div class="drop-zone" data-tipo="abastecimentos">
+                    <input type="file" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(this, 'abastecimentos')">
+                    <i class="fas fa-gas-pump"></i>
+                    <h3>Planilha de Abastecimentos</h3>
+                    <p>Histórico de abastecimentos com preços</p>
+                    <p><small>Atualiza os preços dos postos automaticamente</small></p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Lista de Postos -->
+        <section class="admin-section">
+            <h2><i class="fas fa-list"></i> Postos Cadastrados</h2>
+            <div id="postosTable">
+                Carregando...
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-danger" onclick="limparTodosDadosAdmin()">
+                    <i class="fas fa-trash"></i> Limpar Todos os Dados
+                </button>
+                <button class="btn-success" onclick="exportarJSON()">
+                    <i class="fas fa-download"></i> Exportar JSON
+                </button>
+            </div>
+        </section>
+    </main>
     
-    let html = `
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Terminal</th>
-                    <th>Nome</th>
-                    <th>Bandeira</th>
-                    <th>Bairro</th>
-                    <th>Gasolina</th>
-                    <th>Etanol</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+    <!-- SheetJS para ler Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    adminPostos.forEach(posto => {
-        html += `
-            <tr>
-                <td>${posto.terminal || '-'}</td>
-                <td>${posto.nomeFantasia || '-'}</td>
-                <td><span class="badge" style="background: ${getBandeiraCor(posto.bandeira)}; color: white;">${posto.bandeira || 'N/A'}</span></td>
-                <td>${posto.endereco?.bairro || '-'}</td>
-                <td class="${getPrecoClass(posto.precos?.gasolina)}">
-                    ${posto.precos?.gasolina ? `R$ ${posto.precos.gasolina.toFixed(2)}` : '--'}
-                </td>
-                <td class="${getPrecoClass(posto.precos?.etanol, 'etanol')}">
-                    ${posto.precos?.etanol ? `R$ ${posto.precos.etanol.toFixed(2)}` : '--'}
-                </td>
-                <td>
-                    <button onclick="editarPosto(${posto.id})" class="btn-edit" title="Editar">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="excluirPosto(${posto.id})" class="btn-delete" title="Excluir">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
-    
-    html += '</tbody></table>';
-    container.innerHTML = html;
-}
-
-function getPrecoClass(preco, tipo = 'gasolina') {
-    if (!preco || preco <= 0) return '';
-    const limite = tipo === 'etanol' ? 3.97 : 6.06;
-    const diff = ((preco - limite) / limite) * 100;
-    if (diff > 1) return 'preco-alto';
-    if (diff < -1) return 'preco-baixo';
-    return '';
-}
-
-// ==========================================
-// AÇÕES
-// ==========================================
-
-function editarPosto(id) {
-    const posto = adminPostos.find(p => p.id === id);
-    if (!posto) return;
-    
-    // Implementar modal de edição
-    const novoPrecoGas = prompt(`Preço Gasolina para ${posto.nomeFantasia}:`, posto.precos?.gasolina || '');
-    const novoPrecoEta = prompt(`Preço Etanol para ${posto.nomeFantasia}:`, posto.precos?.etanol || '');
-    
-    if (novoPrecoGas !== null) {
-        const valor = parseFloat(novoPrecoGas);
-        if (!isNaN(valor) && valor > 0) {
-            posto.precos.gasolina = valor;
-        }
-    }
-    
-    if (novoPrecoEta !== null) {
-        const valor = parseFloat(novoPrecoEta);
-        if (!isNaN(valor) && valor > 0) {
-            posto.precos.etanol = valor;
-        }
-    }
-    
-    posto.ultimaAtualizacaoPreco = new Date().toISOString();
-    salvarPostos(postosData);
-    renderizarPostos();
-    showAdminNotification('Posto atualizado!', 'success');
-}
-
-function excluirPosto(id) {
-    if (!confirm('Tem certeza que deseja excluir este posto?')) return;
-    
-    const index = postosData.findIndex(p => p.id === id);
-    if (index > -1) {
-        postosData.splice(index, 1);
-        adminPostos = [...postosData];
-        salvarPostos(postosData);
-        atualizarStatus();
-        renderizarPostos();
-        showAdminNotification('Posto excluído!', 'success');
-    }
-}
-
-function limparTodosDadosAdmin() {
-    if (!confirm('ATENÇÃO: Isso excluirá TODOS os postos cadastrados. Continuar?')) return;
-    
-    limparTodosDados();
-    adminPostos = [];
-    atualizarStatus();
-    renderizarPostos();
-    showAdminNotification('Todos os dados foram limpos!', 'success');
-}
-
-function exportarJSON() {
-    const dataStr = JSON.stringify(postosData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', `postos_${new Date().toISOString().split('T')[0]}.json`);
-    linkElement.click();
-    
-    showAdminNotification('JSON exportado!', 'success');
-}
-
-// ==========================================
-// NOTIFICAÇÕES
-// ==========================================
-
-function showAdminNotification(message, type = 'info') {
-    const existing = document.querySelector('.admin-notification');
-    if (existing) existing.remove();
-    
-    const notification = document.createElement('div');
-    notification.className = `admin-notification ${type}`;
-    notification.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-        <span>${message}</span>
-    `;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 10);
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 4000);
-}
-
-function showAdminLoading(show) {
-    let overlay = document.getElementById('adminLoading');
-    
-    if (show) {
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'adminLoading';
-            overlay.className = 'admin-loading';
-            overlay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
-            document.body.appendChild(overlay);
-        }
-        overlay.classList.add('active');
-    } else if (overlay) {
-        overlay.classList.remove('active');
-    }
-}
-
-// Exportar funções globais
-window.handleFileSelect = handleFileSelect;
-window.editarPosto = editarPosto;
-window.excluirPosto = excluirPosto;
-window.limparTodosDadosAdmin = limparTodosDadosAdmin;
-window.exportarJSON = exportarJSON;
+    <!-- Scripts -->
+    <script src="data.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
