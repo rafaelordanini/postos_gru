@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - CMG Postos</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,285 +12,333 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f1f5f9;
             min-height: 100vh;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            color: white;
             padding: 20px;
         }
         
-        .header h1 {
-            font-size: 24px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            border-radius: 12px;
+            color: white;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .header a {
+        .btn-voltar {
+            background: rgba(255,255,255,0.2);
             color: white;
             text-decoration: none;
-            margin-left: 20px;
-            opacity: 0.8;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s;
         }
         
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
+        .btn-voltar:hover {
+            background: rgba(255,255,255,0.3);
         }
         
         .card {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             padding: 20px;
             margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         
-        .card h2 {
-            font-size: 18px;
-            color: #1f2937;
+        .card h3 {
+            color: #1e3a5f;
             margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .drop-zones {
+        .upload-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
-            margin-bottom: 20px;
         }
         
-        .drop-zone {
-            border: 2px dashed #d1d5db;
+        .upload-box {
+            border: 2px dashed #cbd5e1;
             border-radius: 12px;
-            padding: 40px 20px;
+            padding: 30px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            background: #fafafa;
+            background: #f8fafc;
         }
         
-        .drop-zone:hover {
+        .upload-box:hover {
             border-color: #3b82f6;
             background: #eff6ff;
         }
         
-        .drop-zone.dragover {
-            border-color: #10b981;
-            background: #ecfdf5;
+        .upload-box.dragover {
+            border-color: #22c55e;
+            background: #dcfce7;
+            transform: scale(1.02);
         }
         
-        .drop-zone i {
-            font-size: 48px;
-            color: #9ca3af;
+        .upload-box h4 {
+            color: #334155;
+            margin-bottom: 10px;
+        }
+        
+        .upload-box p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .upload-box .icon {
+            font-size: 3rem;
             margin-bottom: 15px;
         }
         
-        .drop-zone h3 {
-            color: #374151;
-            margin-bottom: 8px;
-        }
-        
-        .drop-zone p {
-            color: #6b7280;
-            font-size: 14px;
-        }
-        
-        .drop-zone input[type="file"] {
+        .file-input {
             display: none;
         }
         
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
         }
         
-        .admin-table th {
-            background: #f3f4f6;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            color: #374151;
-            border-bottom: 2px solid #e5e7eb;
-        }
-        
-        .admin-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-            vertical-align: middle;
-        }
-        
-        .admin-table tr:hover {
-            background: #f9fafb;
-        }
-        
-        .preco-alto {
-            color: #dc2626;
-            font-weight: 600;
-        }
-        
-        .preco-medio {
-            color: #f59e0b;
-            font-weight: 600;
-        }
-        
-        .preco-baixo {
-            color: #10b981;
-            font-weight: 600;
-        }
-        
-        .btn-edit, .btn-delete {
-            padding: 6px 10px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-right: 5px;
-        }
-        
-        .btn-edit {
-            background: #3b82f6;
-            color: white;
-        }
-        
-        .btn-delete {
-            background: #ef4444;
-            color: white;
-        }
-        
-        .actions-bar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .actions-bar button {
-            padding: 10px 20px;
+        .btn {
+            padding: 15px 25px;
             border: none;
             border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
+            justify-content: center;
+            gap: 10px;
         }
         
         .btn-primary {
-            background: #3b82f6;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
         }
         
         .btn-danger {
-            background: #ef4444;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
         }
         
         .btn-success {
-            background: #10b981;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
             color: white;
         }
         
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-        }
-        
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
         }
         
         #statusInfo {
-            background: #eff6ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            line-height: 1.8;
+            min-height: 100px;
         }
         
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
+        #postosTable {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .anp-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .anp-card h4 {
+            color: #92400e;
+            margin-bottom: 15px;
+        }
+        
+        .anp-precos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .anp-preco {
+            text-align: center;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .anp-preco .label {
+            display: block;
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .anp-preco .valor {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #059669;
+        }
+        
+        .anp-fonte {
+            font-size: 0.8rem;
+            color: #78350f;
+            text-align: center;
+        }
+        
+        .anp-fonte a {
+            color: #b45309;
+        }
+        
+        .text-muted {
+            color: #9ca3af;
+        }
+        
+        /* Loading indicator */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsivo */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
             }
-            to {
-                transform: translateX(0);
-                opacity: 1;
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <h1>
-            <i class="fas fa-cog"></i>
-            Admin - CMG Postos
-        </h1>
-        <a href="index.html"><i class="fas fa-arrow-left"></i> Voltar ao App</a>
-    </header>
-    
     <div class="container">
+        <header>
+            <h1>⚙️ Admin - CMG Postos</h1>
+            <a href="index.html" class="btn-voltar">← Voltar ao App</a>
+        </header>
+        
         <!-- Status -->
         <div class="card">
-            <h2><i class="fas fa-chart-bar"></i> Status</h2>
-            <div id="statusInfo">Carregando...</div>
+            <h3>📊 Status</h3>
+            <div id="statusInfo">
+                <p>Carregando...</p>
+            </div>
         </div>
         
-        <!-- Upload -->
+        <!-- Preços ANP -->
         <div class="card">
-            <h2><i class="fas fa-upload"></i> Importar Dados</h2>
-            
-            <div class="drop-zones">
-                <div class="drop-zone" data-tipo="abastecimentos">
-                    <i class="fas fa-gas-pump"></i>
-                    <h3>Planilha de Abastecimentos</h3>
+            <h3>📈 Preços de Referência ANP</h3>
+            <div id="anp-precos">
+                <p>Carregando preços ANP...</p>
+            </div>
+        </div>
+        
+        <!-- Upload de Arquivos -->
+        <div class="card">
+            <h3>📁 Importar Dados</h3>
+            <div class="upload-grid">
+                <!-- Upload Abastecimentos -->
+                <div class="upload-box" id="dropzone-abastecimentos">
+                    <div class="icon">📊</div>
+                    <h4>Planilha de Abastecimentos</h4>
                     <p>Arraste o arquivo CSV ou Excel aqui<br>ou clique para selecionar</p>
-                    <input type="file" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'abastecimentos')">
+                    <input type="file" id="input-abastecimentos" class="file-input" accept=".csv,.xlsx,.xls">
                 </div>
                 
-                <div class="drop-zone" data-tipo="estabelecimentos">
-                    <i class="fas fa-building"></i>
-                    <h3>Planilha de Estabelecimentos</h3>
+                <!-- Upload Estabelecimentos -->
+                <div class="upload-box" id="dropzone-estabelecimentos">
+                    <div class="icon">🏪</div>
+                    <h4>Planilha de Estabelecimentos</h4>
                     <p>Arraste o arquivo Excel aqui<br>ou clique para selecionar</p>
-                    <input type="file" accept=".xlsx,.xls" onchange="handleFileSelect(this, 'estabelecimentos')">
+                    <input type="file" id="input-estabelecimentos" class="file-input" accept=".xlsx,.xls,.csv">
                 </div>
             </div>
         </div>
         
         <!-- Ações -->
         <div class="card">
-            <h2><i class="fas fa-tools"></i> Ações</h2>
-            <div class="actions-bar">
-                <button class="btn-success" onclick="exportarJSON()">
-                    <i class="fas fa-download"></i> Exportar JSON
+            <h3>🔧 Ações</h3>
+            <div class="btn-grid">
+                <button class="btn btn-success" id="btn-exportar">
+                    💾 Exportar JSON
                 </button>
-                <button class="btn-danger" onclick="limparTodosDadosAdmin()">
-                    <i class="fas fa-trash"></i> Limpar Todos os Dados
+                <button class="btn btn-primary" id="btn-atualizar-anp">
+                    🔄 Atualizar Preços ANP
+                </button>
+                <button class="btn btn-danger" id="btn-limpar">
+                    🗑️ Limpar Todos os Dados
                 </button>
             </div>
         </div>
         
-        <!-- Tabela de Postos -->
+        <!-- Postos Cadastrados -->
         <div class="card">
-            <h2><i class="fas fa-list"></i> Postos Cadastrados</h2>
+            <h3>📍 Postos Cadastrados</h3>
             <div id="postosTable">
-                <div class="empty-state">
-                    <i class="fas fa-gas-pump"></i>
-                    <p>Carregando postos...</p>
-                </div>
+                <p>Carregando postos...</p>
             </div>
         </div>
     </div>
     
+    <!-- Scripts -->
     <script src="data.js"></script>
     <script src="admin.js"></script>
 </body>
