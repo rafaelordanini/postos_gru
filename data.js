@@ -14,14 +14,17 @@ const SEDE_CAMARA = {
 // URLs das APIs
 const API_POSTOS_URL = './postos.json';
 const API_PRECOS_URL = './precos-postos.json';
+const ANP_API_URL = 'https://anp-gru.vercel.app/';
 
 // Dados globais
 let postosData = [];
 let abastecimentosData = [];
 let anpData = {
-    gasolinaComum: 6.06,
-    etanol: 3.97,
-    dataAtualizacao: null
+    gasolinaComum: 6.02,
+    etanol: 4.26,
+    dataAtualizacao: null,
+    semana: null,
+    fonte: 'fallback'
 };
 
 // ==========================================
@@ -31,43 +34,40 @@ let anpData = {
 const coordenadasBairros = {
     'centro': { lat: -23.4538, lng: -46.5333 },
     'aeroporto': { lat: -23.4356, lng: -46.4731 },
-    'aeroporto internacional de guarulhos': { lat: -23.4356, lng: -46.4731 },
-    'aeroporto de guarulhos': { lat: -23.4356, lng: -46.4731 },
     'cumbica': { lat: -23.4400, lng: -46.4800 },
-    'cidade industrial satelite': { lat: -23.4650, lng: -46.4950 },
-    'cidade industrial satélite de são paulo': { lat: -23.4650, lng: -46.4950 },
-    'cidade industrial satélite': { lat: -23.4650, lng: -46.4950 },
-    'vila augusta': { lat: -23.4580, lng: -46.5280 },
-    'vila das bandeiras': { lat: -23.4620, lng: -46.5350 },
-    'macedo': { lat: -23.4700, lng: -46.5400 },
     'cocaia': { lat: -23.4750, lng: -46.5450 },
+    'vila barros': { lat: -23.4520, lng: -46.5150 },
+    'vila augusta': { lat: -23.4580, lng: -46.5280 },
+    'macedo': { lat: -23.4700, lng: -46.5400 },
     'jardim presidente dutra': { lat: -23.4550, lng: -46.4650 },
     'vila florida': { lat: -23.4480, lng: -46.5100 },
-    'vila flórida': { lat: -23.4480, lng: -46.5100 },
-    'vila barros': { lat: -23.4520, lng: -46.5150 },
     'jardim santa francisca': { lat: -23.4600, lng: -46.5250 },
     'picanco': { lat: -23.4680, lng: -46.5380 },
     'picanço': { lat: -23.4680, lng: -46.5380 },
-    'jardim moreira': { lat: -23.4720, lng: -46.5320 },
     'vila paraiso': { lat: -23.4800, lng: -46.5000 },
     'vila paraíso': { lat: -23.4800, lng: -46.5000 },
     'cidade serodio': { lat: -23.4850, lng: -46.5100 },
-    'cidade seródio': { lat: -23.4850, lng: -46.5100 },
     'jardim albertina': { lat: -23.4900, lng: -46.4800 },
-    'parque sao miguel': { lat: -23.4950, lng: -46.4700 },
-    'parque são miguel': { lat: -23.4950, lng: -46.4700 },
     'porto da igreja': { lat: -23.4400, lng: -46.5500 },
-    'varzea do palacio': { lat: -23.4350, lng: -46.5400 },
-    'várzea do palácio': { lat: -23.4350, lng: -46.5400 },
     'itapegica': { lat: -23.4450, lng: -46.5600 },
-    'jardim nova taboao': { lat: -23.4500, lng: -46.5200 },
-    'jardim nova taboão': { lat: -23.4500, lng: -46.5200 },
-    'parque estrela': { lat: -23.4550, lng: -46.5400 },
     'vila galvao': { lat: -23.4620, lng: -46.5500 },
     'vila galvão': { lat: -23.4620, lng: -46.5500 },
-    'cidade martins': { lat: -23.4700, lng: -46.5300 },
-    'vila anny': { lat: -23.4780, lng: -46.4900 },
-    'zona industrial': { lat: -23.4650, lng: -46.4850 }
+    'taboao': { lat: -23.4500, lng: -46.5200 },
+    'taboão': { lat: -23.4500, lng: -46.5200 },
+    'gopouva': { lat: -23.4650, lng: -46.5300 },
+    'bom clima': { lat: -23.4420, lng: -46.5180 },
+    'jardim zaira': { lat: -23.4380, lng: -46.5420 },
+    'torres tibagy': { lat: -23.4550, lng: -46.5100 },
+    'jardim sao joao': { lat: -23.4720, lng: -46.4950 },
+    'jardim são joão': { lat: -23.4720, lng: -46.4950 },
+    'cidade industrial satelite': { lat: -23.4650, lng: -46.4950 },
+    'dutra': { lat: -23.4400, lng: -46.4600 },
+    'presidente dutra': { lat: -23.4400, lng: -46.4600 },
+    'guarulhos': { lat: -23.4538, lng: -46.5333 },
+    'candeias': { lat: -23.4650, lng: -46.5100 },
+    'tiradentes': { lat: -23.4700, lng: -46.5200 },
+    'rotary': { lat: -23.4550, lng: -46.5300 },
+    'santa helena': { lat: -23.4600, lng: -46.5050 }
 };
 
 // ==========================================
@@ -82,44 +82,388 @@ const STORAGE_KEYS = {
 };
 
 // ==========================================
-// FUNÇÕES DE CARREGAMENTO
+// PROCESSAR CSV DE ABASTECIMENTOS
+// ==========================================
+
+function processarAbastecimentosCSV(csvContent) {
+    console.log('📊 Iniciando processamento do CSV...');
+    
+    if (!csvContent || typeof csvContent !== 'string') {
+        console.error('CSV vazio ou inválido');
+        return [];
+    }
+    
+    // Dividir em linhas
+    const linhas = csvContent.split('\n');
+    console.log(`📄 Total de linhas no CSV: ${linhas.length}`);
+    
+    const abastecimentos = [];
+    
+    // Encontrar linha de cabeçalho
+    let headerIndex = -1;
+    let headers = [];
+    
+    for (let i = 0; i < Math.min(10, linhas.length); i++) {
+        const linha = linhas[i];
+        if (linha && (linha.includes('Data') && linha.includes('Nome_Posto')) || 
+            (linha.includes('Data') && linha.includes('Combustivel'))) {
+            headerIndex = i;
+            headers = parseCSVLine(linha);
+            console.log(`📋 Cabeçalho encontrado na linha ${i}:`, headers);
+            break;
+        }
+    }
+    
+    if (headerIndex === -1) {
+        // Tentar usar primeira linha com dados como cabeçalho
+        for (let i = 0; i < Math.min(5, linhas.length); i++) {
+            if (linhas[i] && linhas[i].includes(',') && !linhas[i].startsWith('SEP')) {
+                headers = parseCSVLine(linhas[i]);
+                if (headers.length > 5) {
+                    headerIndex = i;
+                    console.log(`📋 Usando linha ${i} como cabeçalho:`, headers);
+                    break;
+                }
+            }
+        }
+    }
+    
+    if (headerIndex === -1 || headers.length === 0) {
+        console.error('❌ Não foi possível encontrar o cabeçalho do CSV');
+        return [];
+    }
+    
+    // Normalizar headers para lowercase
+    const headersLower = headers.map(h => h.toLowerCase().trim().replace(/["\s]/g, ''));
+    console.log('Headers normalizados:', headersLower);
+    
+    // Mapear índices das colunas
+    const colMap = {
+        data: findColumnIndex(headersLower, ['data']),
+        hora: findColumnIndex(headersLower, ['hora']),
+        combustivel: findColumnIndex(headersLower, ['combustivel', 'combustível', 'tipo_combustivel']),
+        qtde: findColumnIndex(headersLower, ['qtde_combustivel_abastecido', 'qtde', 'quantidade', 'litros']),
+        valor: findColumnIndex(headersLower, ['valor_abastecimento', 'valor', 'valor_total']),
+        cidade: findColumnIndex(headersLower, ['cidade_posto', 'cidade']),
+        nomePosto: findColumnIndex(headersLower, ['nome_posto', 'posto', 'estabelecimento']),
+        endereco: findColumnIndex(headersLower, ['endereco_posto', 'endereco', 'endereço']),
+        placa: findColumnIndex(headersLower, ['placa']),
+        condutor: findColumnIndex(headersLower, ['nome_condutor', 'condutor'])
+    };
+    
+    console.log('🗺️ Mapeamento de colunas:', colMap);
+    
+    // Verificar colunas obrigatórias
+    if (colMap.nomePosto === -1) {
+        console.error('❌ Coluna Nome_Posto não encontrada');
+        return [];
+    }
+    
+    // Processar linhas de dados
+    for (let i = headerIndex + 1; i < linhas.length; i++) {
+        const linha = linhas[i].trim();
+        if (!linha || linha.startsWith('SEP')) continue;
+        
+        try {
+            const valores = parseCSVLine(linha);
+            if (valores.length < 5) continue;
+            
+            const cidade = getValorColuna(valores, colMap.cidade) || 'GUARULHOS';
+            
+            // Filtrar apenas Guarulhos
+            if (!cidade.toUpperCase().includes('GUARULHOS')) continue;
+            
+            const qtdeStr = getValorColuna(valores, colMap.qtde);
+            const valorStr = getValorColuna(valores, colMap.valor);
+            
+            const qtde = parseNumero(qtdeStr);
+            const valor = parseNumero(valorStr);
+            
+            // Validar quantidade e valor
+            if (qtde <= 0 || valor <= 0) continue;
+            
+            const precoLitro = valor / qtde;
+            
+            // Validar preço (entre R$ 3 e R$ 15)
+            if (precoLitro < 3 || precoLitro > 15) {
+                console.warn(`⚠️ Preço inválido ignorado: R$ ${precoLitro.toFixed(2)}/L`);
+                continue;
+            }
+            
+            const abastecimento = {
+                data: getValorColuna(valores, colMap.data),
+                hora: getValorColuna(valores, colMap.hora),
+                combustivel: normalizarCombustivel(getValorColuna(valores, colMap.combustivel)),
+                quantidade: qtde,
+                valorTotal: valor,
+                precoLitro: precoLitro,
+                nomePosto: getValorColuna(valores, colMap.nomePosto),
+                endereco: getValorColuna(valores, colMap.endereco),
+                cidade: cidade,
+                placa: getValorColuna(valores, colMap.placa),
+                condutor: getValorColuna(valores, colMap.condutor)
+            };
+            
+            abastecimentos.push(abastecimento);
+            
+        } catch (e) {
+            console.warn(`⚠️ Erro ao processar linha ${i}:`, e.message);
+        }
+    }
+    
+    console.log(`✅ ${abastecimentos.length} abastecimentos processados com sucesso`);
+    
+    return abastecimentos;
+}
+
+function parseCSVLine(linha) {
+    const resultado = [];
+    let atual = '';
+    let dentroAspas = false;
+    
+    for (let i = 0; i < linha.length; i++) {
+        const char = linha[i];
+        
+        if (char === '"') {
+            dentroAspas = !dentroAspas;
+        } else if (char === ',' && !dentroAspas) {
+            resultado.push(atual.trim().replace(/^"|"$/g, ''));
+            atual = '';
+        } else {
+            atual += char;
+        }
+    }
+    
+    resultado.push(atual.trim().replace(/^"|"$/g, ''));
+    return resultado;
+}
+
+function findColumnIndex(headers, possibleNames) {
+    for (let i = 0; i < headers.length; i++) {
+        const header = headers[i];
+        for (const name of possibleNames) {
+            if (header === name || header.includes(name)) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+function getValorColuna(valores, index) {
+    if (index === -1 || index >= valores.length) return '';
+    return (valores[index] || '').trim().replace(/^"|"$/g, '');
+}
+
+function parseNumero(str) {
+    if (!str) return 0;
+    // Remover aspas e espaços
+    str = String(str).replace(/["\s]/g, '');
+    // Trocar vírgula por ponto
+    str = str.replace(',', '.');
+    const num = parseFloat(str);
+    return isNaN(num) ? 0 : num;
+}
+
+function normalizarCombustivel(combustivel) {
+    if (!combustivel) return 'GASOLINA';
+    const c = combustivel.toUpperCase().trim();
+    if (c.includes('ALCOOL') || c.includes('ÁLCOOL') || c.includes('ETANOL')) {
+        return 'ETANOL';
+    }
+    return 'GASOLINA';
+}
+
+// ==========================================
+// ATUALIZAR PREÇOS DOS POSTOS - ÚLTIMO PREÇO
+// ==========================================
+
+function atualizarPrecosComAbastecimentos(abastecimentos) {
+    console.log('📊 Atualizando preços dos postos com último abastecimento...');
+    
+    if (!abastecimentos || abastecimentos.length === 0) {
+        console.warn('Nenhum abastecimento para processar');
+        return postosData;
+    }
+    
+    // Ordenar por data/hora (mais recente primeiro)
+    const abastecimentosOrdenados = [...abastecimentos].sort((a, b) => {
+        const dataA = parseDataBR(a.data, a.hora);
+        const dataB = parseDataBR(b.data, b.hora);
+        return dataB - dataA; // Mais recente primeiro
+    });
+    
+    // Agrupar por posto - pegar apenas o último preço de cada combustível
+    const ultimosPrecoPorPosto = {};
+    
+    abastecimentosOrdenados.forEach(ab => {
+        const nomePosto = normalizarNomePosto(ab.nomePosto);
+        
+        if (!ultimosPrecoPorPosto[nomePosto]) {
+            ultimosPrecoPorPosto[nomePosto] = {
+                nome: ab.nomePosto,
+                endereco: ab.endereco,
+                gasolina: null,
+                etanol: null,
+                ultimaData: ab.data
+            };
+        }
+        
+        // Guardar apenas o primeiro (mais recente) de cada tipo
+        if (ab.combustivel === 'GASOLINA' && !ultimosPrecoPorPosto[nomePosto].gasolina) {
+            ultimosPrecoPorPosto[nomePosto].gasolina = {
+                preco: ab.precoLitro,
+                data: ab.data
+            };
+            console.log(`⛽ ${ab.nomePosto} - Gasolina: R$ ${ab.precoLitro.toFixed(2)} (${ab.data})`);
+        }
+        
+        if (ab.combustivel === 'ETANOL' && !ultimosPrecoPorPosto[nomePosto].etanol) {
+            ultimosPrecoPorPosto[nomePosto].etanol = {
+                preco: ab.precoLitro,
+                data: ab.data
+            };
+            console.log(`⛽ ${ab.nomePosto} - Etanol: R$ ${ab.precoLitro.toFixed(2)} (${ab.data})`);
+        }
+    });
+    
+    console.log(`📍 ${Object.keys(ultimosPrecoPorPosto).length} postos com preços atualizados`);
+    
+    // Atualizar ou criar postos
+    Object.entries(ultimosPrecoPorPosto).forEach(([nomeKey, dados]) => {
+        // Buscar posto existente
+        let posto = postosData.find(p => {
+            const nomePostoNorm = normalizarNomePosto(p.nomeFantasia);
+            return nomePostoNorm === nomeKey;
+        });
+        
+        // Se não existe, criar novo
+        if (!posto) {
+            const coords = obterCoordenadasPorEndereco({ logradouro: dados.endereco });
+            
+            posto = {
+                id: Date.now() + Math.random() * 1000,
+                terminal: null,
+                nomeFantasia: dados.nome,
+                endereco: {
+                    logradouro: dados.endereco || '',
+                    numero: '',
+                    bairro: extrairBairroDoEndereco(dados.endereco),
+                    cidade: 'Guarulhos',
+                    estado: 'SP'
+                },
+                coordenadas: coords,
+                precos: { gasolina: 0, etanol: 0 },
+                bandeira: 'BANDEIRA BRANCA',
+                ativo: true
+            };
+            
+            postosData.push(posto);
+            console.log(`➕ Novo posto criado: ${dados.nome}`);
+        }
+        
+        // Atualizar preços com o último valor
+        if (dados.gasolina) {
+            posto.precos.gasolina = dados.gasolina.preco;
+            posto.ultimaAtualizacaoGasolina = dados.gasolina.data;
+        }
+        
+        if (dados.etanol) {
+            posto.precos.etanol = dados.etanol.preco;
+            posto.ultimaAtualizacaoEtanol = dados.etanol.data;
+        }
+        
+        posto.ultimaAtualizacaoPreco = dados.ultimaData;
+    });
+    
+    // Salvar postos atualizados
+    salvarPostos(postosData);
+    
+    // Salvar abastecimentos
+    abastecimentosData = abastecimentos;
+    salvarAbastecimentos(abastecimentos);
+    
+    console.log(`✅ Total: ${postosData.length} postos no sistema`);
+    
+    return postosData;
+}
+
+function normalizarNomePosto(nome) {
+    if (!nome) return '';
+    return nome.toUpperCase()
+        .trim()
+        .replace(/\s+/g, ' ')
+        .replace(/AUTO POSTO/g, 'AP')
+        .replace(/POSTO DE SERVICOS/g, 'PS')
+        .replace(/LTDA\.?/g, '')
+        .trim();
+}
+
+function parseDataBR(dataStr, horaStr) {
+    if (!dataStr) return new Date(0);
+    
+    try {
+        // Formato DD/MM/YYYY
+        const partes = dataStr.split('/');
+        if (partes.length === 3) {
+            const dia = parseInt(partes[0]);
+            const mes = parseInt(partes[1]) - 1;
+            const ano = parseInt(partes[2]);
+            
+            let hora = 0, min = 0, seg = 0;
+            if (horaStr) {
+                const partesHora = horaStr.split(':');
+                hora = parseInt(partesHora[0]) || 0;
+                min = parseInt(partesHora[1]) || 0;
+                seg = parseInt(partesHora[2]) || 0;
+            }
+            
+            return new Date(ano, mes, dia, hora, min, seg);
+        }
+    } catch (e) {
+        console.warn('Erro ao parsear data:', dataStr);
+    }
+    
+    return new Date(0);
+}
+
+function extrairBairroDoEndereco(endereco) {
+    if (!endereco) return 'Centro';
+    
+    const endLower = endereco.toLowerCase();
+    
+    for (const [bairro, coords] of Object.entries(coordenadasBairros)) {
+        if (endLower.includes(bairro)) {
+            return bairro.charAt(0).toUpperCase() + bairro.slice(1);
+        }
+    }
+    
+    return 'Centro';
+}
+
+// ==========================================
+// BUSCAR PREÇOS DA ANP
 // ==========================================
 
 async function carregarDadosANP() {
-    console.log('🔄 Carregando dados ANP...');
+    console.log('🔄 Buscando preços da ANP...');
     
-    try {
-        // Tentar carregar do localStorage primeiro
-        const cached = localStorage.getItem(STORAGE_KEYS.ANP_DATA);
-        if (cached) {
-            const parsed = JSON.parse(cached);
-            // Verificar se tem menos de 24h
-            const cacheTime = new Date(parsed.dataAtualizacao);
-            const now = new Date();
-            const diffHours = (now - cacheTime) / (1000 * 60 * 60);
-            
-            if (diffHours < 24) {
-                anpData = parsed;
-                console.log('✅ Dados ANP carregados do cache');
-                return anpData;
-            }
-        }
-    } catch (e) {
-        console.warn('Cache ANP inválido');
-    }
-    
-    // Valores padrão atualizados para Guarulhos (Janeiro 2026)
+    // Valores de fallback atualizados
     anpData = {
-        gasolinaComum: 6.06,
-        etanol: 3.97,
-        dataAtualizacao: new Date().toISOString()
+        gasolinaComum: 6.02,
+        etanol: 4.26,
+        semana: '28/12/2025 a 03/01/2026',
+        dataAtualizacao: new Date().toISOString(),
+        fonte: 'fallback'
     };
     
     localStorage.setItem(STORAGE_KEYS.ANP_DATA, JSON.stringify(anpData));
-    console.log('✅ Dados ANP definidos:', anpData);
-    
     return anpData;
 }
+
+// ==========================================
+// CARREGAR POSTOS DO JSON
+// ==========================================
 
 async function carregarPostosDoJSON() {
     console.log('🔄 Carregando postos do JSON...');
@@ -131,7 +475,6 @@ async function carregarPostosDoJSON() {
         const json = await response.json();
         
         if (json.success && json.data) {
-            // Processar cada posto do JSON
             postosData = json.data.map((posto, index) => {
                 const bairro = posto.endereco?.bairro || 'Centro';
                 const coords = obterCoordenadasPorBairro(bairro);
@@ -164,65 +507,20 @@ async function carregarPostosDoJSON() {
                         etanol: 0
                     },
                     bandeira: posto.bandeira || 'BANDEIRA BRANCA',
-                    horarioFuncionamento: posto.horarioFuncionamento,
-                    is24h: verificar24h(posto.horarioFuncionamento),
-                    ultimaTransacao: posto.ultimaTransacao,
                     ativo: posto.ativo !== false,
                     ultimaAtualizacaoPreco: null
                 };
             });
             
             console.log(`✅ ${postosData.length} postos carregados do JSON`);
-            
-            // Carregar preços
-            await carregarPrecosDoJSON();
-            
-            // Salvar no localStorage
             salvarPostos(postosData);
-            
             return postosData;
         }
     } catch (error) {
-        console.warn('⚠️ Erro ao carregar JSON, tentando localStorage:', error);
+        console.warn('⚠️ Erro ao carregar JSON:', error.message);
     }
     
-    // Fallback para localStorage
     return carregarPostos();
-}
-
-async function carregarPrecosDoJSON() {
-    console.log('🔄 Carregando preços do JSON...');
-    
-    try {
-        const response = await fetch(API_PRECOS_URL);
-        if (!response.ok) throw new Error('Erro ao carregar preços');
-        
-        const json = await response.json();
-        
-        if (json.success && json.data) {
-            // Mapear preços para os postos
-            json.data.forEach(precoInfo => {
-                const posto = postosData.find(p => p.terminal === precoInfo.terminal);
-                if (posto && precoInfo.precos) {
-                    posto.precos = {
-                        gasolina: precoInfo.precos.gasolina || 0,
-                        etanol: precoInfo.precos.etanol || 0
-                    };
-                    posto.ultimaAtualizacaoPreco = precoInfo.dataUltimoAbastecimento;
-                }
-            });
-            
-            console.log('✅ Preços carregados e mapeados');
-        }
-    } catch (error) {
-        console.warn('⚠️ Erro ao carregar preços:', error);
-    }
-}
-
-function verificar24h(horario) {
-    if (!horario) return false;
-    const h = horario.toLowerCase();
-    return h.includes('24') || h.includes('24h') || h.includes('24 horas');
 }
 
 // ==========================================
@@ -234,7 +532,7 @@ function carregarPostos() {
         const saved = localStorage.getItem(STORAGE_KEYS.POSTOS);
         if (saved) {
             postosData = JSON.parse(saved);
-            console.log(`✅ ${postosData.length} postos carregados do localStorage`);
+            console.log(`✅ ${postosData.length} postos do localStorage`);
             return postosData;
         }
     } catch (e) {
@@ -250,7 +548,6 @@ function salvarPostos(postos) {
         postosData = postos;
         localStorage.setItem(STORAGE_KEYS.POSTOS, JSON.stringify(postos));
         localStorage.setItem(STORAGE_KEYS.LAST_UPDATE, new Date().toISOString());
-        console.log(`✅ ${postos.length} postos salvos`);
         return true;
     } catch (e) {
         console.error('Erro ao salvar postos:', e);
@@ -277,7 +574,6 @@ function salvarAbastecimentos(dados) {
     try {
         abastecimentosData = dados;
         localStorage.setItem(STORAGE_KEYS.ABASTECIMENTOS, JSON.stringify(dados));
-        console.log(`✅ ${dados.length} abastecimentos salvos`);
         return true;
     } catch (e) {
         console.error('Erro ao salvar abastecimentos:', e);
@@ -290,31 +586,12 @@ function getUltimaAtualizacao() {
 }
 
 function limparTodosDados() {
-    localStorage.removeItem(STORAGE_KEYS.POSTOS);
-    localStorage.removeItem(STORAGE_KEYS.ABASTECIMENTOS);
-    localStorage.removeItem(STORAGE_KEYS.LAST_UPDATE);
+    Object.values(STORAGE_KEYS).forEach(key => {
+        localStorage.removeItem(key);
+    });
     postosData = [];
     abastecimentosData = [];
-    console.log('🗑️ Todos os dados foram limpos');
-}
-
-// ==========================================
-// ATUALIZAÇÃO DE PREÇOS
-// ==========================================
-
-function atualizarPrecoPosto(postoId, combustivel, novoPreco) {
-    const posto = postosData.find(p => p.id === postoId || p.id === parseInt(postoId));
-    if (!posto) {
-        console.warn('Posto não encontrado:', postoId);
-        return false;
-    }
-    
-    posto.precos[combustivel] = parseFloat(novoPreco);
-    posto.ultimaAtualizacaoPreco = new Date().toISOString();
-    
-    salvarPostos(postosData);
-    console.log(`✅ Preço atualizado: ${posto.nomeFantasia} - ${combustivel}: R$ ${novoPreco}`);
-    return true;
+    anpData = { gasolinaComum: 6.02, etanol: 4.26 };
 }
 
 // ==========================================
@@ -347,6 +624,19 @@ function obterCoordenadasPorEndereco(endereco) {
                 lat: coords.lat + (Math.random() - 0.5) * 0.008,
                 lng: coords.lng + (Math.random() - 0.5) * 0.008
             };
+        }
+    }
+    
+    // Tentar extrair bairro do logradouro
+    if (endereco && endereco.logradouro) {
+        const endLower = endereco.logradouro.toLowerCase();
+        for (const [bairro, coords] of Object.entries(coordenadasBairros)) {
+            if (endLower.includes(bairro)) {
+                return {
+                    lat: coords.lat + (Math.random() - 0.5) * 0.008,
+                    lng: coords.lng + (Math.random() - 0.5) * 0.008
+                };
+            }
         }
     }
     
@@ -456,7 +746,8 @@ function getEstatisticas() {
         maisBaratoGasolina,
         maisCaroGasolina,
         maisBaratoEtanol,
-        maisCaroEtanol
+        maisCaroEtanol,
+        totalAbastecimentos: abastecimentosData.length
     };
 }
 
@@ -483,23 +774,38 @@ function getBandeiraCor(bandeira) {
         'RAIZEN': '#E30613',
         'RAÍZEN': '#E30613',
         'ALE': '#0066CC',
-        'BANDEIRA BRANCA': '#6B7280',
-        'N/A': '#6B7280'
+        'BANDEIRA BRANCA': '#6B7280'
     };
     
     return cores[b] || '#6B7280';
 }
 
+function atualizarPrecoPosto(postoId, combustivel, novoPreco) {
+    const posto = postosData.find(p => p.id === postoId || p.id === parseInt(postoId));
+    if (!posto) return false;
+    
+    posto.precos[combustivel] = parseFloat(novoPreco);
+    posto.ultimaAtualizacaoPreco = new Date().toISOString();
+    
+    salvarPostos(postosData);
+    return true;
+}
+
 // ==========================================
-// EXPORTAR PARA GLOBAL
+// EXPORTAR PARA GLOBAL - IMPORTANTE!
 // ==========================================
 
+// Variáveis globais
 window.postosData = postosData;
 window.abastecimentosData = abastecimentosData;
 window.anpData = anpData;
 window.SEDE_CAMARA = SEDE_CAMARA;
 window.coordenadasBairros = coordenadasBairros;
+window.ANP_API_URL = ANP_API_URL;
 
+// Funções principais - TODAS EXPORTADAS
+window.processarAbastecimentosCSV = processarAbastecimentosCSV;
+window.atualizarPrecosComAbastecimentos = atualizarPrecosComAbastecimentos;
 window.carregarDadosANP = carregarDadosANP;
 window.carregarPostosDoJSON = carregarPostosDoJSON;
 window.carregarPostos = carregarPostos;
@@ -520,3 +826,5 @@ window.getEstatisticas = getEstatisticas;
 window.formatarPreco = formatarPreco;
 window.formatarData = formatarData;
 window.getBandeiraCor = getBandeiraCor;
+
+console.log('✅ data.js carregado - processarAbastecimentosCSV disponível');
