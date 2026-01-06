@@ -3,90 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Postos Credenciados</title>
+    <title>Admin - CMG Postos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        .admin-header {
-            background: linear-gradient(135deg, #1e3a5f, #0d6efd);
-            color: white;
-            padding: 1.5rem 2rem;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .admin-header h1 {
-            font-size: 1.5rem;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
         }
         
-        .admin-content {
+        .header a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            opacity: 0.8;
+        }
+        
+        .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 20px;
         }
         
-        .admin-section {
+        .card {
             background: white;
             border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
         }
         
-        .admin-section h2 {
-            font-size: 1.125rem;
-            margin-bottom: 1rem;
+        .card h2 {
+            font-size: 18px;
+            color: #1f2937;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
         }
         
-        .status-box {
-            background: #eff6ff;
-            padding: 1rem;
-            border-radius: 8px;
-            border-left: 4px solid #0d6efd;
-        }
-        
-        .import-grid {
+        .drop-zones {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
+            gap: 20px;
+            margin-bottom: 20px;
         }
         
         .drop-zone {
             border: 2px dashed #d1d5db;
             border-radius: 12px;
-            padding: 2rem;
+            padding: 40px 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            background: #f9fafb;
+            background: #fafafa;
         }
         
-        .drop-zone:hover, .drop-zone.dragover {
-            border-color: #0d6efd;
+        .drop-zone:hover {
+            border-color: #3b82f6;
             background: #eff6ff;
         }
         
+        .drop-zone.dragover {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        
         .drop-zone i {
-            font-size: 2.5rem;
-            color: #6b7280;
-            margin-bottom: 1rem;
+            font-size: 48px;
+            color: #9ca3af;
+            margin-bottom: 15px;
         }
         
         .drop-zone h3 {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
+            color: #374151;
+            margin-bottom: 8px;
         }
         
         .drop-zone p {
-            font-size: 0.875rem;
             color: #6b7280;
-            margin-bottom: 0.25rem;
+            font-size: 14px;
         }
         
         .drop-zone input[type="file"] {
@@ -96,219 +112,187 @@
         .admin-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.875rem;
-        }
-        
-        .admin-table th, .admin-table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
         }
         
         .admin-table th {
-            background: #f9fafb;
+            background: #f3f4f6;
+            padding: 12px;
+            text-align: left;
             font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .admin-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
         }
         
         .admin-table tr:hover {
             background: #f9fafb;
         }
         
-        .badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
+        .preco-alto {
+            color: #dc2626;
+            font-weight: 600;
         }
         
-        .preco-alto { color: #dc2626; font-weight: 600; }
-        .preco-baixo { color: #059669; font-weight: 600; }
+        .preco-medio {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+        
+        .preco-baixo {
+            color: #10b981;
+            font-weight: 600;
+        }
         
         .btn-edit, .btn-delete {
+            padding: 6px 10px;
             border: none;
-            padding: 0.5rem;
             border-radius: 6px;
             cursor: pointer;
-            margin-right: 0.25rem;
+            margin-right: 5px;
         }
         
         .btn-edit {
-            background: #dbeafe;
-            color: #1d4ed8;
+            background: #3b82f6;
+            color: white;
         }
         
         .btn-delete {
-            background: #fee2e2;
-            color: #dc2626;
+            background: #ef4444;
+            color: white;
         }
         
-        .btn-edit:hover { background: #bfdbfe; }
-        .btn-delete:hover { background: #fecaca; }
-        
-        .action-buttons {
+        .actions-bar {
             display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .actions-bar button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
         }
         
         .btn-danger {
-            background: #dc2626;
+            background: #ef4444;
             color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
         .btn-success {
-            background: #059669;
+            background: #10b981;
             color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
-        
-        .btn-danger:hover { background: #b91c1c; }
-        .btn-success:hover { background: #047857; }
         
         .empty-state {
             text-align: center;
-            padding: 3rem;
+            padding: 60px 20px;
             color: #6b7280;
         }
         
         .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
+            font-size: 48px;
+            margin-bottom: 15px;
         }
         
-        .admin-notification {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #1f2937;
-            color: white;
-            padding: 1rem 1.5rem;
+        #statusInfo {
+            background: #eff6ff;
+            padding: 15px;
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
-            z-index: 2000;
+            margin-bottom: 20px;
+            line-height: 1.8;
         }
         
-        .admin-notification.show {
-            transform: translateX(-50%) translateY(0);
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
-        
-        .admin-notification.success { background: #059669; }
-        .admin-notification.error { background: #dc2626; }
-        
-        .admin-loading {
-            position: fixed;
-            inset: 0;
-            background: rgba(255,255,255,0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            font-size: 1.25rem;
-            color: #0d6efd;
-        }
-        
-        .admin-loading.active {
-            display: flex;
-        }
-        
-        .admin-loading i {
-            margin-right: 0.5rem;
-        }
-        
-        .back-link {
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            opacity: 0.9;
-            margin-top: 0.5rem;
-        }
-        
-        .back-link:hover { opacity: 1; }
     </style>
 </head>
 <body>
-    <header class="admin-header">
-        <h1><i class="fas fa-cogs"></i> Painel Administrativo</h1>
-        <p>Gerenciamento de Postos Credenciados</p>
-        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Voltar ao mapa</a>
+    <header class="header">
+        <h1>
+            <i class="fas fa-cog"></i>
+            Admin - CMG Postos
+        </h1>
+        <a href="index.html"><i class="fas fa-arrow-left"></i> Voltar ao App</a>
     </header>
     
-    <main class="admin-content">
+    <div class="container">
         <!-- Status -->
-        <section class="admin-section">
-            <h2><i class="fas fa-info-circle"></i> Status Atual</h2>
-            <div class="status-box" id="statusInfo">
-                Carregando...
-            </div>
-        </section>
+        <div class="card">
+            <h2><i class="fas fa-chart-bar"></i> Status</h2>
+            <div id="statusInfo">Carregando...</div>
+        </div>
         
-        <!-- Importação -->
-        <section class="admin-section">
-            <h2><i class="fas fa-file-import"></i> Importar Dados</h2>
+        <!-- Upload -->
+        <div class="card">
+            <h2><i class="fas fa-upload"></i> Importar Dados</h2>
             
-            <div class="import-grid">
-                <!-- Estabelecimentos -->
-                <div class="drop-zone" data-tipo="estabelecimentos">
-                    <input type="file" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(this, 'estabelecimentos')">
-                    <i class="fas fa-building"></i>
-                    <h3>Planilha de Estabelecimentos</h3>
-                    <p>Arquivo Excel do sistema Prime</p>
-                    <p><small>Colunas: Terminal, Nome Fantasia, CNPJ, Endereço, Bairro, etc.</small></p>
-                </div>
-                
-                <!-- Abastecimentos -->
+            <div class="drop-zones">
                 <div class="drop-zone" data-tipo="abastecimentos">
-                    <input type="file" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(this, 'abastecimentos')">
                     <i class="fas fa-gas-pump"></i>
                     <h3>Planilha de Abastecimentos</h3>
-                    <p>Histórico de abastecimentos com preços</p>
-                    <p><small>Atualiza os preços dos postos automaticamente</small></p>
+                    <p>Arraste o arquivo CSV ou Excel aqui<br>ou clique para selecionar</p>
+                    <input type="file" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'abastecimentos')">
+                </div>
+                
+                <div class="drop-zone" data-tipo="estabelecimentos">
+                    <i class="fas fa-building"></i>
+                    <h3>Planilha de Estabelecimentos</h3>
+                    <p>Arraste o arquivo Excel aqui<br>ou clique para selecionar</p>
+                    <input type="file" accept=".xlsx,.xls" onchange="handleFileSelect(this, 'estabelecimentos')">
                 </div>
             </div>
-        </section>
+        </div>
         
-        <!-- Lista de Postos -->
-        <section class="admin-section">
-            <h2><i class="fas fa-list"></i> Postos Cadastrados</h2>
-            <div id="postosTable">
-                Carregando...
-            </div>
-            
-            <div class="action-buttons">
-                <button class="btn-danger" onclick="limparTodosDadosAdmin()">
-                    <i class="fas fa-trash"></i> Limpar Todos os Dados
-                </button>
+        <!-- Ações -->
+        <div class="card">
+            <h2><i class="fas fa-tools"></i> Ações</h2>
+            <div class="actions-bar">
                 <button class="btn-success" onclick="exportarJSON()">
                     <i class="fas fa-download"></i> Exportar JSON
                 </button>
+                <button class="btn-danger" onclick="limparTodosDadosAdmin()">
+                    <i class="fas fa-trash"></i> Limpar Todos os Dados
+                </button>
             </div>
-        </section>
-    </main>
+        </div>
+        
+        <!-- Tabela de Postos -->
+        <div class="card">
+            <h2><i class="fas fa-list"></i> Postos Cadastrados</h2>
+            <div id="postosTable">
+                <div class="empty-state">
+                    <i class="fas fa-gas-pump"></i>
+                    <p>Carregando postos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
     
-    <!-- SheetJS para ler Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <!-- Scripts -->
     <script src="data.js"></script>
     <script src="admin.js"></script>
 </body>
