@@ -1,12 +1,8 @@
 // ==========================================
-// ADMIN - Gerenciamento de Postos
+// ADMIN - Gerenciamento de Postos (CORRIGIDO)
 // ==========================================
 
 let adminPostos = [];
-
-// ==========================================
-// INICIALIZAÇÃO
-// ==========================================
 
 document.addEventListener('DOMContentLoaded', function() {
     initAdmin();
@@ -15,8 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function initAdmin() {
     console.log('🔧 Iniciando painel admin...');
     
-    // Carregar dados existentes
+    // Carregar dados
     carregarPostos();
+    carregarAbastecimentos();
     adminPostos = [...postosData];
     
     // Atualizar interface
@@ -33,16 +30,16 @@ function atualizarStatus() {
     const statusEl = document.getElementById('statusInfo');
     if (statusEl) {
         const ultima = getUltimaAtualizacao();
+        const stats = getEstatisticas();
+        
         statusEl.innerHTML = `
             <strong>${postosData.length}</strong> postos cadastrados<br>
+            <strong>${stats.postosComPreco}</strong> postos com preço<br>
+            <strong>${abastecimentosData.length}</strong> abastecimentos<br>
             <small>Última atualização: ${ultima ? new Date(ultima).toLocaleString('pt-BR') : 'Nunca'}</small>
         `;
     }
 }
-
-// ==========================================
-// DRAG AND DROP
-// ==========================================
 
 function setupDropZones() {
     const dropZones = document.querySelectorAll('.drop-zone');
@@ -81,35 +78,134 @@ function handleFileSelect(input, tipo) {
     }
 }
 
-// ==========================================
-// PROCESSAMENTO DE ARQUIVOS
-// ==========================================
-
 async function processarArquivo(file, tipo) {
     console.log(`📁 Processando arquivo: ${file.name} (${tipo})`);
     
     const ext = file.name.split('.').pop().toLowerCase();
     
-    if (!['xlsx', 'xls', 'csv'].includes(ext)) {
-        showAdminNotification('Formato inválido. Use .xlsx, .xls ou .csv', 'error');
-        return;
-    }
-    
     showAdminLoading(true);
     
     try {
-        if (tipo === 'estabelecimentos') {
-            await processarPlanilhaEstabelecimentos(file);
-        } else if (tipo === 'abastecimentos') {
-            await processarPlanilhaAbastecimentos(file);
+        if (tipo === 'abastecimentos') {
+            if (ext === 'csv') {
+                await processarCSVAbastecimentos(file);
+            } else if (ext === 'xlsx' || ext === 'xls') {
+                await processarExcelAbastecimentos(file);
+            } else {
+                throw new Error('Formato não suportado. Use .csv, .xlsx ou .xls');
+            }
+        } else if (tipo === 'estabelecimentos') {
+            if (ext === 'xlsx' || ext === 'xls') {
+                await processarPlanilhaEstabelecimentos(file);
+            } else if (ext === 'csv') {
+                await processarCSVEstabelecimentos(file);
+            } else {
+                throw new Error('Formato não suportado. Use .xlsx, .xls ou .csv');
+            }
         }
     } catch (error) {
         console.error('Erro ao processar arquivo:', error);
-        showAdminNotification('Erro ao processar arquivo: ' + error.message, 'error');
+        showAdminNotification('Erro: ' + error.message, 'error');
     } finally {
         showAdminLoading(false);
     }
 }
+
+// ==========================================
+// PROCESSAR CSV DE ABASTECIMENTOS
+// ==========================================
+
+async function processarCSVAbastecimentos(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                const csvContent = e.target.result;
+                
+                console.log('📄 CSV carregado, processando...');
+                
+                // Processar CSV
+                const abastecimentos = processarAbastecimentosCSV(csvContent);
+                
+                if (abastecimentos.length === 0) {
+                    throw new Error('Nenhum abastecimento válido encontrado no arquivo.');
+                }
+                
+                // Atualizar preços dos postos
+                atualizarPrecosComAbastecimentos(abastecimentos);
+                
+                // Atualizar interface
+                adminPostos = [...postosData];
+                atualizarStatus();
+                renderizarPostos();
+                
+                showAdminNotification(`✅ ${abastecimentos.length} abastecimentos processados!`, 'success');
+                resolve(abastecimentos);
+                
+            } catch (error) {
+                reject(error);
+            }
+        };
+        
+        reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+        reader.readAsText(file, 'UTF-8');
+    });
+}
+
+// ==========================================
+// PROCESSAR EXCEL DE ABASTECIMENTOS
+// ==========================================
+
+async function processarExcelAbastecimentos(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                // Verificar se XLSX está disponível
+                if (typeof XLSX === 'undefined') {
+                    throw new Error('Biblioteca XLSX não carregada. Use arquivo CSV.');
+                }
+                
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                
+                // Converter para CSV
+                const csvContent = XLSX.utils.sheet_to_csv(sheet);
+                
+                // Processar como CSV
+                const abastecimentos = processarAbastecimentosCSV(csvContent);
+                
+                if (abastecimentos.length === 0) {
+                    throw new Error('Nenhum abastecimento válido encontrado.');
+                }
+                
+                atualizarPrecosComAbastecimentos(abastecimentos);
+                
+                adminPostos = [...postosData];
+                atualizarStatus();
+                renderizarPostos();
+                
+                showAdminNotification(`✅ ${abastecimentos.length} abastecimentos processados!`, 'success');
+                resolve(abastecimentos);
+                
+            } catch (error) {
+                reject(error);
+            }
+        };
+        
+        reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+// ==========================================
+// PROCESSAR PLANILHA DE ESTABELECIMENTOS
+// ==========================================
 
 async function processarPlanilhaEstabelecimentos(file) {
     return new Promise((resolve, reject) => {
@@ -117,6 +213,10 @@ async function processarPlanilhaEstabelecimentos(file) {
         
         reader.onload = function(e) {
             try {
+                if (typeof XLSX === 'undefined') {
+                    throw new Error('Biblioteca XLSX não carregada.');
+                }
+                
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 
@@ -124,15 +224,13 @@ async function processarPlanilhaEstabelecimentos(file) {
                 const sheet = workbook.Sheets[sheetName];
                 const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
                 
-                console.log('📊 Linhas encontradas:', json.length);
-                
-                // Encontrar linha de cabeçalho
+                // Encontrar cabeçalho
                 let headerIndex = -1;
                 for (let i = 0; i < Math.min(10, json.length); i++) {
                     const row = json[i];
                     if (row && row.some(cell => {
                         const val = String(cell || '').toLowerCase();
-                        return val.includes('terminal') || val.includes('nome fantasia') || val.includes('cnpj');
+                        return val.includes('terminal') || val.includes('nome fantasia');
                     })) {
                         headerIndex = i;
                         break;
@@ -140,64 +238,53 @@ async function processarPlanilhaEstabelecimentos(file) {
                 }
                 
                 if (headerIndex === -1) {
-                    throw new Error('Cabeçalho não encontrado. Verifique se a planilha tem as colunas corretas.');
+                    throw new Error('Cabeçalho não encontrado na planilha.');
                 }
                 
                 const headers = json[headerIndex].map(h => String(h || '').toLowerCase().trim());
-                console.log('📋 Cabeçalhos:', headers);
                 
-                // Mapear colunas
                 const colMap = {
-                    terminal: findColumnIndex(headers, ['terminal', 'cod', 'codigo']),
-                    nomeFantasia: findColumnIndex(headers, ['nome fantasia', 'fantasia', 'nome']),
-                    razaoSocial: findColumnIndex(headers, ['razao social', 'razão social', 'razao']),
-                    cnpj: findColumnIndex(headers, ['cnpj', 'cpf/cnpj']),
-                    cep: findColumnIndex(headers, ['cep']),
-                    logradouro: findColumnIndex(headers, ['logradouro', 'tipo logradouro']),
-                    endereco: findColumnIndex(headers, ['endereco', 'endereço', 'rua']),
-                    numero: findColumnIndex(headers, ['numero', 'número', 'nro', 'num']),
-                    bairro: findColumnIndex(headers, ['bairro']),
-                    cidade: findColumnIndex(headers, ['cidade', 'municipio', 'município']),
-                    uf: findColumnIndex(headers, ['uf', 'estado']),
-                    telefone: findColumnIndex(headers, ['telefone', 'tel', 'fone']),
-                    email: findColumnIndex(headers, ['email', 'e-mail']),
-                    bandeira: findColumnIndex(headers, ['bandeira', 'rede']),
-                    horario: findColumnIndex(headers, ['horario', 'horário', 'funcionamento'])
+                    terminal: findColIndex(headers, ['terminal', 'cod']),
+                    nomeFantasia: findColIndex(headers, ['nome fantasia', 'fantasia']),
+                    cnpj: findColIndex(headers, ['cnpj']),
+                    cep: findColIndex(headers, ['cep']),
+                    logradouro: findColIndex(headers, ['logradouro', 'tipo logradouro']),
+                    endereco: findColIndex(headers, ['endereco', 'endereço', 'rua']),
+                    numero: findColIndex(headers, ['numero', 'número']),
+                    bairro: findColIndex(headers, ['bairro']),
+                    cidade: findColIndex(headers, ['cidade', 'municipio']),
+                    uf: findColIndex(headers, ['uf', 'estado']),
+                    telefone: findColIndex(headers, ['telefone']),
+                    bandeira: findColIndex(headers, ['bandeira'])
                 };
                 
-                console.log('🗺️ Mapeamento de colunas:', colMap);
-                
-                // Processar linhas de dados
                 const novosPostos = [];
                 
                 for (let i = headerIndex + 1; i < json.length; i++) {
                     const row = json[i];
                     if (!row || row.length === 0) continue;
                     
-                    const terminal = getCell(row, colMap.terminal);
-                    const nomeFantasia = getCell(row, colMap.nomeFantasia);
+                    const terminal = getCellValue(row, colMap.terminal);
+                    const nomeFantasia = getCellValue(row, colMap.nomeFantasia);
                     
-                    // Pular linhas sem terminal ou nome
                     if (!terminal && !nomeFantasia) continue;
                     
-                    const bairro = getCell(row, colMap.bairro) || 'Centro';
+                    const bairro = getCellValue(row, colMap.bairro) || 'Centro';
                     const coords = obterCoordenadasPorBairro(bairro);
                     
-                    const posto = {
+                    novosPostos.push({
                         id: parseInt(terminal) || (Date.now() + i),
                         terminal: terminal,
                         nomeFantasia: nomeFantasia || `Posto ${terminal}`,
-                        razaoSocial: getCell(row, colMap.razaoSocial),
-                        cnpj: getCell(row, colMap.cnpj),
-                        telefone: getCell(row, colMap.telefone),
-                        email: getCell(row, colMap.email),
+                        cnpj: getCellValue(row, colMap.cnpj),
+                        telefone: getCellValue(row, colMap.telefone),
                         endereco: {
-                            logradouro: `${getCell(row, colMap.logradouro)} ${getCell(row, colMap.endereco)}`.trim(),
-                            numero: getCell(row, colMap.numero) || 'S/N',
+                            logradouro: `${getCellValue(row, colMap.logradouro)} ${getCellValue(row, colMap.endereco)}`.trim(),
+                            numero: getCellValue(row, colMap.numero) || 'S/N',
                             bairro: bairro,
-                            cidade: getCell(row, colMap.cidade) || 'Guarulhos',
-                            estado: getCell(row, colMap.uf) || 'SP',
-                            cep: getCell(row, colMap.cep)
+                            cidade: getCellValue(row, colMap.cidade) || 'Guarulhos',
+                            estado: getCellValue(row, colMap.uf) || 'SP',
+                            cep: getCellValue(row, colMap.cep)
                         },
                         coordenadas: coords ? {
                             lat: coords.lat + (Math.random() - 0.5) * 0.008,
@@ -207,23 +294,15 @@ async function processarPlanilhaEstabelecimentos(file) {
                             lng: -46.5333 + (Math.random() - 0.5) * 0.04
                         },
                         precos: { gasolina: 0, etanol: 0 },
-                        bandeira: normalizarBandeira(getCell(row, colMap.bandeira)),
-                        horarioFuncionamento: getCell(row, colMap.horario),
-                        is24h: verificar24hAdmin(getCell(row, colMap.horario)),
-                        ativo: true,
-                        dataImportacao: new Date().toISOString()
-                    };
-                    
-                    novosPostos.push(posto);
+                        bandeira: getCellValue(row, colMap.bandeira) || 'BANDEIRA BRANCA',
+                        ativo: true
+                    });
                 }
-                
-                console.log(`✅ ${novosPostos.length} postos processados`);
                 
                 if (novosPostos.length === 0) {
-                    throw new Error('Nenhum posto válido encontrado na planilha.');
+                    throw new Error('Nenhum posto válido encontrado.');
                 }
                 
-                // Salvar
                 postosData = novosPostos;
                 adminPostos = novosPostos;
                 salvarPostos(novosPostos);
@@ -231,7 +310,7 @@ async function processarPlanilhaEstabelecimentos(file) {
                 atualizarStatus();
                 renderizarPostos();
                 
-                showAdminNotification(`${novosPostos.length} postos importados com sucesso!`, 'success');
+                showAdminNotification(`✅ ${novosPostos.length} postos importados!`, 'success');
                 resolve(novosPostos);
                 
             } catch (error) {
@@ -244,120 +323,24 @@ async function processarPlanilhaEstabelecimentos(file) {
     });
 }
 
-async function processarPlanilhaAbastecimentos(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            try {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                
-                const sheetName = workbook.SheetNames[0];
-                const sheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(sheet);
-                
-                console.log('📊 Abastecimentos encontrados:', json.length);
-                
-                // Processar e atualizar preços dos postos
-                const precosAtualizados = {};
-                
-                json.forEach(row => {
-                    const terminal = row['Terminal'] || row['terminal'] || row['Posto'] || row['TERMINAL'];
-                    const gasolina = parseFloat(row['Gasolina'] || row['Preço Gasolina'] || row['gasolina'] || row['GASOLINA'] || 0);
-                    const etanol = parseFloat(row['Etanol'] || row['Preço Etanol'] || row['etanol'] || row['ETANOL'] || 0);
-                    
-                    if (terminal) {
-                        const terminalStr = String(terminal).trim();
-                        if (!precosAtualizados[terminalStr]) {
-                            precosAtualizados[terminalStr] = { gasolina: [], etanol: [] };
-                        }
-                        if (gasolina > 0) precosAtualizados[terminalStr].gasolina.push(gasolina);
-                        if (etanol > 0) precosAtualizados[terminalStr].etanol.push(etanol);
-                    }
-                });
-                
-                // Atualizar postos com média dos preços
-                let atualizados = 0;
-                Object.entries(precosAtualizados).forEach(([terminal, precos]) => {
-                    const posto = postosData.find(p => String(p.terminal).trim() === terminal);
-                    if (posto) {
-                        if (precos.gasolina.length > 0) {
-                            posto.precos.gasolina = precos.gasolina.reduce((a, b) => a + b) / precos.gasolina.length;
-                        }
-                        if (precos.etanol.length > 0) {
-                            posto.precos.etanol = precos.etanol.reduce((a, b) => a + b) / precos.etanol.length;
-                        }
-                        posto.ultimaAtualizacaoPreco = new Date().toISOString();
-                        atualizados++;
-                    }
-                });
-                
-                salvarPostos(postosData);
-                adminPostos = [...postosData];
-                renderizarPostos();
-                
-                showAdminNotification(`${atualizados} postos atualizados com preços!`, 'success');
-                resolve(json);
-                
-            } catch (error) {
-                reject(error);
-            }
-        };
-        
-        reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
-        reader.readAsArrayBuffer(file);
-    });
+async function processarCSVEstabelecimentos(file) {
+    showAdminNotification('Para estabelecimentos, use arquivo Excel (.xlsx)', 'error');
 }
 
-// ==========================================
-// FUNÇÕES AUXILIARES
-// ==========================================
-
-function findColumnIndex(headers, possibleNames) {
+function findColIndex(headers, possibleNames) {
     for (let i = 0; i < headers.length; i++) {
         const header = headers[i];
         for (const name of possibleNames) {
-            if (header && header.includes(name)) {
-                return i;
-            }
+            if (header && header.includes(name)) return i;
         }
     }
     return -1;
 }
 
-function getCell(row, index) {
+function getCellValue(row, index) {
     if (index === -1 || !row || index >= row.length) return '';
     const value = row[index];
     return value !== undefined && value !== null ? String(value).trim() : '';
-}
-
-function normalizarBandeira(bandeira) {
-    if (!bandeira) return 'BANDEIRA BRANCA';
-    
-    const b = bandeira.toUpperCase().trim();
-    
-    const mapeamento = {
-        'PETROBRAS': 'PETROBRAS',
-        'BR': 'BR',
-        'IPIRANGA': 'IPIRANGA',
-        'SHELL': 'SHELL',
-        'RAIZEN': 'RAÍZEN',
-        'RAÍZEN': 'RAÍZEN',
-        'ALE': 'ALE',
-        'BRANCA': 'BANDEIRA BRANCA',
-        'BANDEIRA BRANCA': 'BANDEIRA BRANCA',
-        'N/A': 'BANDEIRA BRANCA',
-        '': 'BANDEIRA BRANCA'
-    };
-    
-    return mapeamento[b] || b;
-}
-
-function verificar24hAdmin(horario) {
-    if (!horario) return false;
-    const h = String(horario).toLowerCase();
-    return h.includes('24') || h.includes('24h') || h.includes('24 horas');
 }
 
 // ==========================================
@@ -383,12 +366,12 @@ function renderizarPostos() {
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Terminal</th>
-                    <th>Nome</th>
+                    <th>Posto</th>
                     <th>Bandeira</th>
-                    <th>Bairro</th>
+                    <th>Endereço</th>
                     <th>Gasolina</th>
                     <th>Etanol</th>
+                    <th>Status</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -396,17 +379,34 @@ function renderizarPostos() {
     `;
     
     adminPostos.forEach(posto => {
+        const statusGas = getStatusPreco(posto.precos?.gasolina, anpData.gasolinaComum);
+        const statusEta = getStatusPreco(posto.precos?.etanol, anpData.etanol);
+        
         html += `
             <tr>
-                <td>${posto.terminal || '-'}</td>
-                <td>${posto.nomeFantasia || '-'}</td>
-                <td><span class="badge" style="background: ${getBandeiraCor(posto.bandeira)}; color: white;">${posto.bandeira || 'N/A'}</span></td>
-                <td>${posto.endereco?.bairro || '-'}</td>
-                <td class="${getPrecoClass(posto.precos?.gasolina)}">
-                    ${posto.precos?.gasolina ? `R$ ${posto.precos.gasolina.toFixed(2)}` : '--'}
+                <td>
+                    <strong>${posto.nomeFantasia || '-'}</strong>
+                    <br><small>${posto.terminal || ''}</small>
                 </td>
-                <td class="${getPrecoClass(posto.precos?.etanol, 'etanol')}">
-                    ${posto.precos?.etanol ? `R$ ${posto.precos.etanol.toFixed(2)}` : '--'}
+                <td>
+                    <span class="badge" style="background: ${getBandeiraCor(posto.bandeira)}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">
+                        ${posto.bandeira || 'N/A'}
+                    </span>
+                </td>
+                <td>
+                    ${posto.endereco?.logradouro || '-'}
+                    <br><small>${posto.endereco?.bairro || ''}</small>
+                </td>
+                <td class="${statusGas.class}">
+                    ${posto.precos?.gasolina > 0 ? `R$ ${posto.precos.gasolina.toFixed(2)}` : '--'}
+                    ${statusGas.icon}
+                </td>
+                <td class="${statusEta.class}">
+                    ${posto.precos?.etanol > 0 ? `R$ ${posto.precos.etanol.toFixed(2)}` : '--'}
+                    ${statusEta.icon}
+                </td>
+                <td>
+                    ${posto.ultimaAtualizacaoPreco ? `<small>${posto.ultimaAtualizacaoPreco}</small>` : '<small>Sem dados</small>'}
                 </td>
                 <td>
                     <button onclick="editarPosto(${posto.id})" class="btn-edit" title="Editar">
@@ -424,13 +424,19 @@ function renderizarPostos() {
     container.innerHTML = html;
 }
 
-function getPrecoClass(preco, tipo = 'gasolina') {
-    if (!preco || preco <= 0) return '';
-    const limite = tipo === 'etanol' ? (anpData?.etanol || 3.97) : (anpData?.gasolinaComum || 6.06);
+function getStatusPreco(preco, limite) {
+    if (!preco || preco <= 0) return { class: '', icon: '' };
+    if (!limite) return { class: '', icon: '' };
+    
     const diff = ((preco - limite) / limite) * 100;
-    if (diff > 1) return 'preco-alto';
-    if (diff < -1) return 'preco-baixo';
-    return '';
+    
+    if (diff > 3) {
+        return { class: 'preco-alto', icon: '🔴' };
+    } else if (diff > 1) {
+        return { class: 'preco-medio', icon: '🟡' };
+    } else {
+        return { class: 'preco-baixo', icon: '🟢' };
+    }
 }
 
 // ==========================================
@@ -441,31 +447,37 @@ function editarPosto(id) {
     const posto = adminPostos.find(p => p.id === id);
     if (!posto) return;
     
-    const novoPrecoGas = prompt(`Preço Gasolina para ${posto.nomeFantasia}:`, posto.precos?.gasolina || '');
-    const novoPrecoEta = prompt(`Preço Etanol para ${posto.nomeFantasia}:`, posto.precos?.etanol || '');
+    const novoPrecoGas = prompt(`Preço Gasolina para ${posto.nomeFantasia}:`, posto.precos?.gasolina?.toFixed(2) || '');
+    const novoPrecoEta = prompt(`Preço Etanol para ${posto.nomeFantasia}:`, posto.precos?.etanol?.toFixed(2) || '');
     
-    if (novoPrecoGas !== null) {
-        const valor = parseFloat(novoPrecoGas);
+    let atualizado = false;
+    
+    if (novoPrecoGas !== null && novoPrecoGas !== '') {
+        const valor = parseFloat(novoPrecoGas.replace(',', '.'));
         if (!isNaN(valor) && valor > 0) {
             posto.precos.gasolina = valor;
+            atualizado = true;
         }
     }
     
-    if (novoPrecoEta !== null) {
-        const valor = parseFloat(novoPrecoEta);
+    if (novoPrecoEta !== null && novoPrecoEta !== '') {
+        const valor = parseFloat(novoPrecoEta.replace(',', '.'));
         if (!isNaN(valor) && valor > 0) {
             posto.precos.etanol = valor;
+            atualizado = true;
         }
     }
     
-    posto.ultimaAtualizacaoPreco = new Date().toISOString();
-    salvarPostos(postosData);
-    renderizarPostos();
-    showAdminNotification('Posto atualizado!', 'success');
+    if (atualizado) {
+        posto.ultimaAtualizacaoPreco = new Date().toISOString().split('T')[0];
+        salvarPostos(postosData);
+        renderizarPostos();
+        showAdminNotification('Posto atualizado!', 'success');
+    }
 }
 
 function excluirPosto(id) {
-    if (!confirm('Tem certeza que deseja excluir este posto?')) return;
+    if (!confirm('Excluir este posto?')) return;
     
     const index = postosData.findIndex(p => p.id === id);
     if (index > -1) {
@@ -479,23 +491,23 @@ function excluirPosto(id) {
 }
 
 function limparTodosDadosAdmin() {
-    if (!confirm('ATENÇÃO: Isso excluirá TODOS os postos cadastrados. Continuar?')) return;
+    if (!confirm('ATENÇÃO: Isso excluirá TODOS os dados. Continuar?')) return;
     
     limparTodosDados();
     adminPostos = [];
     atualizarStatus();
     renderizarPostos();
-    showAdminNotification('Todos os dados foram limpos!', 'success');
+    showAdminNotification('Dados limpos!', 'success');
 }
 
 function exportarJSON() {
-    const dataStr = JSON.stringify(postosData, null, 2);
+    const dataStr = JSON.stringify({ postos: postosData, abastecimentos: abastecimentosData }, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', `postos_${new Date().toISOString().split('T')[0]}.json`);
-    linkElement.click();
+    const link = document.createElement('a');
+    link.href = dataUri;
+    link.download = `dados_postos_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
     
     showAdminNotification('JSON exportado!', 'success');
 }
@@ -514,12 +526,27 @@ function showAdminNotification(message, type = 'info') {
         <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
         <span>${message}</span>
     `;
+    
+    Object.assign(notification.style, {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        background: type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6',
+        color: 'white',
+        padding: '12px 20px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        zIndex: '9999',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        animation: 'slideIn 0.3s ease'
+    });
+    
     document.body.appendChild(notification);
     
-    setTimeout(() => notification.classList.add('show'), 10);
-    
     setTimeout(() => {
-        notification.classList.remove('show');
+        notification.style.opacity = '0';
         setTimeout(() => notification.remove(), 300);
     }, 4000);
 }
@@ -531,13 +558,29 @@ function showAdminLoading(show) {
         if (!overlay) {
             overlay = document.createElement('div');
             overlay.id = 'adminLoading';
-            overlay.className = 'admin-loading';
-            overlay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+            Object.assign(overlay.style, {
+                position: 'fixed',
+                top: '0',
+                left: '0',
+                right: '0',
+                bottom: '0',
+                background: 'rgba(0,0,0,0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: '9998'
+            });
+            overlay.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 12px; text-align: center;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #1e40af;"></i>
+                    <p style="margin-top: 15px; color: #374151;">Processando arquivo...</p>
+                </div>
+            `;
             document.body.appendChild(overlay);
         }
-        overlay.classList.add('active');
+        overlay.style.display = 'flex';
     } else if (overlay) {
-        overlay.classList.remove('active');
+        overlay.style.display = 'none';
     }
 }
 
