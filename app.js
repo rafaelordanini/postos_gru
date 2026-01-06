@@ -3,9 +3,10 @@
 // ==========================================
 
 // Variáveis globais
-let currentView = 'grid';
+let currentView = 'map'; // Começa com mapa como padrão
 let map = null;
 let markers = [];
+let markersLayer = null;
 let filteredPostos = [];
 let chatOpen = true;
 
@@ -28,11 +29,13 @@ async function init() {
         updateANPDisplay();
         populateFilters();
         updateStats();
-        renderPostos();
         updateLastUpdate();
         
         // Event listeners
         setupEventListeners();
+        
+        // Inicializar com visualização de mapa
+        initMapView();
         
     } catch (error) {
         console.error('Erro na inicialização:', error);
@@ -43,8 +46,6 @@ async function init() {
 }
 
 async function loadData() {
-    // Em produção, buscar dados da API
-    // Por enquanto, usando dados locais
     filteredPostos = [...postosData];
 }
 
@@ -119,11 +120,12 @@ function applyFilters() {
         filteredPostos = sortPostos(filteredPostos, sortBy);
     }
     
-    renderPostos();
     updateStats();
     
-    if (currentView === 'map' && map) {
+    if (currentView === 'map') {
         updateMapMarkers();
+    } else {
+        renderPostos();
     }
 }
 
@@ -146,7 +148,286 @@ function updateStats() {
 }
 
 // ==========================================
-// RENDERIZAÇÃO DE POSTOS
+// VISUALIZAÇÃO
+// ==========================================
+
+function setView(view) {
+    currentView = view;
+    
+    // Atualizar botões
+    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.closest('.view-btn').classList.add('active');
+    
+    // Mostrar/ocultar containers
+    const postosContainer = document.getElementById('postosContainer');
+    const mapContainer = document.getElementById('mapContainer');
+    
+    if (view === 'map') {
+        postosContainer.style.display = 'none';
+        mapContainer.style.display = 'block';
+        if (!map) {
+            initMap();
+        } else {
+            updateMapMarkers();
+            map.invalidateSize();
+        }
+    } else {
+        postosContainer.style.display = '';
+        mapContainer.style.display = 'none';
+        renderPostos();
+    }
+}
+
+function initMapView() {
+    // Definir mapa como visualização ativa
+    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.view-btn[onclick*="map"]').classList.add('active');
+    
+    document.getElementById('postosContainer').style.display = 'none';
+    document.getElementById('mapContainer').style.display = 'block';
+    
+    initMap();
+}
+
+// ==========================================
+// MAPA COM MARCADORES COLORIDOS
+// ==========================================
+
+function initMap() {
+    if (map) {
+        updateMapMarkers();
+        return;
+    }
+    
+    // Criar mapa centrado em Guarulhos
+    map = L.map('map', {
+        center: [-23.4538, -46.5333],
+        zoom: 13,
+        zoomControl: true
+    });
+    
+    // Camada de tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Criar layer group para marcadores
+    markersLayer = L.layerGroup().addTo(map);
+    
+    // Adicionar marcador da sede da Câmara
+    addSedeMarker();
+    
+    // Adicionar legenda
+    addMapLegend();
+    
+    // Adicionar marcadores dos postos
+    updateMapMarkers();
+}
+
+function addSedeMarker() {
+    const sedeIcon = L.divIcon({
+        className: 'custom-marker sede-marker',
+        html: `
+            <div class="marker-pin sede">
+                <i class="fas fa-landmark"></i>
+            </div>
+        `,
+        iconSize: [40, 50],
+        iconAnchor: [20, 50],
+        popupAnchor: [0, -50]
+    });
+    
+    L.marker([SEDE_CAMARA.lat, SEDE_CAMARA.lng], { icon: sedeIcon })
+        .addTo(map)
+        .bindPopup(`
+            <div class="popup-sede">
+                <h3>🏛️ Câmara Municipal de Guarulhos</h3>
+                <p><strong>Sede da Frota</strong></p>
+                <p>📍 ${SEDE_CAMARA.endereco}</p>
+                <p>📞 (11) 2475-0200</p>
+            </div>
+        `);
+}
+
+function addMapLegend() {
+    const legend = L.control({ position: 'bottomright' });
+    
+    legend.onAdd = function(map) {
+        const div = L.DomUtil.create('div', 'map-legend');
+        div.innerHTML = `
+            <h4>📊 Legenda de Preços</h4>
+            <div class="legend-item">
+                <span class="legend-color verde"></span>
+                <span>Abaixo da ANP (bom preço)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color amarelo"></span>
+                <span>Igual à ANP (dentro do limite)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color vermelho"></span>
+                <span>Acima da ANP (⚠️ bloqueado)</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color azul"></span>
+                <span>Sede da Câmara</span>
+            </div>
+        `;
+        return div;
+    };
+    
+    legend.addTo(map);
+}
+
+function updateMapMarkers() {
+    if (!markersLayer) return;
+    
+    // Limpar marcadores anteriores
+    markersLayer.clearLayers();
+    
+    // Adicionar marcadores dos postos
+    filteredPostos.forEach(posto => {
+        const marker = createPostoMarker(posto);
+        markersLayer.addLayer(marker);
+    });
+    
+    // Ajustar visualização para incluir todos os marcadores
+    if (filteredPostos.length > 0) {
+        const allMarkers = [];
+        markersLayer.eachLayer(m => allMarkers.push(m));
+        
+        if (allMarkers.length > 0) {
+            const group = L.featureGroup(allMarkers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+    }
+}
+
+function createPostoMarker(posto) {
+    // Determinar cor baseada no preço da gasolina vs ANP
+    const corStatus = getMarkerColor(posto);
+    
+    const icon = L.divIcon({
+        className: `custom-marker posto-marker ${corStatus.class}`,
+        html: `
+            <div class="marker-pin ${corStatus.class}" title="${posto.nomeFantasia}">
+                <i class="fas fa-gas-pump"></i>
+                <span class="marker-price">R$ ${posto.precos.gasolina?.toFixed(2) || '--'}</span>
+            </div>
+        `,
+        iconSize: [50, 60],
+        iconAnchor: [25, 60],
+        popupAnchor: [0, -60]
+    });
+    
+    const marker = L.marker([posto.coordenadas.lat, posto.coordenadas.lng], { icon: icon });
+    
+    // Popup com informações detalhadas
+    marker.bindPopup(createMarkerPopup(posto, corStatus));
+    
+    return marker;
+}
+
+function getMarkerColor(posto) {
+    const precoGasolina = posto.precos.gasolina;
+    const anpGasolina = anpData.gasolinaComum;
+    
+    if (!precoGasolina || !anpGasolina) {
+        return { class: 'cinza', label: 'Sem dados', icon: '❓' };
+    }
+    
+    const diferenca = ((precoGasolina - anpGasolina) / anpGasolina) * 100;
+    
+    if (diferenca < -1) {
+        // Mais de 1% abaixo da ANP
+        return { 
+            class: 'verde', 
+            label: 'Abaixo da ANP', 
+            icon: '✅',
+            diff: diferenca.toFixed(1) + '%'
+        };
+    } else if (diferenca <= 1) {
+        // Entre -1% e +1% da ANP (considerado igual)
+        return { 
+            class: 'amarelo', 
+            label: 'Igual à ANP', 
+            icon: '⚠️',
+            diff: diferenca.toFixed(1) + '%'
+        };
+    } else {
+        // Acima da ANP
+        return { 
+            class: 'vermelho', 
+            label: 'Acima da ANP', 
+            icon: '🚫',
+            diff: '+' + diferenca.toFixed(1) + '%'
+        };
+    }
+}
+
+function createMarkerPopup(posto, corStatus) {
+    const distancia = calcularDistancia(
+        SEDE_CAMARA.lat, SEDE_CAMARA.lng,
+        posto.coordenadas.lat, posto.coordenadas.lng
+    ).toFixed(1);
+    
+    return `
+        <div class="popup-posto ${corStatus.class}">
+            <div class="popup-header">
+                <h3>${posto.nomeFantasia}</h3>
+                <span class="popup-bandeira">${posto.bandeira}</span>
+            </div>
+            
+            <div class="popup-status ${corStatus.class}">
+                ${corStatus.icon} ${corStatus.label} 
+                ${corStatus.diff ? `<small>(${corStatus.diff})</small>` : ''}
+            </div>
+            
+            <div class="popup-info">
+                <p>📍 ${posto.endereco.logradouro}, ${posto.endereco.numero}</p>
+                <p>🏘️ ${posto.endereco.bairro}</p>
+                <p>📏 ${distancia} km da sede</p>
+                <p>🕐 ${posto.is24h ? '24 horas' : (isOpen(posto) ? 'Aberto agora' : 'Fechado')}</p>
+            </div>
+            
+            <div class="popup-precos">
+                <div class="popup-preco ${getPrecoClass(posto.precos.gasolina, anpData.gasolinaComum)}">
+                    <span class="label">Gasolina</span>
+                    <span class="valor">R$ ${posto.precos.gasolina?.toFixed(2) || '--'}</span>
+                </div>
+                <div class="popup-preco ${getPrecoClass(posto.precos.etanol, anpData.etanol)}">
+                    <span class="label">Etanol</span>
+                    <span class="valor">R$ ${posto.precos.etanol?.toFixed(2) || '--'}</span>
+                </div>
+                <div class="popup-preco">
+                    <span class="label">Diesel</span>
+                    <span class="valor">R$ ${posto.precos.diesel?.toFixed(2) || '--'}</span>
+                </div>
+                <div class="popup-preco">
+                    <span class="label">GNV</span>
+                    <span class="valor">R$ ${posto.precos.gnv?.toFixed(2) || '--'}</span>
+                </div>
+            </div>
+            
+            <div class="popup-anp">
+                <small>Limite ANP Gasolina: R$ ${anpData.gasolinaComum?.toFixed(2) || '--'}</small>
+            </div>
+            
+            <div class="popup-actions">
+                <button onclick="openModal(${posto.id})" class="btn-popup-details">
+                    <i class="fas fa-info-circle"></i> Detalhes
+                </button>
+                <button onclick="openDirections(${posto.id})" class="btn-popup-directions">
+                    <i class="fas fa-directions"></i> Rota
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// ==========================================
+// RENDERIZAÇÃO DE POSTOS (GRID/LIST)
 // ==========================================
 
 function renderPostos() {
@@ -173,13 +454,15 @@ function renderPostos() {
 }
 
 function createPostoCard(posto) {
+    const corStatus = getMarkerColor(posto);
     const gasolinaClass = getPrecoClass(posto.precos.gasolina, anpData.gasolinaComum);
     const etanolClass = getPrecoClass(posto.precos.etanol, anpData.etanol);
     
     return `
-        <div class="posto-card" onclick="openModal(${posto.id})">
+        <div class="posto-card ${corStatus.class}-border" onclick="openModal(${posto.id})">
             <div class="posto-card-header">
                 <span class="posto-bandeira">${posto.bandeira}</span>
+                <span class="posto-status ${corStatus.class}">${corStatus.icon}</span>
                 <h3 class="posto-nome">${posto.nomeFantasia}</h3>
                 <p class="posto-endereco">
                     <i class="fas fa-map-marker-alt"></i>
@@ -215,8 +498,8 @@ function createPostoCard(posto) {
                     <button class="btn-acao" onclick="event.stopPropagation(); openDirections(${posto.id})" title="Como chegar">
                         <i class="fas fa-directions"></i>
                     </button>
-                    <button class="btn-acao" onclick="event.stopPropagation(); openModal(${posto.id})" title="Detalhes">
-                        <i class="fas fa-info-circle"></i>
+                    <button class="btn-acao" onclick="event.stopPropagation(); focusOnMap(${posto.id})" title="Ver no mapa">
+                        <i class="fas fa-map-marker-alt"></i>
                     </button>
                 </div>
             </div>
@@ -225,19 +508,21 @@ function createPostoCard(posto) {
 }
 
 function createPostoListItem(posto) {
+    const corStatus = getMarkerColor(posto);
+    
     return `
-        <div class="posto-list-item" onclick="openModal(${posto.id})">
-            <div class="posto-list-icon">
+        <div class="posto-list-item ${corStatus.class}-border" onclick="openModal(${posto.id})">
+            <div class="posto-list-icon ${corStatus.class}">
                 <i class="fas fa-gas-pump"></i>
             </div>
             <div class="posto-list-info">
-                <h3 class="posto-list-nome">${posto.nomeFantasia}</h3>
+                <h3 class="posto-list-nome">${posto.nomeFantasia} <span class="status-badge ${corStatus.class}">${corStatus.icon}</span></h3>
                 <p class="posto-list-endereco">${formatEnderecoCard(posto)} - ${posto.bandeira}</p>
             </div>
             <div class="posto-list-precos">
                 <div class="posto-list-preco">
                     <span class="posto-list-preco-label">Gasolina</span>
-                    <span class="posto-list-preco-valor">${formatPreco(posto.precos.gasolina)}</span>
+                    <span class="posto-list-preco-valor ${getPrecoClass(posto.precos.gasolina, anpData.gasolinaComum)}">${formatPreco(posto.precos.gasolina)}</span>
                 </div>
                 <div class="posto-list-preco">
                     <span class="posto-list-preco-label">Etanol</span>
@@ -252,104 +537,26 @@ function createPostoListItem(posto) {
     `;
 }
 
-// ==========================================
-// VISUALIZAÇÃO
-// ==========================================
-
-function setView(view) {
-    currentView = view;
+function focusOnMap(id) {
+    const posto = getPostoById(id);
+    if (!posto) return;
     
-    // Atualizar botões
-    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.closest('.view-btn').classList.add('active');
+    // Mudar para visualização de mapa
+    setView('map');
     
-    // Mostrar/ocultar containers
-    const postosContainer = document.getElementById('postosContainer');
-    const mapContainer = document.getElementById('mapContainer');
-    
-    if (view === 'map') {
-        postosContainer.style.display = 'none';
-        mapContainer.style.display = 'block';
-        initMap();
-    } else {
-        postosContainer.style.display = '';
-        mapContainer.style.display = 'none';
-        renderPostos();
-    }
-}
-
-// ==========================================
-// MAPA
-// ==========================================
-
-function initMap() {
-    if (map) {
-        updateMapMarkers();
-        return;
-    }
-    
-    map = L.map('map').setView([-23.4538, -46.5333], 12);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-    
-    // Marcador da sede da Câmara
-    const sedeIcon = L.divIcon({
-        className: 'sede-marker',
-        html: '<i class="fas fa-landmark" style="color: #1a5f7a; font-size: 24px;"></i>',
-        iconSize: [30, 30],
-        iconAnchor: [15, 30]
-    });
-    
-    L.marker([SEDE_CAMARA.lat, SEDE_CAMARA.lng], { icon: sedeIcon })
-        .addTo(map)
-        .bindPopup('<strong>Câmara Municipal de Guarulhos</strong><br>' + SEDE_CAMARA.endereco);
-    
-    updateMapMarkers();
-}
-
-function updateMapMarkers() {
-    // Remover marcadores antigos
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
-    
-    // Adicionar novos marcadores
-    filteredPostos.forEach(posto => {
-        const marker = L.marker([posto.coordenadas.lat, posto.coordenadas.lng])
-            .addTo(map)
-            .bindPopup(createPopupContent(posto));
-        markers.push(marker);
-    });
-    
-    // Ajustar visualização
-    if (markers.length > 0) {
-        const group = new L.featureGroup(markers);
-        map.fitBounds(group.getBounds().pad(0.1));
-    }
-}
-
-function createPopupContent(posto) {
-    return `
-        <div class="popup-content">
-            <h3>${posto.nomeFantasia}</h3>
-            <p><i class="fas fa-map-marker-alt"></i> ${formatEnderecoCard(posto)}</p>
-            <p><i class="fas fa-flag"></i> ${posto.bandeira}</p>
-            <div class="popup-precos">
-                <div class="popup-preco">
-                    <span class="popup-preco-label">Gasolina</span>
-                    <span class="popup-preco-valor">${formatPreco(posto.precos.gasolina)}</span>
-                </div>
-                <div class="popup-preco">
-                    <span class="popup-preco-label">Etanol</span>
-                    <span class="popup-preco-valor">${formatPreco(posto.precos.etanol)}</span>
-                </div>
-            </div>
-            <button onclick="openModal(${posto.id})" style="margin-top: 10px; padding: 5px 10px; cursor: pointer;">
-                Ver detalhes
-            </button>
-        </div>
-    `;
+    // Centralizar no posto
+    setTimeout(() => {
+        map.setView([posto.coordenadas.lat, posto.coordenadas.lng], 16);
+        
+        // Abrir popup do posto
+        markersLayer.eachLayer(marker => {
+            const latlng = marker.getLatLng();
+            if (Math.abs(latlng.lat - posto.coordenadas.lat) < 0.0001 && 
+                Math.abs(latlng.lng - posto.coordenadas.lng) < 0.0001) {
+                marker.openPopup();
+            }
+        });
+    }, 300);
 }
 
 // ==========================================
@@ -377,7 +584,13 @@ function createModalContent(posto) {
         posto.coordenadas.lat, posto.coordenadas.lng
     ).toFixed(1);
     
+    const corStatus = getMarkerColor(posto);
+    
     return `
+        <div class="modal-status-banner ${corStatus.class}">
+            ${corStatus.icon} ${corStatus.label} ${corStatus.diff ? `(${corStatus.diff} em relação à ANP)` : ''}
+        </div>
+        
         <div class="modal-section">
             <h4 class="modal-section-title"><i class="fas fa-info-circle"></i> Informações Gerais</h4>
             <div class="modal-info-grid">
@@ -410,13 +623,16 @@ function createModalContent(posto) {
         </div>
         
         <div class="modal-section">
-            <h4 class="modal-section-title"><i class="fas fa-dollar-sign"></i> Preços</h4>
+            <h4 class="modal-section-title"><i class="fas fa-dollar-sign"></i> Preços vs ANP</h4>
             <div class="modal-precos-grid">
                 ${createModalPrecoCard('Gasolina', posto.precos.gasolina, anpData.gasolinaComum)}
                 ${createModalPrecoCard('Etanol', posto.precos.etanol, anpData.etanol)}
                 ${createModalPrecoCard('Diesel', posto.precos.diesel, anpData.diesel)}
                 ${createModalPrecoCard('GNV', posto.precos.gnv, anpData.gnv)}
             </div>
+            <p class="modal-anp-note">
+                ⚠️ <strong>Importante:</strong> Preços acima da ANP são bloqueados pelo sistema de cartões, conforme contrato.
+            </p>
         </div>
         
         <div class="modal-section">
@@ -433,9 +649,12 @@ function createModalContent(posto) {
             </div>
         </div>
         
-        <div class="modal-section">
+        <div class="modal-section modal-actions-section">
             <button class="btn-directions" onclick="openDirections(${posto.id})">
                 <i class="fas fa-directions"></i> Como Chegar
+            </button>
+            <button class="btn-map-focus" onclick="closeModal(); focusOnMap(${posto.id})">
+                <i class="fas fa-map-marker-alt"></i> Ver no Mapa
             </button>
         </div>
     `;
@@ -451,15 +670,33 @@ function createModalPrecoCard(label, preco, anpPreco) {
         `;
     }
     
-    const diff = anpPreco ? ((preco - anpPreco) / anpPreco * 100).toFixed(1) : 0;
-    const diffClass = diff < 0 ? 'abaixo' : (diff > 0 ? 'acima' : '');
-    const diffText = diff < 0 ? `${diff}% ANP` : (diff > 0 ? `+${diff}% ANP` : 'Igual ANP');
+    let diffClass = '';
+    let diffText = '';
+    let statusIcon = '';
+    
+    if (anpPreco) {
+        const diff = ((preco - anpPreco) / anpPreco * 100).toFixed(1);
+        if (diff < -1) {
+            diffClass = 'abaixo';
+            diffText = `${diff}% ANP`;
+            statusIcon = '✅';
+        } else if (diff <= 1) {
+            diffClass = 'igual';
+            diffText = 'Igual ANP';
+            statusIcon = '⚠️';
+        } else {
+            diffClass = 'acima';
+            diffText = `+${diff}% ANP`;
+            statusIcon = '🚫';
+        }
+    }
     
     return `
-        <div class="modal-preco-card">
+        <div class="modal-preco-card ${diffClass}">
             <span class="modal-preco-label">${label}</span>
             <span class="modal-preco-valor">R$ ${preco.toFixed(2)}</span>
-            ${anpPreco ? `<span class="modal-preco-comparacao ${diffClass}">${diffText}</span>` : ''}
+            ${anpPreco ? `<span class="modal-preco-comparacao ${diffClass}">${statusIcon} ${diffText}</span>` : ''}
+            ${anpPreco ? `<span class="modal-preco-anp">ANP: R$ ${anpPreco.toFixed(2)}</span>` : ''}
         </div>
     `;
 }
@@ -503,23 +740,15 @@ async function sendMessage() {
     
     if (!message) return;
     
-    // Adicionar mensagem do usuário
     addChatMessage(message, 'user');
     input.value = '';
     
-    // Mostrar indicador de digitação
     showTypingIndicator();
     
     try {
-        // Obter resposta da IA
         const response = await getAIResponse(message);
-        
-        // Remover indicador de digitação
         hideTypingIndicator();
-        
-        // Adicionar resposta
         addChatMessage(response, 'bot');
-        
     } catch (error) {
         hideTypingIndicator();
         addChatMessage('Desculpe, ocorreu um erro. Tente novamente.', 'bot');
@@ -550,7 +779,6 @@ function addChatMessage(content, type) {
 }
 
 function formatChatMessage(content) {
-    // Converter markdown simples para HTML
     return content
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -591,7 +819,7 @@ async function getAIResponse(userMessage) {
     try {
         const postosContext = prepareFullContext();
         
-        const prompt = `Você é um assistente virtual inteligente e versátil da Câmara Municipal de Guarulhos, especializado em:
+        const prompt = `Você é um assistente virtual inteligente da Câmara Municipal de Guarulhos, especializado em:
 1. Postos de combustíveis credenciados
 2. O contrato administrativo com a empresa Prime (Contrato nº 08/2025)
 3. Regras de abastecimento da frota oficial
@@ -607,56 +835,34 @@ DADOS ANP ATUAIS (Média Semanal Guarulhos):
 - Diesel: R$ ${anpData?.diesel?.toFixed(2) || 'N/A'}
 - GNV: R$ ${anpData?.gnv?.toFixed(2) || 'N/A'}
 
-SUAS CAPACIDADES:
-- Responder QUALQUER pergunta sobre o contrato, postos, preços, regras
-- Calcular distâncias entre postos usando coordenadas (fórmula de Haversine)
-- Explicar cláusulas contratuais em linguagem simples
-- Informar sobre penalidades, prazos, obrigações
-- Comparar preços com limites do contrato
-- Ajudar com dúvidas sobre LGPD, pagamentos, fiscalização
-- Orientar sobre procedimentos de abastecimento
-- Responder perguntas gerais também
+CLASSIFICAÇÃO DE PREÇOS (usado no mapa):
+- 🟢 VERDE: Mais de 1% abaixo da ANP (recomendado)
+- 🟡 AMARELO: Entre -1% e +1% da ANP (dentro do limite)
+- 🔴 VERMELHO: Acima de 1% da ANP (bloqueado pelo sistema)
 
 INSTRUÇÕES:
 - Responda SEMPRE em português brasileiro
 - Seja claro, objetivo e amigável
-- Use emojis moderadamente para tornar a conversa agradável
+- Use emojis moderadamente
 - Cite cláusulas do contrato quando relevante
-- Para distâncias, calcule usando as coordenadas dos postos
-- Se não souber algo específico, seja honesto
+- Para preços, indique se está verde/amarelo/vermelho
 - Formate respostas longas com quebras de linha
 
 PERGUNTA DO USUÁRIO: ${userMessage}`;
 
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 2500,
-                    topP: 0.95
-                }
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.7, maxOutputTokens: 2500, topP: 0.95 }
             })
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Gemini API Error:', errorData);
-            throw new Error('API Error');
-        }
+        if (!response.ok) throw new Error('API Error');
 
         const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        
-        return text || "Desculpe, não consegui processar sua pergunta. Pode reformular?";
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui processar sua pergunta.";
         
     } catch (error) {
         console.error('Gemini API error:', error);
@@ -666,253 +872,136 @@ PERGUNTA DO USUÁRIO: ${userMessage}`;
 
 function prepareFullContext() {
     return postosData.map(p => {
-        const distancia = calcularDistancia(
-            SEDE_CAMARA.lat, SEDE_CAMARA.lng,
-            p.coordenadas.lat, p.coordenadas.lng
-        ).toFixed(1);
+        const distancia = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, p.coordenadas.lat, p.coordenadas.lng).toFixed(1);
+        const status = getMarkerColor(p);
         
         return `
-- ${p.nomeFantasia} (${p.bandeira})
+- ${p.nomeFantasia} (${p.bandeira}) [${status.label}]
   Endereço: ${p.endereco.logradouro}, ${p.endereco.numero} - ${p.endereco.bairro}
   Distância da sede: ${distancia} km
-  Coordenadas: ${p.coordenadas.lat}, ${p.coordenadas.lng}
-  Gasolina: R$ ${p.precos.gasolina?.toFixed(2) || 'N/D'}
+  Gasolina: R$ ${p.precos.gasolina?.toFixed(2) || 'N/D'} ${status.icon}
   Etanol: R$ ${p.precos.etanol?.toFixed(2) || 'N/D'}
-  Diesel: R$ ${p.precos.diesel?.toFixed(2) || 'N/D'}
-  GNV: R$ ${p.precos.gnv?.toFixed(2) || 'N/D'}
-  24 horas: ${p.is24h ? 'Sim' : 'Não'}
-  Telefone: ${p.telefone}`;
+  24 horas: ${p.is24h ? 'Sim' : 'Não'}`;
     }).join('\n');
 }
-
-// ==========================================
-// RESPOSTAS LOCAIS (FALLBACK)
-// ==========================================
 
 function getLocalResponse(message) {
     const msg = message.toLowerCase();
     
-    // Perguntas sobre o contrato
+    // Postos verdes (melhores preços)
+    if (msg.includes('verde') || msg.includes('melhor') || msg.includes('recomend')) {
+        const postosVerdes = postosData.filter(p => {
+            const status = getMarkerColor(p);
+            return status.class === 'verde';
+        });
+        
+        if (postosVerdes.length === 0) {
+            return "🟡 No momento, não há postos com preços significativamente abaixo da ANP. Os postos amarelos estão dentro do limite contratual.";
+        }
+        
+        let response = "🟢 **Postos com melhores preços (VERDE):**\n\n";
+        postosVerdes.forEach((p, i) => {
+            const diff = ((p.precos.gasolina - anpData.gasolinaComum) / anpData.gasolinaComum * 100).toFixed(1);
+            response += `${i + 1}. **${p.nomeFantasia}**\n   💰 R$ ${p.precos.gasolina.toFixed(2)} (${diff}% ANP)\n   📍 ${formatEnderecoCard(p)}\n\n`;
+        });
+        
+        return response;
+    }
+    
+    // Postos vermelhos (bloqueados)
+    if (msg.includes('vermelho') || msg.includes('bloqueado') || msg.includes('acima')) {
+        const postosVermelhos = postosData.filter(p => {
+            const status = getMarkerColor(p);
+            return status.class === 'vermelho';
+        });
+        
+        if (postosVermelhos.length === 0) {
+            return "✅ Ótimo! Nenhum posto está com preços acima do limite ANP no momento.";
+        }
+        
+        let response = "🔴 **Postos com preços ACIMA da ANP (bloqueados):**\n\n";
+        postosVermelhos.forEach((p, i) => {
+            const diff = ((p.precos.gasolina - anpData.gasolinaComum) / anpData.gasolinaComum * 100).toFixed(1);
+            response += `${i + 1}. **${p.nomeFantasia}**\n   ⚠️ R$ ${p.precos.gasolina.toFixed(2)} (+${diff}% ANP)\n   📍 ${formatEnderecoCard(p)}\n\n`;
+        });
+        
+        response += "⚠️ O sistema de cartões bloqueia abastecimentos nesses postos automaticamente.";
+        return response;
+    }
+    
+    // Legenda do mapa
+    if (msg.includes('legenda') || msg.includes('cores') || msg.includes('mapa')) {
+        return `🗺️ **Legenda do Mapa:**
+
+🟢 **VERDE** - Preço abaixo da ANP (>1%)
+   ✅ Melhor opção, economia garantida
+
+🟡 **AMARELO** - Preço igual à ANP (±1%)
+   ⚠️ Dentro do limite contratual
+
+🔴 **VERMELHO** - Preço acima da ANP (>1%)
+   🚫 Bloqueado pelo sistema de cartões
+
+🔵 **AZUL** - Sede da Câmara Municipal
+   📍 Av. Guarulhos, 845
+
+**Limite ANP atual (gasolina): R$ ${anpData.gasolinaComum?.toFixed(2) || '--'}**`;
+    }
+    
+    // Contrato
     if (msg.includes('contrato') || msg.includes('prime')) {
         return `📋 **Contrato Administrativo nº 08/2025**
 
-🏢 **Contratada:** Prime Consultoria e Assessoria Empresarial LTDA
-📅 **Vigência:** 30 meses a partir de 23/10/2025
+🏢 **Contratada:** Prime Consultoria
+📅 **Vigência:** 30 meses (desde 23/10/2025)
 💰 **Valor total:** R$ 1.326.946,38
-📉 **Taxa de Administração:** -5,65% (desconto!)
+📉 **Taxa de Administração:** -5,65% (DESCONTO!)
 ⛽ **Limite mensal:** 12.000 litros
 
-Posso detalhar qualquer cláusula específica!`;
-    }
-    
-    // Taxa de administração
-    if (msg.includes('taxa') && msg.includes('administra')) {
-        return `💰 **Taxa de Administração do Contrato**
+🚗 **Frota:** 40 veículos (39 Onix + 1 Spin)
 
-A taxa é **NEGATIVA de -5,65%**, ou seja, a Prime concede um **desconto** sobre o valor do combustível!
-
-Isso significa que a cada R$ 100,00 em combustível, a Câmara paga R$ 94,35.`;
-    }
-    
-    // Limite de abastecimento
-    if (msg.includes('limite') || (msg.includes('máximo') && (msg.includes('litro') || msg.includes('abastec')))) {
-        return `⛽ **Limites de Abastecimento**
-
-📊 **Limite mensal da frota:** 12.000 litros (Ato da Mesa nº 356/2021)
-🚗 **Consumo médio por veículo:** 167,73 litros/mês
-💳 **Por cartão:** limite em R$ E em litros (ambos)
-💵 **Preço máximo:** média ANP da semana anterior (atualmente R$ ${anpData.gasolinaComum?.toFixed(2)} gasolina)
-
-O sistema bloqueia automaticamente abastecimentos acima desses limites!`;
-    }
-    
-    // Penalidades
-    if (msg.includes('penalidade') || msg.includes('multa') || msg.includes('sanção') || msg.includes('sancao')) {
-        return `⚠️ **Penalidades do Contrato**
-
-• **Advertência:** inexecução parcial sem gravidade
-• **Multa:** 5% sobre o valor dos itens prejudicados
-• **Impedimento de licitar:** inexecução grave, retardamento
-• **Inidoneidade:** fraude, documentação falsa
-
-📝 Prazo de defesa: 15 dias úteis
-📋 Prazo para recolhimento de multa: 10 dias corridos`;
-    }
-    
-    // Prazo de pagamento
-    if (msg.includes('pagamento') && (msg.includes('prazo') || msg.includes('quando'))) {
-        return `💳 **Pagamento aos Postos**
-
-A **Prime é responsável exclusiva** pelo pagamento aos postos credenciados.
-A Câmara NÃO responde solidária ou subsidiariamente.
-
-📅 **Pagamento à Prime:** até 10 dias úteis após liquidação
-📄 **Nota Fiscal:** deve conter período, valores e dados do contrato
-📊 **Correção por atraso:** IPCA-IBGE`;
-    }
-    
-    // Frota
-    if (msg.includes('frota') || msg.includes('veículo') || msg.includes('veiculo') || msg.includes('carro')) {
-        return `🚗 **Frota da Câmara Municipal**
-
-• **Total:** 40 veículos
-• **39 Chevrolet Onix**
-• **1 Chevrolet Spin**
-
-💳 Cada veículo tem seu cartão personalizado com placa e modelo.
-📊 Consumo médio: 167,73 litros/veículo/mês`;
+Posso detalhar qualquer cláusula!`;
     }
     
     // Gasolina mais barata
-    if (msg.includes('gasolina') && (msg.includes('barat') || msg.includes('menor') || msg.includes('baix'))) {
-        const postosComGasolina = postosData.filter(p => p.precos?.gasolina > 0)
-            .sort((a, b) => a.precos.gasolina - b.precos.gasolina)
-            .slice(0, 5);
+    if (msg.includes('gasolina') && (msg.includes('barat') || msg.includes('menor'))) {
+        const ordenados = [...postosData].filter(p => p.precos?.gasolina > 0)
+            .sort((a, b) => a.precos.gasolina - b.precos.gasolina).slice(0, 5);
         
-        if (postosComGasolina.length === 0) {
-            return "Não encontrei postos com preços de gasolina cadastrados.";
-        }
-        
-        let response = "⛽ **Top 5 postos com gasolina mais barata:**\n\n";
-        postosComGasolina.forEach((p, i) => {
-            const dentroLimite = anpData?.gasolinaComum && p.precos.gasolina <= anpData.gasolinaComum;
-            response += `${i + 1}. **${p.nomeFantasia}** ${dentroLimite ? '✅' : '⚠️'}\n   📍 ${formatEnderecoCard(p)}\n   💰 R$ ${p.precos.gasolina.toFixed(2)}\n\n`;
-        });
-        
-        if (anpData?.gasolinaComum) {
-            response += `📊 *Limite ANP: R$ ${anpData.gasolinaComum.toFixed(2)}*\n✅ = Dentro do limite contratual | ⚠️ = Acima do limite`;
-        }
-        
-        return response;
-    }
-    
-    // Etanol mais barato
-    if (msg.includes('etanol') && (msg.includes('barat') || msg.includes('menor') || msg.includes('baix'))) {
-        const postosComEtanol = postosData.filter(p => p.precos?.etanol > 0)
-            .sort((a, b) => a.precos.etanol - b.precos.etanol)
-            .slice(0, 5);
-        
-        if (postosComEtanol.length === 0) {
-            return "Não encontrei postos com preços de etanol cadastrados.";
-        }
-        
-        let response = "🌿 **Top 5 postos com etanol mais barato:**\n\n";
-        postosComEtanol.forEach((p, i) => {
-            response += `${i + 1}. **${p.nomeFantasia}**\n   📍 ${formatEnderecoCard(p)}\n   💰 R$ ${p.precos.etanol.toFixed(2)}\n\n`;
+        let response = "⛽ **Top 5 - Gasolina mais barata:**\n\n";
+        ordenados.forEach((p, i) => {
+            const status = getMarkerColor(p);
+            response += `${i + 1}. **${p.nomeFantasia}** ${status.icon}\n   💰 R$ ${p.precos.gasolina.toFixed(2)}\n   📍 ${formatEnderecoCard(p)}\n\n`;
         });
         
         return response;
     }
     
-    // Postos 24h
-    if (msg.includes('24') || msg.includes('madrugada') || msg.includes('noite')) {
+    // 24 horas
+    if (msg.includes('24') || msg.includes('madrugada')) {
         const postos24h = postosData.filter(p => p.is24h);
-        
-        if (postos24h.length === 0) {
-            return "⚠️ Não encontrei postos 24h cadastrados. O contrato exige **pelo menos 1 posto 24h** em Guarulhos!";
-        }
         
         let response = `🕐 **Postos 24 horas (${postos24h.length}):**\n\n`;
         postos24h.forEach((p, i) => {
-            const distancia = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, p.coordenadas.lat, p.coordenadas.lng).toFixed(1);
-            response += `${i + 1}. **${p.nomeFantasia}**\n   📍 ${formatEnderecoCard(p)}\n   📏 ${distancia} km da sede\n\n`;
+            const status = getMarkerColor(p);
+            const dist = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, p.coordenadas.lat, p.coordenadas.lng).toFixed(1);
+            response += `${i + 1}. **${p.nomeFantasia}** ${status.icon}\n   📍 ${formatEnderecoCard(p)}\n   📏 ${dist} km da sede\n\n`;
         });
         
         return response;
-    }
-    
-    // Distância
-    if (msg.includes('distância') || msg.includes('distancia') || msg.includes('longe') || msg.includes('perto') || msg.includes('próximo')) {
-        return `📏 **Regras de Distância (Contrato)**
-
-• Máximo **5 km** para encontrar um posto credenciado em Guarulhos
-• Obrigatório **1 posto a ~3 km** da sede (Av. Guarulhos, 845)
-• No estado de SP: **1 posto a cada 50 km** nas cidades próximas
-
-Para calcular a distância entre postos específicos, me diga quais postos!`;
-    }
-    
-    // Vigência
-    if (msg.includes('vigência') || msg.includes('vigencia') || msg.includes('prazo') && msg.includes('contrato')) {
-        return `📅 **Vigência do Contrato**
-
-• **Prazo:** 30 meses
-• **Início:** 23/10/2025
-• **Término previsto:** Abril/2028
-• **Prorrogação:** Possível por até 10 anos
-
-Condições para prorrogar:
-✅ Preços vantajosos
-✅ Serviços regulares
-✅ Interesse da Administração
-✅ Manifestação da Contratada
-✅ Habilitação mantida`;
-    }
-    
-    // Cartões
-    if (msg.includes('cartão') || msg.includes('cartao') || msg.includes('cartões') || msg.includes('cartoes')) {
-        return `💳 **Cartões Magnéticos/Microprocessados**
-
-• **Quantidade:** 50 cartões (40 veículos + 10 reservas)
-• **Custo:** Gratuito (fornecimento e substituições)
-• **Personalização:** Placa e modelo do veículo
-
-**Funcionalidades:**
-• Bloqueio/desbloqueio online instantâneo
-• Senha pessoal por condutor
-• Limite em R$ e litros (simultâneos)
-• Limite de preço por litro`;
-    }
-    
-    // LGPD
-    if (msg.includes('lgpd') || msg.includes('dados pessoais') || msg.includes('privacidade')) {
-        return `🔒 **LGPD no Contrato**
-
-A Prime deve cumprir integralmente a Lei 13.709/2018:
-
-• Dados apenas para finalidades contratuais
-• Vedado compartilhamento não autorizado
-• Comunicar suboperadores em 5 dias úteis
-• Eliminar dados ao término do contrato
-• Treinar empregados sobre LGPD
-• Manter rastreabilidade de acessos`;
-    }
-    
-    // Sede
-    if (msg.includes('sede') || msg.includes('câmara') || msg.includes('camara') || msg.includes('endereço da')) {
-        return `🏛️ **Câmara Municipal de Guarulhos**
-
-📍 **Endereço:** Av. Guarulhos, 845 - Vila Vicentina
-📮 **CEP:** 07023-000 - Guarulhos/SP
-📞 **Telefone:** (11) 2475-0200
-🌐 **Site:** www.guarulhos.sp.leg.br`;
-    }
-    
-    // Quantidade de postos
-    if (msg.includes('quantos postos') || msg.includes('total de postos')) {
-        return `📊 **Postos Credenciados**
-
-• **Total cadastrado:** ${postosData.length} postos
-• **Postos 24h:** ${postosData.filter(p => p.is24h).length}
-• **Bandeiras:** ${[...new Set(postosData.map(p => p.bandeira))].join(', ')}
-
-O contrato exige cobertura em todo o município de Guarulhos e Estado de SP.`;
     }
     
     // Resposta padrão
     return `🤖 **Posso ajudar com:**
 
-💰 Preços de combustíveis
-📋 Detalhes do contrato com a Prime
-⚠️ Penalidades e multas
-🚗 Informações da frota (40 veículos)
-📏 Distâncias entre postos
+🗺️ **Mapa:** cores verde/amarelo/vermelho
+💰 Preços e comparação com ANP
+📋 Detalhes do contrato Prime
+🚗 Frota e limites de abastecimento
 🕐 Postos 24 horas
-💳 Cartões e limites
-📅 Prazos e pagamentos
-🔒 LGPD e privacidade
+📏 Distâncias entre postos
 
-Pergunte qualquer coisa sobre postos credenciados ou o contrato!`;
+Pergunte sobre os postos ou o contrato!`;
 }
 
 // ==========================================
@@ -930,13 +1019,10 @@ function formatPreco(preco) {
 
 function getPrecoClass(preco, anpPreco) {
     if (!preco || !anpPreco) return '';
-    if (preco < anpPreco) return 'destaque';
-    if (preco > anpPreco) return 'alerta';
+    const diff = ((preco - anpPreco) / anpPreco) * 100;
+    if (diff < -1) return 'destaque';
+    if (diff > 1) return 'alerta';
     return '';
-}
-
-function is24Hours(posto) {
-    return posto.is24h === true;
 }
 
 function isOpen(posto) {
@@ -959,16 +1045,7 @@ function isOpen(posto) {
 }
 
 function formatHorario(horario) {
-    const dias = {
-        segunda: 'Seg',
-        terca: 'Ter',
-        quarta: 'Qua',
-        quinta: 'Qui',
-        sexta: 'Sex',
-        sabado: 'Sáb',
-        domingo: 'Dom'
-    };
-    
+    const dias = { segunda: 'Seg', terca: 'Ter', quarta: 'Qua', quinta: 'Qui', sexta: 'Sex', sabado: 'Sáb', domingo: 'Dom' };
     let result = '';
     for (const [dia, h] of Object.entries(horario)) {
         if (h && h.abertura && h.fechamento) {
@@ -986,9 +1063,10 @@ function updateLastUpdate() {
 function refreshData() {
     showLoading(true);
     setTimeout(() => {
+        updateMapMarkers();
         updateLastUpdate();
+        updateStats();
         showLoading(false);
-        alert('Dados atualizados com sucesso!');
     }, 1000);
 }
 
