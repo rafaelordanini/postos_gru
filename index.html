@@ -144,6 +144,32 @@
             50% { opacity: 0.5; }
         }
 
+        /* Geocoding indicator */
+        .geo-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 15px;
+            font-size: 0.7rem;
+            color: #7c3aed;
+            font-weight: 500;
+        }
+
+        .geo-indicator.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #059669;
+        }
+
+        .geo-indicator.loading {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #d97706;
+        }
+
         /* Stats Grid Compacto */
         .stats-grid {
             display: grid;
@@ -1367,6 +1393,10 @@
                         <div class="counter-value" id="totalPostos">--</div>
                         <div class="counter-label">Postos</div>
                     </div>
+                    <div class="geo-indicator" id="geoIndicator">
+                        <div class="anp-dot"></div>
+                        <span id="geoStatus">Geocodificando...</span>
+                    </div>
                     <div class="anp-indicator" id="anpIndicator">
                         <div class="anp-dot"></div>
                         <span id="anpStatus">Conectando...</span>
@@ -1592,6 +1622,9 @@
         const API_ANP = 'https://anp-gru.vercel.app/prices.json';
         const GUARULHOS_CENTER = [-23.4538, -46.5333];
         const DEFAULT_ZOOM = 12;
+        
+        // ⚠️ SUBSTITUA PELA SUA API KEY DO GEMINI
+        const GEMINI_API_KEY = 'AIzaSyAHbzal0e8Nvt3JHEn6TnQ9VX_pRb1z-TU';
 
         let map;
         let markers = [];
@@ -1604,12 +1637,14 @@
         let currentSort = 'name';
         let currentBandeira = '';
         let postoImages = {};
+        let geocodeCache = {};
 
         // ==========================================
         // INICIALIZAÇÃO
         // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
             loadImagesFromStorage();
+            loadGeocodeCache();
             initMap();
             await loadAllData();
             initEventListeners();
@@ -1631,6 +1666,175 @@
         }
 
         // ==========================================
+        // GEOCODIFICAÇÃO COM GEMINI
+        // ==========================================
+        function loadGeocodeCache() {
+            const stored = localStorage.getItem('geocodeCache');
+            if (stored) {
+                geocodeCache = JSON.parse(stored);
+            }
+        }
+
+        function saveGeocodeCache() {
+            localStorage.setItem('geocodeCache', JSON.stringify(geocodeCache));
+        }
+
+        function formatAddressForGeocode(posto) {
+            if (!posto.endereco) return null;
+            
+            const e = posto.endereco;
+            let parts = [];
+            
+            if (e.tipoLogradouro && e.logradouro) {
+                parts.push(`${e.tipoLogradouro} ${e.logradouro}`);
+            } else if (e.logradouro) {
+                parts.push(e.logradouro);
+            }
+            
+            if (e.numero && e.numero !== 'S/N') {
+                parts.push(e.numero);
+            }
+            
+            if (e.bairro) {
+                parts.push(e.bairro);
+            }
+            
+            parts.push('Guarulhos');
+            parts.push('SP');
+            parts.push('Brasil');
+            
+            return parts.join(', ');
+        }
+
+        async function geocodeWithGemini(address) {
+            if (!address || !GEMINI_API_KEY || GEMINI_API_KEY === 'SUA_API_KEY_AQUI') {
+                return null;
+            }
+
+            // Verifica cache
+            if (geocodeCache[address]) {
+                return geocodeCache[address];
+            }
+
+            try {
+                const prompt = `Você é um geocodificador. Dada o endereço abaixo, retorne APENAS as coordenadas geográficas no formato JSON exato: {"lat": -XX.XXXX, "lng": -XX.XXXX}
+
+Endereço: ${address}
+
+Retorne APENAS o JSON, sem explicações ou texto adicional. Se não conseguir determinar as coordenadas exatas, use as coordenadas aproximadas do bairro mencionado em Guarulhos, SP.`;
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.1,
+                            maxOutputTokens: 100
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro na API Gemini');
+                }
+
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (text) {
+                    // Extrai JSON do texto
+                    const jsonMatch = text.match(/\{[\s\S]*?\}/);
+                    if (jsonMatch) {
+                        const coords = JSON.parse(jsonMatch[0]);
+                        if (coords.lat && coords.lng) {
+                            // Valida se está em Guarulhos (aproximadamente)
+                            if (coords.lat > -24 && coords.lat < -23 && coords.lng > -47 && coords.lng < -46) {
+                                geocodeCache[address] = coords;
+                                saveGeocodeCache();
+                                return coords;
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('Erro ao geocodificar:', address, error);
+            }
+
+            return null;
+        }
+
+        async function geocodeAllPostos() {
+            const geoIndicator = document.getElementById('geoIndicator');
+            const geoStatus = document.getElementById('geoStatus');
+            
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === 'SUA_API_KEY_AQUI') {
+                geoIndicator.className = 'geo-indicator';
+                geoStatus.textContent = 'Sem API Key';
+                return;
+            }
+
+            geoIndicator.className = 'geo-indicator loading';
+            geoStatus.textContent = 'Geocodificando...';
+
+            let geocoded = 0;
+            let fromCache = 0;
+            let total = postosData.length;
+
+            for (let i = 0; i < postosData.length; i++) {
+                const posto = postosData[i];
+                const address = formatAddressForGeocode(posto);
+                
+                if (!address) continue;
+
+                // Verifica se já está no cache
+                if (geocodeCache[address]) {
+                    const coords = geocodeCache[address];
+                    posto.coordenadas = [coords.lat, coords.lng];
+                    posto.geocoded = true;
+                    fromCache++;
+                    continue;
+                }
+
+                // Geocodifica com Gemini (com delay para não exceder rate limit)
+                const coords = await geocodeWithGemini(address);
+                
+                if (coords) {
+                    posto.coordenadas = [coords.lat, coords.lng];
+                    posto.geocoded = true;
+                    geocoded++;
+                } else {
+                    // Usa coordenadas aproximadas por bairro
+                    posto.coordenadas = generateCoordinates(posto);
+                    posto.geocoded = false;
+                }
+
+                // Atualiza status
+                geoStatus.textContent = `${i + 1}/${total}...`;
+
+                // Pequeno delay entre requests para não exceder rate limit
+                if (!geocodeCache[address]) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+
+            // Atualiza marcadores
+            renderMarkers();
+
+            // Status final
+            geoIndicator.className = 'geo-indicator success';
+            geoStatus.textContent = `${geocoded + fromCache} geocodificados`;
+            
+            console.log(`Geocodificação: ${geocoded} novos, ${fromCache} do cache, ${total - geocoded - fromCache} aproximados`);
+        }
+
+        // ==========================================
         // CARREGAMENTO DE DADOS
         // ==========================================
         async function loadAllData() {
@@ -1646,6 +1850,9 @@
                 renderPosts();
                 renderMarkers();
                 updateStats();
+                
+                // Inicia geocodificação em background
+                geocodeAllPostos();
                 
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
@@ -1752,63 +1959,55 @@
             if (subtext) subtext.textContent = text;
         }
 
-      function mergeData() {
-    if (!Array.isArray(postosData)) {
-        postosData = [];
-        return;
-    }
-
-    postosData = postosData.map(posto => {
-        const preco = Array.isArray(precosData) ? 
-            precosData.find(p => p.terminal === posto.terminal) : null;
-
-        // Corrige o mapeamento invertido dos campos de endereço
-        let enderecoCorrigido = {};
-        
-        if (posto.endereco) {
-            const e = posto.endereco;
-            
-            // Os campos estão invertidos no JSON:
-            // e.rua = tipo de logradouro (AVENIDA, RUA, RODOVIA)
-            // e.numero = nome da rua/avenida
-            // e.bairro = número do endereço
-            // e.uf = bairro real
-            // e.logradouro = CEP
-            
-            const tipoLogradouro = e.rua || '';
-            const nomeLogradouro = e.numero || '';
-            const numero = e.bairro || 'S/N';
-            const bairro = e.uf || '';
-            const cidade = 'Guarulhos';
-            const uf = 'SP';
-            
-            // Formata o CEP
-            let cep = e.logradouro || '';
-            cep = cep.replace(/\D/g, '');
-            if (cep.length === 8) {
-                cep = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+        function mergeData() {
+            if (!Array.isArray(postosData)) {
+                postosData = [];
+                return;
             }
-            
-            enderecoCorrigido = {
-                tipoLogradouro: tipoLogradouro.trim(),
-                logradouro: nomeLogradouro.trim(),
-                numero: numero.trim(),
-                bairro: bairro.trim(),
-                cidade: cidade,
-                uf: uf,
-                cep: cep
-            };
-        }
 
-        return {
-            ...posto,
-            endereco: enderecoCorrigido,
-            precos: preco?.precos || { gasolina: null, etanol: null, diesel: null, gnv: null },
-            dataPreco: preco?.dataAtualizacao || preco?.dataUltimoAbastecimento || null,
-            coordenadas: generateCoordinates({ ...posto, endereco: enderecoCorrigido })
-        };
-    });
-}
+            postosData = postosData.map(posto => {
+                const preco = Array.isArray(precosData) ? 
+                    precosData.find(p => p.terminal === posto.terminal) : null;
+
+                // Corrige o mapeamento invertido dos campos de endereço
+                let enderecoCorrigido = {};
+                
+                if (posto.endereco) {
+                    const e = posto.endereco;
+                    
+                    const tipoLogradouro = e.rua || '';
+                    const nomeLogradouro = e.numero || '';
+                    const numero = e.bairro || 'S/N';
+                    const bairro = e.uf || '';
+                    const cidade = 'Guarulhos';
+                    const uf = 'SP';
+                    
+                    let cep = e.logradouro || '';
+                    cep = cep.replace(/\D/g, '');
+                    if (cep.length === 8) {
+                        cep = cep.replace(/(\d{5})(\d{3})/, '$1-$2');
+                    }
+                    
+                    enderecoCorrigido = {
+                        tipoLogradouro: tipoLogradouro.trim(),
+                        logradouro: nomeLogradouro.trim(),
+                        numero: numero.trim(),
+                        bairro: bairro.trim(),
+                        cidade: cidade,
+                        uf: uf,
+                        cep: cep
+                    };
+                }
+
+                return {
+                    ...posto,
+                    endereco: enderecoCorrigido,
+                    precos: preco?.precos || { gasolina: null, etanol: null, diesel: null, gnv: null },
+                    dataPreco: preco?.dataAtualizacao || preco?.dataUltimoAbastecimento || null,
+                    coordenadas: generateCoordinates({ ...posto, endereco: enderecoCorrigido })
+                };
+            });
+        }
 
         function generateCoordinates(posto) {
             const bairroCoords = {
@@ -1859,12 +2058,10 @@
         // COMPARAÇÃO COM ANP
         // ==========================================
         function getPriceStatus(preco, tipo = 'gasolina') {
-            // Se não tem preço válido, retorna no-data
             if (preco === null || preco === undefined || isNaN(preco) || preco <= 0) {
                 return 'no-data';
             }
 
-            // Se não tem dados da ANP, considera como no-data
             if (!anpData) {
                 return 'no-data';
             }
@@ -1880,12 +2077,10 @@
                 anpPrice = anpData.gnv;
             }
 
-            // Se não tem preço ANP para comparar
             if (!anpPrice || isNaN(anpPrice) || anpPrice <= 0) {
                 return 'no-data';
             }
 
-            // Compara preço do posto com ANP
             if (parseFloat(preco) < parseFloat(anpPrice)) {
                 return 'below-anp';
             } else {
@@ -1969,119 +2164,119 @@
         function formatEnderecoResumido(posto) {
             if (!posto.endereco) return 'Endereço não disponível';
             const e = posto.endereco;
-            const rua = e.rua || e.logradouro || '';
+            const rua = e.logradouro || '';
             const bairro = e.bairro || '';
             return `${rua}${bairro ? ' - ' + bairro : ''}`.trim() || 'Endereço não disponível';
         }
-function formatEnderecoCard(posto) {
-    if (!posto.endereco) return 'Endereço não disponível';
-    
-    const e = posto.endereco;
-    let partes = [];
-    
-    // Tipo + Nome do logradouro
-    if (e.tipoLogradouro && e.logradouro) {
-        partes.push(`${e.tipoLogradouro} ${e.logradouro}`);
-    } else if (e.logradouro) {
-        partes.push(e.logradouro);
-    }
-    
-    // Número
-    if (e.numero && e.numero !== 'S/N' && e.numero !== 'S N') {
-        partes[0] = partes[0] ? `${partes[0]}, ${e.numero}` : e.numero;
-    } else if (partes.length > 0) {
-        partes[0] = `${partes[0]}, S/N`;
-    }
-    
-    // Bairro
-    if (e.bairro) {
-        partes.push(e.bairro);
-    }
-    
-    if (partes.length === 0) {
-        return 'Endereço não disponível';
-    }
-    
-    return partes.join(' - ');
-}
+
+        function formatEnderecoCard(posto) {
+            if (!posto.endereco) return 'Endereço não disponível';
+            
+            const e = posto.endereco;
+            let partes = [];
+            
+            if (e.tipoLogradouro && e.logradouro) {
+                partes.push(`${e.tipoLogradouro} ${e.logradouro}`);
+            } else if (e.logradouro) {
+                partes.push(e.logradouro);
+            }
+            
+            if (e.numero && e.numero !== 'S/N' && e.numero !== 'S N') {
+                partes[0] = partes[0] ? `${partes[0]}, ${e.numero}` : e.numero;
+            } else if (partes.length > 0) {
+                partes[0] = `${partes[0]}, S/N`;
+            }
+            
+            if (e.bairro) {
+                partes.push(e.bairro);
+            }
+            
+            if (partes.length === 0) {
+                return 'Endereço não disponível';
+            }
+            
+            return partes.join(' - ');
+        }
+
         // ==========================================
         // RENDERIZAÇÃO
         // ==========================================
-   function renderPosts() {
-    const container = document.getElementById('postsList');
-    
-    if (!Array.isArray(postosData) || postosData.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">🔍</div>
-                <p>Nenhum posto encontrado</p>
-            </div>
-        `;
-        return;
-    }
-
-    let filteredPosts = filterAndSortPosts();
-
-    if (filteredPosts.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">🔍</div>
-                <p>Nenhum posto com os filtros atuais</p>
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = filteredPosts.map(posto => {
-        const endereco = formatEnderecoCard(posto);
-        const badgeClass = getBadgeClass(posto.bandeira);
-        
-        const gasolina = posto.precos?.gasolina;
-        const etanol = posto.precos?.etanol;
-        
-        const gasolinaStatus = getPriceStatus(gasolina, 'gasolina');
-        const etanolStatus = getPriceStatus(etanol, 'etanol');
-        
-        const hasImages = postoImages[posto.terminal] && postoImages[posto.terminal].length > 0;
-
-        return `
-            <div class="post-card status-${gasolinaStatus}" data-terminal="${posto.terminal}" onclick="selectPosto('${posto.terminal}')">
-                <div class="post-header">
-                    <div class="post-name">${posto.nomeFantasia || 'Posto sem nome'}</div>
-                    <span class="post-badge ${badgeClass}">${posto.bandeira || 'Branca'}</span>
-                </div>
-                <div class="post-address">
-                    <span class="post-address-icon">📍</span>
-                    <span>${endereco}</span>
-                </div>
-                <div class="post-prices">
-                    <div class="price-item ${gasolinaStatus !== 'no-data' ? gasolinaStatus : ''}">
-                        <div class="price-type">Gasolina</div>
-                        ${gasolina && gasolina > 0 ? 
-                            `<div class="price-value ${gasolinaStatus}">R$ ${gasolina.toFixed(2)}</div>
-                             <div class="price-source">Último abast.</div>` :
-                            `<div class="price-value no-data">--</div>`
-                        }
+        function renderPosts() {
+            const container = document.getElementById('postsList');
+            
+            if (!Array.isArray(postosData) || postosData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <p>Nenhum posto encontrado</p>
                     </div>
-                    <div class="price-item ${etanolStatus !== 'no-data' ? etanolStatus : ''}">
-                        <div class="price-type">Etanol</div>
-                        ${etanol && etanol > 0 ? 
-                            `<div class="price-value ${etanolStatus}">R$ ${etanol.toFixed(2)}</div>
-                             <div class="price-source">Último abast.</div>` :
-                            `<div class="price-value no-data">--</div>`
-                        }
+                `;
+                return;
+            }
+
+            let filteredPosts = filterAndSortPosts();
+
+            if (filteredPosts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <p>Nenhum posto com os filtros atuais</p>
                     </div>
-                </div>
-                <div class="post-footer">
-                    <div class="post-hours ${is24Hours(posto) ? 'open' : ''}">
-                        🕐 ${posto.horarioFuncionamento || 'Não informado'}
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredPosts.map(posto => {
+                const endereco = formatEnderecoCard(posto);
+                const badgeClass = getBadgeClass(posto.bandeira);
+                
+                const gasolina = posto.precos?.gasolina;
+                const etanol = posto.precos?.etanol;
+                
+                const gasolinaStatus = getPriceStatus(gasolina, 'gasolina');
+                const etanolStatus = getPriceStatus(etanol, 'etanol');
+                
+                const hasImages = postoImages[posto.terminal] && postoImages[posto.terminal].length > 0;
+                const isGeocoded = posto.geocoded ? '📍' : '';
+
+                return `
+                    <div class="post-card status-${gasolinaStatus}" data-terminal="${posto.terminal}" onclick="selectPosto('${posto.terminal}')">
+                        <div class="post-header">
+                            <div class="post-name">${posto.nomeFantasia || 'Posto sem nome'} ${isGeocoded}</div>
+                            <span class="post-badge ${badgeClass}">${posto.bandeira || 'Branca'}</span>
+                        </div>
+                        <div class="post-address">
+                            <span class="post-address-icon">📍</span>
+                            <span>${endereco}</span>
+                        </div>
+                        <div class="post-prices">
+                            <div class="price-item ${gasolinaStatus !== 'no-data' ? gasolinaStatus : ''}">
+                                <div class="price-type">Gasolina</div>
+                                ${gasolina && gasolina > 0 ? 
+                                    `<div class="price-value ${gasolinaStatus}">R$ ${gasolina.toFixed(2)}</div>
+                                     <div class="price-source">Último abast.</div>` :
+                                    `<div class="price-value no-data">--</div>`
+                                }
+                            </div>
+                            <div class="price-item ${etanolStatus !== 'no-data' ? etanolStatus : ''}">
+                                <div class="price-type">Etanol</div>
+                                ${etanol && etanol > 0 ? 
+                                    `<div class="price-value ${etanolStatus}">R$ ${etanol.toFixed(2)}</div>
+                                     <div class="price-source">Último abast.</div>` :
+                                    `<div class="price-value no-data">--</div>`
+                                }
+                            </div>
+                        </div>
+                        <div class="post-footer">
+                            <div class="post-hours ${is24Hours(posto) ? 'open' : ''}">
+                                🕐 ${posto.horarioFuncionamento || 'Não informado'}
+                            </div>
+                            ${hasImages ? `<div class="post-image-indicator">📷 ${postoImages[posto.terminal].length}</div>` : ''}
+                        </div>
                     </div>
-                    ${hasImages ? `<div class="post-image-indicator">📷 ${postoImages[posto.terminal].length}</div>` : ''}
-                </div>
-            </div>
-        `;
-    }).join('');
-}
+                `;
+            }).join('');
+        }
 
         function filterAndSortPosts() {
             if (!Array.isArray(postosData)) return [];
@@ -2089,23 +2284,20 @@ function formatEnderecoCard(posto) {
             let filtered = [...postosData];
             const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
 
- // Filtro de busca
-if (searchTerm) {
-    filtered = filtered.filter(posto => {
-        const nome = (posto.nomeFantasia || '').toLowerCase();
-        const endereco = formatEnderecoCard(posto).toLowerCase();
-        return nome.includes(searchTerm) || endereco.includes(searchTerm);
-    });
-}
+            if (searchTerm) {
+                filtered = filtered.filter(posto => {
+                    const nome = (posto.nomeFantasia || '').toLowerCase();
+                    const endereco = formatEnderecoCard(posto).toLowerCase();
+                    return nome.includes(searchTerm) || endereco.includes(searchTerm);
+                });
+            }
 
-            // Filtro de bandeira
             if (currentBandeira) {
                 filtered = filtered.filter(posto => 
                     (posto.bandeira || '').toUpperCase().includes(currentBandeira.toUpperCase())
                 );
             }
 
-            // Filtro por cor (status de preço)
             if (currentColorFilter) {
                 filtered = filtered.filter(posto => {
                     const gasolinaPreco = posto.precos?.gasolina;
@@ -2114,7 +2306,6 @@ if (searchTerm) {
                 });
             }
 
-            // Filtros gerais
             if (currentFilter === '24h') {
                 filtered = filtered.filter(posto => is24Hours(posto));
             } else if (currentFilter === 'low-price') {
@@ -2123,7 +2314,6 @@ if (searchTerm) {
                 filtered = filtered.slice(0, 10);
             }
 
-            // Ordenação
             switch (currentSort) {
                 case 'name':
                     filtered.sort((a, b) => (a.nomeFantasia || '').localeCompare(b.nomeFantasia || ''));
@@ -2156,13 +2346,11 @@ if (searchTerm) {
         }
 
         function renderMarkers() {
-            // Remove marcadores antigos
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
 
             if (!Array.isArray(postosData) || postosData.length === 0) return;
 
-            // Aplica filtro de cor aos marcadores também
             let filteredPosts = postosData;
             
             if (currentColorFilter) {
@@ -2190,7 +2378,7 @@ if (searchTerm) {
 
                 const icon = L.divIcon({
                     className: markerClass,
-                    html: '⛽',
+                    html: posto.geocoded ? '📍' : '⛽',
                     iconSize: [32, 32],
                     iconAnchor: [16, 16]
                 });
@@ -2243,11 +2431,9 @@ if (searchTerm) {
         function showInfoPanel(posto) {
             const panel = document.getElementById('infoPanel');
             
-            const endereco = posto.endereco ? 
-                `${posto.endereco.logradouro || posto.endereco.rua || ''}, ${posto.endereco.numero || ''} - ${posto.endereco.bairro || ''}, ${posto.endereco.cidade || 'Guarulhos'} - ${posto.endereco.uf || 'SP'}` : 
-                'Endereço não disponível';
+            const endereco = formatEnderecoCard(posto) + (posto.endereco?.cep ? ` - CEP: ${posto.endereco.cep}` : '');
 
-            document.getElementById('infoName').textContent = posto.nomeFantasia || 'Posto';
+            document.getElementById('infoName').textContent = (posto.nomeFantasia || 'Posto') + (posto.geocoded ? ' 📍' : '');
             document.getElementById('infoAddress').textContent = endereco;
             document.getElementById('infoContact').textContent = `🕐 ${posto.horarioFuncionamento || 'Horário não informado'}`;
 
@@ -2478,7 +2664,6 @@ if (searchTerm) {
                 renderMarkers();
             });
 
-            // Filtros gerais
             document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
@@ -2489,19 +2674,15 @@ if (searchTerm) {
                 });
             });
 
-            // Filtros de cor - toggle on/off
             document.querySelectorAll('.filter-btn[data-color]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const wasActive = btn.classList.contains('active');
                     
-                    // Remove active de todos os filtros de cor
                     document.querySelectorAll('.filter-btn[data-color]').forEach(b => b.classList.remove('active'));
                     
                     if (wasActive) {
-                        // Se já estava ativo, desativa (mostra todos)
                         currentColorFilter = null;
                     } else {
-                        // Se não estava ativo, ativa este filtro
                         btn.classList.add('active');
                         currentColorFilter = btn.dataset.color;
                     }
@@ -2534,7 +2715,6 @@ if (searchTerm) {
                 renderMarkers();
             });
 
-            // Fechar modal com ESC
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     closeImageModal();
