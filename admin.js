@@ -250,7 +250,7 @@ function processarArquivo(file, tipo) {
 }
 
 // ==========================================
-// PROCESSAR CSV DE ABASTECIMENTOS
+// PROCESSAR CSV DE ABASTECIMENTOS - CORRIGIDO
 // ==========================================
 
 function processarCSVAbastecimentos(csvContent) {
@@ -299,21 +299,21 @@ function processarCSVAbastecimentos(csvContent) {
     const headersLower = headers.map(h => h.toLowerCase().replace(/["\s]/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
     console.log('Headers normalizados:', headersLower);
     
-// Mapear colunas - CORRIGIDO
-const colMap = {
-    data: findColumnExact(headersLower, ['data']),
-    hora: findColumnExact(headersLower, ['hora']),
-    combustivel: findColumnExact(headersLower, ['combustivel', 'tipo_combustivel', 'tipocombustivel']),
-    qtde: findColumnExact(headersLower, ['qtde_combustivel_abastecido', 'qtde_combustivel', 'qtde', 'quantidade', 'litros', 'qtdecombustivel']),
-    valor: findColumnExact(headersLower, ['valor_abastecimento', 'valorabastecimento', 'valortotal', 'valor', 'total']),
-    cidade: findColumnExact(headersLower, ['cidade_posto', 'cidadeposto']),
-    nomePosto: findColumnExact(headersLower, ['nome_posto', 'nomeposto']),  // SEM 'posto' genérico!
-    endereco: findColumnExact(headersLower, ['endereco_posto', 'enderecoposto']),
-    placa: findColumnExact(headersLower, ['placa', 'placa_veiculo']),
-    condutor: findColumnExact(headersLower, ['nome_condutor', 'nomecondutor', 'condutor', 'motorista'])
-};
-
-console.log('Mapeamento de colunas:', colMap);
+    // Mapear colunas - CORRIGIDO: ordem específica para evitar conflitos
+    const colMap = {
+        data: findColumnExact(headersLower, ['data']),
+        hora: findColumnExact(headersLower, ['hora']),
+        combustivel: findColumnExact(headersLower, ['combustivel', 'tipo_combustivel', 'tipocombustivel']),
+        qtde: findColumnExact(headersLower, ['qtde_combustivel_abastecido', 'qtde_combustivel', 'qtdecombustivel', 'qtde', 'quantidade', 'litros']),
+        valor: findColumnExact(headersLower, ['valor_abastecimento', 'valorabastecimento', 'valortotal', 'valor', 'total']),
+        cidade: findColumnExact(headersLower, ['cidade_posto', 'cidadeposto']),
+        nomePosto: findColumnExact(headersLower, ['nome_posto', 'nomeposto']),
+        endereco: findColumnExact(headersLower, ['endereco_posto', 'enderecoposto']),
+        placa: findColumnExact(headersLower, ['placa', 'placa_veiculo']),
+        condutor: findColumnExact(headersLower, ['nome_condutor', 'nomecondutor', 'condutor', 'motorista'])
+    };
+    
+    console.log('Mapeamento de colunas:', colMap);
     
     // Processar linhas de dados
     for (let i = headerIndex + 1; i < linhas.length; i++) {
@@ -350,6 +350,8 @@ console.log('Mapeamento de colunas:', colMap);
                                      combustivel.toUpperCase().includes('ALCOOL') ||
                                      combustivel.toUpperCase().includes('ÁLCOOL')) ? 'ETANOL' : 'GASOLINA';
             
+            const nomePosto = getCol(valores, colMap.nomePosto) || '';
+            
             abastecimentos.push({
                 data: getCol(valores, colMap.data) || '',
                 hora: getCol(valores, colMap.hora) || '',
@@ -357,7 +359,7 @@ console.log('Mapeamento de colunas:', colMap);
                 quantidade: qtde,
                 valorTotal: valor,
                 precoLitro: precoLitro,
-                nomePosto: getCol(valores, colMap.nomePosto) || '',
+                nomePosto: nomePosto,
                 endereco: getCol(valores, colMap.endereco) || '',
                 cidade: cidade || 'GUARULHOS',
                 placa: getCol(valores, colMap.placa) || '',
@@ -370,6 +372,10 @@ console.log('Mapeamento de colunas:', colMap);
     }
     
     console.log(`✅ ${abastecimentos.length} abastecimentos processados`);
+    
+    // Mostrar nomes únicos de postos encontrados
+    const nomesUnicos = [...new Set(abastecimentos.map(ab => ab.nomePosto))].filter(n => n);
+    console.log(`📍 Postos únicos encontrados: ${nomesUnicos.length}`, nomesUnicos);
     
     if (abastecimentos.length === 0) {
         mostrarNotificacao('Nenhum abastecimento válido encontrado', 'warning');
@@ -387,7 +393,7 @@ console.log('Mapeamento de colunas:', colMap);
     renderizarStatus();
     renderizarPostos();
     
-    mostrarNotificacao(`${abastecimentos.length} abastecimentos processados! Preços atualizados.`, 'success');
+    mostrarNotificacao(`${abastecimentos.length} abastecimentos importados de ${nomesUnicos.length} postos!`, 'success');
 }
 
 function parseCSVLine(linha) {
@@ -415,26 +421,31 @@ function parseCSVLine(linha) {
     return resultado;
 }
 
+// FUNÇÃO CORRIGIDA: Busca exata primeiro, depois por inclusão
 function findColumnExact(headers, nomes) {
-    // Primeiro: busca exata
+    // Primeiro: busca exata (prioridade máxima)
     for (let i = 0; i < headers.length; i++) {
         for (const nome of nomes) {
-            if (headers[i] === nome.replace(/_/g, '')) return i;
+            const nomeNorm = nome.replace(/_/g, '');
+            if (headers[i] === nomeNorm) {
+                return i;
+            }
         }
     }
-    // Segundo: busca por inclusão (menos prioritário)
+    
+    // Segundo: busca por inclusão completa
     for (let i = 0; i < headers.length; i++) {
         for (const nome of nomes) {
-            if (headers[i].includes(nome.replace(/_/g, ''))) return i;
+            const nomeNorm = nome.replace(/_/g, '');
+            if (headers[i] === nomeNorm || headers[i].includes(nomeNorm)) {
+                return i;
+            }
         }
     }
+    
     return -1;
 }
 
-// Manter a antiga para compatibilidade
-function findColumn(headers, nomes) {
-    return findColumnExact(headers, nomes);
-}
 function getCol(valores, index) {
     if (index < 0 || index >= valores.length) return '';
     return (valores[index] || '').trim().replace(/^"|"$/g, '');
@@ -699,7 +710,7 @@ async function atualizarPrecosANP() {
         console.error('❌ Erro ao buscar preços ANP:', error);
     }
     
-    // Renderizar interface - SEM FALLBACK (mostra "Indisponível" se falhar)
+    // Renderizar interface
     const gasolinaDisplay = dadosANP.gasolinaComum 
         ? `R$ ${dadosANP.gasolinaComum.toFixed(2).replace('.', ',')}` 
         : '<span class="text-muted">Indisponível</span>';
@@ -750,47 +761,9 @@ async function atualizarPrecosANP() {
         </div>
     `;
 }
-// ==========================================
-// RENDERIZAR INTERFACE - CORRIGIDO
-// ==========================================
-
-function renderizarStatus() {
-    const container = document.getElementById('statusInfo');  // ID CORRETO
-    if (!container) return;
-    
-    const postosComPreco = postosAdmin.filter(p => p.precos?.gasolina > 0 || p.precos?.etanol > 0);
-    const ultimaAtualizacao = localStorage.getItem('cmg_last_update');
-    const anp = JSON.parse(localStorage.getItem('cmg_anp_data') || '{}');
-    
-    container.innerHTML = `
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px;">
-            <div style="text-align: center; padding: 15px; background: #e0f2fe; border-radius: 8px;">
-                <div style="font-size: 2rem; font-weight: bold; color: #0369a1;">${postosAdmin.length}</div>
-                <div style="color: #666;">postos cadastrados</div>
-            </div>
-            <div style="text-align: center; padding: 15px; background: #d1fae5; border-radius: 8px;">
-                <div style="font-size: 2rem; font-weight: bold; color: #047857;">${postosComPreco.length}</div>
-                <div style="color: #666;">com preço</div>
-            </div>
-            <div style="text-align: center; padding: 15px; background: #fef3c7; border-radius: 8px;">
-                <div style="font-size: 2rem; font-weight: bold; color: #b45309;">${abastecimentosAdmin.length}</div>
-                <div style="color: #666;">abastecimentos</div>
-            </div>
-            <div style="text-align: center; padding: 15px; background: #f3e8ff; border-radius: 8px;">
-                <div style="font-size: 1.2rem; font-weight: bold; color: #7c3aed;">
-                    ${anp.gasolinaComum ? 'R$ ' + anp.gasolinaComum.toFixed(2) : '--'}
-                </div>
-                <div style="color: #666;">ANP Gasolina</div>
-            </div>
-        </div>
-        <div style="font-size: 0.85rem; color: #888;">
-            Última atualização: ${ultimaAtualizacao ? new Date(ultimaAtualizacao).toLocaleString('pt-BR') : '--'}
-        </div>
-    `;
-}
 
 // ==========================================
-// RENDERIZAR INTERFACE - CORRIGIDO
+// RENDERIZAR INTERFACE
 // ==========================================
 
 function renderizarStatus() {
@@ -875,7 +848,7 @@ function renderizarPostos() {
                             </td>
                             <td style="padding: 10px;">
                                 <button onclick="excluirPosto(${posto.id})" 
-                                        style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                        style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
                                     🗑️
                                 </button>
                             </td>
@@ -889,6 +862,7 @@ function renderizarPostos() {
         </p>
     `;
 }
+
 // ==========================================
 // AÇÕES
 // ==========================================
@@ -935,7 +909,6 @@ function editarPosto(id) {
     const posto = postosAdmin.find(p => p.id === id);
     if (!posto) return;
     
-    // Implementar modal de edição
     console.log('Editar posto:', posto);
     mostrarNotificacao('Função de edição em desenvolvimento', 'info');
 }
@@ -962,10 +935,27 @@ function mostrarNotificacao(mensagem, tipo = 'info') {
     
     const notification = document.createElement('div');
     notification.className = `notification notification-${tipo}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        background: ${tipo === 'success' ? '#d1fae5' : tipo === 'error' ? '#fee2e2' : tipo === 'warning' ? '#fef3c7' : '#e0f2fe'};
+        color: ${tipo === 'success' ? '#065f46' : tipo === 'error' ? '#991b1b' : tipo === 'warning' ? '#92400e' : '#1e40af'};
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+        max-width: 400px;
+    `;
+    
     notification.innerHTML = `
-        <span class="notification-icon">${tipo === 'success' ? '✅' : tipo === 'error' ? '❌' : tipo === 'warning' ? '⚠️' : 'ℹ️'}</span>
-        <span class="notification-message">${mensagem}</span>
-        <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+        <span>${tipo === 'success' ? '✅' : tipo === 'error' ? '❌' : tipo === 'warning' ? '⚠️' : 'ℹ️'}</span>
+        <span style="flex: 1;">${mensagem}</span>
+        <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.7;">×</button>
     `;
     
     document.body.appendChild(notification);
@@ -974,6 +964,9 @@ function mostrarNotificacao(mensagem, tipo = 'info') {
     setTimeout(() => notification.remove(), 5000);
 }
 
-// Expor funções globais
+// ==========================================
+// EXPOR FUNÇÕES GLOBAIS
+// ==========================================
+
 window.editarPosto = editarPosto;
 window.excluirPosto = excluirPosto;
