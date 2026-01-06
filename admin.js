@@ -263,23 +263,24 @@ async function processarPlanilhaAbastecimentos(file) {
                 const precosAtualizados = {};
                 
                 json.forEach(row => {
-                    const terminal = row['Terminal'] || row['terminal'] || row['Posto'];
-                    const gasolina = parseFloat(row['Gasolina'] || row['Preço Gasolina'] || row['gasolina'] || 0);
-                    const etanol = parseFloat(row['Etanol'] || row['Preço Etanol'] || row['etanol'] || 0);
+                    const terminal = row['Terminal'] || row['terminal'] || row['Posto'] || row['TERMINAL'];
+                    const gasolina = parseFloat(row['Gasolina'] || row['Preço Gasolina'] || row['gasolina'] || row['GASOLINA'] || 0);
+                    const etanol = parseFloat(row['Etanol'] || row['Preço Etanol'] || row['etanol'] || row['ETANOL'] || 0);
                     
                     if (terminal) {
-                        if (!precosAtualizados[terminal]) {
-                            precosAtualizados[terminal] = { gasolina: [], etanol: [] };
+                        const terminalStr = String(terminal).trim();
+                        if (!precosAtualizados[terminalStr]) {
+                            precosAtualizados[terminalStr] = { gasolina: [], etanol: [] };
                         }
-                        if (gasolina > 0) precosAtualizados[terminal].gasolina.push(gasolina);
-                        if (etanol > 0) precosAtualizados[terminal].etanol.push(etanol);
+                        if (gasolina > 0) precosAtualizados[terminalStr].gasolina.push(gasolina);
+                        if (etanol > 0) precosAtualizados[terminalStr].etanol.push(etanol);
                     }
                 });
                 
                 // Atualizar postos com média dos preços
                 let atualizados = 0;
                 Object.entries(precosAtualizados).forEach(([terminal, precos]) => {
-                    const posto = postosData.find(p => p.terminal === terminal);
+                    const posto = postosData.find(p => String(p.terminal).trim() === terminal);
                     if (posto) {
                         if (precos.gasolina.length > 0) {
                             posto.precos.gasolina = precos.gasolina.reduce((a, b) => a + b) / precos.gasolina.length;
@@ -425,7 +426,7 @@ function renderizarPostos() {
 
 function getPrecoClass(preco, tipo = 'gasolina') {
     if (!preco || preco <= 0) return '';
-    const limite = tipo === 'etanol' ? 3.97 : 6.06;
+    const limite = tipo === 'etanol' ? (anpData?.etanol || 3.97) : (anpData?.gasolinaComum || 6.06);
     const diff = ((preco - limite) / limite) * 100;
     if (diff > 1) return 'preco-alto';
     if (diff < -1) return 'preco-baixo';
@@ -440,7 +441,6 @@ function editarPosto(id) {
     const posto = adminPostos.find(p => p.id === id);
     if (!posto) return;
     
-    // Implementar modal de edição
     const novoPrecoGas = prompt(`Preço Gasolina para ${posto.nomeFantasia}:`, posto.precos?.gasolina || '');
     const novoPrecoEta = prompt(`Preço Etanol para ${posto.nomeFantasia}:`, posto.precos?.etanol || '');
     
