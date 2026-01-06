@@ -2,10 +2,8 @@
 // APLICAÇÃO PRINCIPAL
 // ==========================================
 
-// Variáveis globais
-let currentView = 'map'; // Começa com mapa como padrão
+let currentView = 'map';
 let map = null;
-let markers = [];
 let markersLayer = null;
 let filteredPostos = [];
 let chatOpen = true;
@@ -22,20 +20,25 @@ async function init() {
     showLoading(true);
     
     try {
-        // Carregar dados
-        await loadData();
+        // Carregar dados salvos
+        carregarPostos();
         
-        // Inicializar interface
+        // Carregar ANP da API
+        await carregarDadosANP();
+        
+        // Atualizar interface
         updateANPDisplay();
         populateFilters();
         updateStats();
         updateLastUpdate();
         
-        // Event listeners
+        // Configurar eventos
         setupEventListeners();
         
-        // Inicializar com visualização de mapa
+        // Inicializar mapa
         initMapView();
+        
+        filteredPostos = [...postosData];
         
     } catch (error) {
         console.error('Erro na inicialização:', error);
@@ -45,19 +48,47 @@ async function init() {
     }
 }
 
-async function loadData() {
-    filteredPostos = [...postosData];
-}
-
 // ==========================================
 // DISPLAY ANP
 // ==========================================
 
 function updateANPDisplay() {
-    document.getElementById('anpGasolina').textContent = `R$ ${anpData.gasolinaComum?.toFixed(2) || '--'}`;
-    document.getElementById('anpEtanol').textContent = `R$ ${anpData.etanol?.toFixed(2) || '--'}`;
-    document.getElementById('anpDiesel').textContent = `R$ ${anpData.diesel?.toFixed(2) || '--'}`;
-    document.getElementById('anpGnv').textContent = `R$ ${anpData.gnv?.toFixed(2) || '--'}`;
+    document.getElementById('anpGasolina').textContent = anpData.gasolinaComum 
+        ? `R$ ${anpData.gasolinaComum.toFixed(2)}` 
+        : 'R$ --';
+    document.getElementById('anpEtanol').textContent = anpData.etanol 
+        ? `R$ ${anpData.etanol.toFixed(2)}` 
+        : 'R$ --';
+}
+
+// ==========================================
+// ESTATÍSTICAS (com mais barato e mais caro)
+// ==========================================
+
+function updateStats() {
+    const stats = getEstatisticas();
+    
+    document.getElementById('totalPostos').textContent = stats.totalPostos;
+    
+    // Mais barato
+    if (stats.maisBaratoGasolina) {
+        document.getElementById('maisBaratoValor').textContent = 
+            `R$ ${stats.maisBaratoGasolina.precos.gasolina.toFixed(2)}`;
+        document.getElementById('maisBaratoNome').textContent = 
+            truncateText(stats.maisBaratoGasolina.nomeFantasia, 25);
+    }
+    
+    // Mais caro
+    if (stats.maisCaroGasolina) {
+        document.getElementById('maisCaroValor').textContent = 
+            `R$ ${stats.maisCaroGasolina.precos.gasolina.toFixed(2)}`;
+        document.getElementById('maisCaroNome').textContent = 
+            truncateText(stats.maisCaroGasolina.nomeFantasia, 25);
+    }
+}
+
+function truncateText(text, maxLength) {
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }
 
 // ==========================================
@@ -65,15 +96,6 @@ function updateANPDisplay() {
 // ==========================================
 
 function populateFilters() {
-    // Bandeiras
-    const filterBrand = document.getElementById('filterBrand');
-    const bandeiras = getBandeiras();
-    filterBrand.innerHTML = '<option value="all">Todas</option>';
-    bandeiras.forEach(b => {
-        filterBrand.innerHTML += `<option value="${b}">${b}</option>`;
-    });
-    
-    // Bairros
     const filterNeighborhood = document.getElementById('filterNeighborhood');
     const bairros = getBairros();
     filterNeighborhood.innerHTML = '<option value="all">Todos</option>';
@@ -83,21 +105,14 @@ function populateFilters() {
 }
 
 function setupEventListeners() {
-    // Busca em tempo real
     document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 300));
-    
-    // Filtros
-    document.getElementById('filterFuel').addEventListener('change', applyFilters);
-    document.getElementById('filterBrand').addEventListener('change', applyFilters);
     document.getElementById('filterNeighborhood').addEventListener('change', applyFilters);
     document.getElementById('sortBy').addEventListener('change', applyFilters);
     
-    // Fechar modal ao clicar fora
     document.getElementById('postoModal').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
     
-    // Tecla ESC para fechar modal
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeModal();
     });
@@ -106,19 +121,13 @@ function setupEventListeners() {
 function applyFilters() {
     const filtros = {
         busca: document.getElementById('searchInput').value,
-        combustivel: document.getElementById('filterFuel').value,
-        bandeira: document.getElementById('filterBrand').value,
         bairro: document.getElementById('filterNeighborhood').value
     };
     
     filteredPostos = filterPostos(filtros);
     
     const sortBy = document.getElementById('sortBy').value;
-    if (sortBy === 'distance') {
-        filteredPostos = sortByDistanciaFromSede(filteredPostos);
-    } else {
-        filteredPostos = sortPostos(filteredPostos, sortBy);
-    }
+    filteredPostos = sortPostos(filteredPostos, sortBy);
     
     updateStats();
     
@@ -135,30 +144,15 @@ function clearSearch() {
 }
 
 // ==========================================
-// ESTATÍSTICAS
-// ==========================================
-
-function updateStats() {
-    const stats = getEstatisticas();
-    
-    document.getElementById('totalPostos').textContent = filteredPostos.length;
-    document.getElementById('avgGasolina').textContent = stats.mediaGasolina > 0 ? `R$ ${stats.mediaGasolina.toFixed(2)}` : 'R$ --';
-    document.getElementById('avgEtanol').textContent = stats.mediaEtanol > 0 ? `R$ ${stats.mediaEtanol.toFixed(2)}` : 'R$ --';
-    document.getElementById('postos24h').textContent = filteredPostos.filter(p => p.is24h).length;
-}
-
-// ==========================================
 // VISUALIZAÇÃO
 // ==========================================
 
 function setView(view) {
     currentView = view;
     
-    // Atualizar botões
     document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
     event.target.closest('.view-btn').classList.add('active');
     
-    // Mostrar/ocultar containers
     const postosContainer = document.getElementById('postosContainer');
     const mapContainer = document.getElementById('mapContainer');
     
@@ -179,7 +173,6 @@ function setView(view) {
 }
 
 function initMapView() {
-    // Definir mapa como visualização ativa
     document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector('.view-btn[onclick*="map"]').classList.add('active');
     
@@ -190,7 +183,7 @@ function initMapView() {
 }
 
 // ==========================================
-// MAPA COM MARCADORES COLORIDOS
+// MAPA COM MARCADORES EM BOLINHAS
 // ==========================================
 
 function initMap() {
@@ -199,53 +192,39 @@ function initMap() {
         return;
     }
     
-    // Criar mapa centrado em Guarulhos
     map = L.map('map', {
         center: [-23.4538, -46.5333],
         zoom: 13,
         zoomControl: true
     });
     
-    // Camada de tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
+        attribution: '© OpenStreetMap',
         maxZoom: 19
     }).addTo(map);
     
-    // Criar layer group para marcadores
     markersLayer = L.layerGroup().addTo(map);
     
-    // Adicionar marcador da sede da Câmara
     addSedeMarker();
-    
-    // Adicionar legenda
     addMapLegend();
-    
-    // Adicionar marcadores dos postos
     updateMapMarkers();
 }
 
 function addSedeMarker() {
     const sedeIcon = L.divIcon({
-        className: 'custom-marker sede-marker',
-        html: `
-            <div class="marker-pin sede">
-                <i class="fas fa-landmark"></i>
-            </div>
-        `,
-        iconSize: [40, 50],
-        iconAnchor: [20, 50],
-        popupAnchor: [0, -50]
+        className: 'marker-sede',
+        html: `<div class="marker-circle sede"><i class="fas fa-landmark"></i></div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -20]
     });
     
     L.marker([SEDE_CAMARA.lat, SEDE_CAMARA.lng], { icon: sedeIcon })
         .addTo(map)
         .bindPopup(`
-            <div class="popup-sede">
+            <div class="popup-content">
                 <h3>🏛️ Câmara Municipal de Guarulhos</h3>
-                <p><strong>Sede da Frota</strong></p>
                 <p>📍 ${SEDE_CAMARA.endereco}</p>
-                <p>📞 (11) 2475-0200</p>
             </div>
         `);
 }
@@ -253,26 +232,14 @@ function addSedeMarker() {
 function addMapLegend() {
     const legend = L.control({ position: 'bottomright' });
     
-    legend.onAdd = function(map) {
+    legend.onAdd = function() {
         const div = L.DomUtil.create('div', 'map-legend');
         div.innerHTML = `
-            <h4>📊 Legenda de Preços</h4>
-            <div class="legend-item">
-                <span class="legend-color verde"></span>
-                <span>Abaixo da ANP (bom preço)</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color amarelo"></span>
-                <span>Igual à ANP (dentro do limite)</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color vermelho"></span>
-                <span>Acima da ANP (⚠️ bloqueado)</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color azul"></span>
-                <span>Sede da Câmara</span>
-            </div>
+            <h4>📊 Legenda</h4>
+            <div class="legend-item"><span class="dot green"></span> Abaixo da ANP</div>
+            <div class="legend-item"><span class="dot yellow"></span> Igual à ANP</div>
+            <div class="legend-item"><span class="dot red"></span> Acima da ANP</div>
+            <div class="legend-item"><span class="dot blue"></span> Sede da Câmara</div>
         `;
         return div;
     };
@@ -283,284 +250,109 @@ function addMapLegend() {
 function updateMapMarkers() {
     if (!markersLayer) return;
     
-    // Limpar marcadores anteriores
     markersLayer.clearLayers();
     
-    // Adicionar marcadores dos postos
     filteredPostos.forEach(posto => {
         const marker = createPostoMarker(posto);
         markersLayer.addLayer(marker);
     });
     
-    // Ajustar visualização para incluir todos os marcadores
     if (filteredPostos.length > 0) {
-        const allMarkers = [];
-        markersLayer.eachLayer(m => allMarkers.push(m));
-        
-        if (allMarkers.length > 0) {
-            const group = L.featureGroup(allMarkers);
-            map.fitBounds(group.getBounds().pad(0.1));
-        }
+        const bounds = [];
+        filteredPostos.forEach(p => bounds.push([p.coordenadas.lat, p.coordenadas.lng]));
+        bounds.push([SEDE_CAMARA.lat, SEDE_CAMARA.lng]);
+        map.fitBounds(bounds, { padding: [50, 50] });
     }
 }
 
 function createPostoMarker(posto) {
-    // Determinar cor baseada no preço da gasolina vs ANP
-    const corStatus = getMarkerColor(posto);
+    const status = getMarkerStatus(posto);
     
+    // Marcador em formato de BOLINHA colorida
     const icon = L.divIcon({
-        className: `custom-marker posto-marker ${corStatus.class}`,
+        className: 'marker-posto',
         html: `
-            <div class="marker-pin ${corStatus.class}" title="${posto.nomeFantasia}">
-                <i class="fas fa-gas-pump"></i>
-                <span class="marker-price">R$ ${posto.precos.gasolina?.toFixed(2) || '--'}</span>
+            <div class="marker-circle ${status.class}" title="${posto.nomeFantasia}">
+                <span class="marker-price">R$${posto.precos.gasolina?.toFixed(2) || '--'}</span>
             </div>
         `,
-        iconSize: [50, 60],
-        iconAnchor: [25, 60],
-        popupAnchor: [0, -60]
+        iconSize: [50, 50],
+        iconAnchor: [25, 25],
+        popupAnchor: [0, -25]
     });
     
     const marker = L.marker([posto.coordenadas.lat, posto.coordenadas.lng], { icon: icon });
-    
-    // Popup com informações detalhadas
-    marker.bindPopup(createMarkerPopup(posto, corStatus));
+    marker.bindPopup(createMarkerPopup(posto, status));
     
     return marker;
 }
 
-function getMarkerColor(posto) {
-    const precoGasolina = posto.precos.gasolina;
-    const anpGasolina = anpData.gasolinaComum;
+function getMarkerStatus(posto) {
+    const preco = posto.precos.gasolina;
+    const anp = anpData.gasolinaComum;
     
-    if (!precoGasolina || !anpGasolina) {
-        return { class: 'cinza', label: 'Sem dados', icon: '❓' };
+    if (!preco || !anp) {
+        return { class: 'gray', label: 'Sem dados', icon: '❓' };
     }
     
-    const diferenca = ((precoGasolina - anpGasolina) / anpGasolina) * 100;
+    const diff = ((preco - anp) / anp) * 100;
     
-    if (diferenca < -1) {
-        // Mais de 1% abaixo da ANP
-        return { 
-            class: 'verde', 
-            label: 'Abaixo da ANP', 
-            icon: '✅',
-            diff: diferenca.toFixed(1) + '%'
-        };
-    } else if (diferenca <= 1) {
-        // Entre -1% e +1% da ANP (considerado igual)
-        return { 
-            class: 'amarelo', 
-            label: 'Igual à ANP', 
-            icon: '⚠️',
-            diff: diferenca.toFixed(1) + '%'
-        };
+    if (diff < -1) {
+        return { class: 'green', label: 'Abaixo da ANP', icon: '✅', diff: diff.toFixed(1) + '%' };
+    } else if (diff <= 1) {
+        return { class: 'yellow', label: 'Igual à ANP', icon: '⚠️', diff: diff.toFixed(1) + '%' };
     } else {
-        // Acima da ANP
-        return { 
-            class: 'vermelho', 
-            label: 'Acima da ANP', 
-            icon: '🚫',
-            diff: '+' + diferenca.toFixed(1) + '%'
-        };
+        return { class: 'red', label: 'Acima da ANP', icon: '🚫', diff: '+' + diff.toFixed(1) + '%' };
     }
 }
 
-function createMarkerPopup(posto, corStatus) {
-    const distancia = calcularDistancia(
-        SEDE_CAMARA.lat, SEDE_CAMARA.lng,
-        posto.coordenadas.lat, posto.coordenadas.lng
-    ).toFixed(1);
+function createMarkerPopup(posto, status) {
+    const dist = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, posto.coordenadas.lat, posto.coordenadas.lng).toFixed(1);
     
     return `
-        <div class="popup-posto ${corStatus.class}">
-            <div class="popup-header">
-                <h3>${posto.nomeFantasia}</h3>
-                <span class="popup-bandeira">${posto.bandeira}</span>
-            </div>
-            
-            <div class="popup-status ${corStatus.class}">
-                ${corStatus.icon} ${corStatus.label} 
-                ${corStatus.diff ? `<small>(${corStatus.diff})</small>` : ''}
-            </div>
+        <div class="popup-content">
+            <h3>${posto.nomeFantasia}</h3>
+            <span class="popup-badge ${status.class}">${status.icon} ${status.label}</span>
             
             <div class="popup-info">
                 <p>📍 ${posto.endereco.logradouro}, ${posto.endereco.numero}</p>
                 <p>🏘️ ${posto.endereco.bairro}</p>
-                <p>📏 ${distancia} km da sede</p>
-                <p>🕐 ${posto.is24h ? '24 horas' : (isOpen(posto) ? 'Aberto agora' : 'Fechado')}</p>
+                <p>📏 ${dist} km da sede</p>
             </div>
             
-            <div class="popup-precos">
-                <div class="popup-preco ${getPrecoClass(posto.precos.gasolina, anpData.gasolinaComum)}">
-                    <span class="label">Gasolina</span>
-                    <span class="valor">R$ ${posto.precos.gasolina?.toFixed(2) || '--'}</span>
+            <div class="popup-prices">
+                <div class="popup-price ${getPriceClass(posto.precos.gasolina, anpData.gasolinaComum)}">
+                    <span>Gasolina</span>
+                    <strong>R$ ${posto.precos.gasolina?.toFixed(2) || '--'}</strong>
                 </div>
-                <div class="popup-preco ${getPrecoClass(posto.precos.etanol, anpData.etanol)}">
-                    <span class="label">Etanol</span>
-                    <span class="valor">R$ ${posto.precos.etanol?.toFixed(2) || '--'}</span>
+                <div class="popup-price ${getPriceClass(posto.precos.etanol, anpData.etanol)}">
+                    <span>Etanol</span>
+                    <strong>R$ ${posto.precos.etanol?.toFixed(2) || '--'}</strong>
                 </div>
-                <div class="popup-preco">
-                    <span class="label">Diesel</span>
-                    <span class="valor">R$ ${posto.precos.diesel?.toFixed(2) || '--'}</span>
-                </div>
-                <div class="popup-preco">
-                    <span class="label">GNV</span>
-                    <span class="valor">R$ ${posto.precos.gnv?.toFixed(2) || '--'}</span>
-                </div>
-            </div>
-            
-            <div class="popup-anp">
-                <small>Limite ANP Gasolina: R$ ${anpData.gasolinaComum?.toFixed(2) || '--'}</small>
             </div>
             
             <div class="popup-actions">
-                <button onclick="openModal(${posto.id})" class="btn-popup-details">
-                    <i class="fas fa-info-circle"></i> Detalhes
+                <button onclick="openModal(${posto.id})" class="btn-details">
+                    <i class="fas fa-edit"></i> Ver / Editar
                 </button>
-                <button onclick="openDirections(${posto.id})" class="btn-popup-directions">
-                    <i class="fas fa-directions"></i> Rota
+                <button onclick="openDirections(${posto.id})" class="btn-route">
+                    <i class="fas fa-route"></i> Rota
                 </button>
             </div>
         </div>
     `;
 }
 
-// ==========================================
-// RENDERIZAÇÃO DE POSTOS (GRID/LIST)
-// ==========================================
-
-function renderPostos() {
-    const container = document.getElementById('postosContainer');
-    
-    if (filteredPostos.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-search"></i>
-                <h3>Nenhum posto encontrado</h3>
-                <p>Tente ajustar os filtros de busca</p>
-            </div>
-        `;
-        return;
-    }
-    
-    if (currentView === 'grid') {
-        container.className = 'postos-grid';
-        container.innerHTML = filteredPostos.map(posto => createPostoCard(posto)).join('');
-    } else if (currentView === 'list') {
-        container.className = 'postos-list';
-        container.innerHTML = filteredPostos.map(posto => createPostoListItem(posto)).join('');
-    }
-}
-
-function createPostoCard(posto) {
-    const corStatus = getMarkerColor(posto);
-    const gasolinaClass = getPrecoClass(posto.precos.gasolina, anpData.gasolinaComum);
-    const etanolClass = getPrecoClass(posto.precos.etanol, anpData.etanol);
-    
-    return `
-        <div class="posto-card ${corStatus.class}-border" onclick="openModal(${posto.id})">
-            <div class="posto-card-header">
-                <span class="posto-bandeira">${posto.bandeira}</span>
-                <span class="posto-status ${corStatus.class}">${corStatus.icon}</span>
-                <h3 class="posto-nome">${posto.nomeFantasia}</h3>
-                <p class="posto-endereco">
-                    <i class="fas fa-map-marker-alt"></i>
-                    ${formatEnderecoCard(posto)}
-                </p>
-            </div>
-            <div class="posto-card-body">
-                <div class="posto-precos">
-                    <div class="preco-item">
-                        <span class="preco-label">Gasolina</span>
-                        <span class="preco-valor ${gasolinaClass}">${formatPreco(posto.precos.gasolina)}</span>
-                    </div>
-                    <div class="preco-item">
-                        <span class="preco-label">Etanol</span>
-                        <span class="preco-valor ${etanolClass}">${formatPreco(posto.precos.etanol)}</span>
-                    </div>
-                    <div class="preco-item">
-                        <span class="preco-label">Diesel</span>
-                        <span class="preco-valor">${formatPreco(posto.precos.diesel)}</span>
-                    </div>
-                    <div class="preco-item">
-                        <span class="preco-label">GNV</span>
-                        <span class="preco-valor">${formatPreco(posto.precos.gnv)}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="posto-card-footer">
-                <span class="posto-horario ${posto.is24h || isOpen(posto) ? 'aberto' : 'fechado'}">
-                    <i class="fas fa-clock"></i>
-                    ${posto.is24h ? '24 horas' : (isOpen(posto) ? 'Aberto agora' : 'Fechado')}
-                </span>
-                <div class="posto-acoes">
-                    <button class="btn-acao" onclick="event.stopPropagation(); openDirections(${posto.id})" title="Como chegar">
-                        <i class="fas fa-directions"></i>
-                    </button>
-                    <button class="btn-acao" onclick="event.stopPropagation(); focusOnMap(${posto.id})" title="Ver no mapa">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function createPostoListItem(posto) {
-    const corStatus = getMarkerColor(posto);
-    
-    return `
-        <div class="posto-list-item ${corStatus.class}-border" onclick="openModal(${posto.id})">
-            <div class="posto-list-icon ${corStatus.class}">
-                <i class="fas fa-gas-pump"></i>
-            </div>
-            <div class="posto-list-info">
-                <h3 class="posto-list-nome">${posto.nomeFantasia} <span class="status-badge ${corStatus.class}">${corStatus.icon}</span></h3>
-                <p class="posto-list-endereco">${formatEnderecoCard(posto)} - ${posto.bandeira}</p>
-            </div>
-            <div class="posto-list-precos">
-                <div class="posto-list-preco">
-                    <span class="posto-list-preco-label">Gasolina</span>
-                    <span class="posto-list-preco-valor ${getPrecoClass(posto.precos.gasolina, anpData.gasolinaComum)}">${formatPreco(posto.precos.gasolina)}</span>
-                </div>
-                <div class="posto-list-preco">
-                    <span class="posto-list-preco-label">Etanol</span>
-                    <span class="posto-list-preco-valor">${formatPreco(posto.precos.etanol)}</span>
-                </div>
-                <div class="posto-list-preco">
-                    <span class="posto-list-preco-label">Diesel</span>
-                    <span class="posto-list-preco-valor">${formatPreco(posto.precos.diesel)}</span>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function focusOnMap(id) {
-    const posto = getPostoById(id);
-    if (!posto) return;
-    
-    // Mudar para visualização de mapa
-    setView('map');
-    
-    // Centralizar no posto
-    setTimeout(() => {
-        map.setView([posto.coordenadas.lat, posto.coordenadas.lng], 16);
-        
-        // Abrir popup do posto
-        markersLayer.eachLayer(marker => {
-            const latlng = marker.getLatLng();
-            if (Math.abs(latlng.lat - posto.coordenadas.lat) < 0.0001 && 
-                Math.abs(latlng.lng - posto.coordenadas.lng) < 0.0001) {
-                marker.openPopup();
-            }
-        });
-    }, 300);
+function getPriceClass(preco, anp) {
+    if (!preco || !anp) return '';
+    const diff = ((preco - anp) / anp) * 100;
+    if (diff < -1) return 'price-low';
+    if (diff > 1) return 'price-high';
+    return '';
 }
 
 // ==========================================
-// MODAL
+// MODAL COM EDIÇÃO DE PREÇO
 // ==========================================
 
 function openModal(id) {
@@ -579,126 +371,155 @@ function closeModal() {
 }
 
 function createModalContent(posto) {
-    const distancia = calcularDistancia(
-        SEDE_CAMARA.lat, SEDE_CAMARA.lng,
-        posto.coordenadas.lat, posto.coordenadas.lng
-    ).toFixed(1);
+    const status = getMarkerStatus(posto);
+    const dist = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, posto.coordenadas.lat, posto.coordenadas.lng).toFixed(1);
     
-    const corStatus = getMarkerColor(posto);
+    const ultimaAtualizacao = posto.ultimaAtualizacaoPreco 
+        ? new Date(posto.ultimaAtualizacaoPreco).toLocaleString('pt-BR')
+        : 'Não informado';
     
     return `
-        <div class="modal-status-banner ${corStatus.class}">
-            ${corStatus.icon} ${corStatus.label} ${corStatus.diff ? `(${corStatus.diff} em relação à ANP)` : ''}
+        <div class="modal-status ${status.class}">
+            ${status.icon} ${status.label} ${status.diff ? `(${status.diff})` : ''}
         </div>
         
         <div class="modal-section">
-            <h4 class="modal-section-title"><i class="fas fa-info-circle"></i> Informações Gerais</h4>
-            <div class="modal-info-grid">
-                <div class="modal-info-item">
-                    <span class="modal-info-label">Bandeira</span>
-                    <span class="modal-info-value">${posto.bandeira}</span>
+            <h4><i class="fas fa-info-circle"></i> Informações</h4>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Bandeira</span>
+                    <span class="info-value">${posto.bandeira}</span>
                 </div>
-                <div class="modal-info-item">
-                    <span class="modal-info-label">CNPJ</span>
-                    <span class="modal-info-value">${posto.cnpj}</span>
+                <div class="info-item">
+                    <span class="info-label">Distância</span>
+                    <span class="info-value">${dist} km</span>
                 </div>
-                <div class="modal-info-item">
-                    <span class="modal-info-label">Telefone</span>
-                    <span class="modal-info-value">${posto.telefone}</span>
+                <div class="info-item">
+                    <span class="info-label">Telefone</span>
+                    <span class="info-value">${posto.telefone}</span>
                 </div>
-                <div class="modal-info-item">
-                    <span class="modal-info-label">Distância da Sede</span>
-                    <span class="modal-info-value">${distancia} km</span>
+                <div class="info-item">
+                    <span class="info-label">Última atualização</span>
+                    <span class="info-value">${ultimaAtualizacao}</span>
                 </div>
             </div>
         </div>
         
         <div class="modal-section">
-            <h4 class="modal-section-title"><i class="fas fa-map-marker-alt"></i> Endereço</h4>
-            <p style="color: var(--text-secondary);">
-                ${posto.endereco.logradouro}, ${posto.endereco.numero}<br>
-                ${posto.endereco.bairro} - ${posto.endereco.cidade}/${posto.endereco.estado}<br>
-                CEP: ${posto.endereco.cep}
-            </p>
+            <h4><i class="fas fa-map-marker-alt"></i> Endereço</h4>
+            <p>${posto.endereco.logradouro}, ${posto.endereco.numero}<br>
+            ${posto.endereco.bairro} - ${posto.endereco.cidade}/${posto.endereco.estado}<br>
+            CEP: ${posto.endereco.cep}</p>
         </div>
         
         <div class="modal-section">
-            <h4 class="modal-section-title"><i class="fas fa-dollar-sign"></i> Preços vs ANP</h4>
-            <div class="modal-precos-grid">
-                ${createModalPrecoCard('Gasolina', posto.precos.gasolina, anpData.gasolinaComum)}
-                ${createModalPrecoCard('Etanol', posto.precos.etanol, anpData.etanol)}
-                ${createModalPrecoCard('Diesel', posto.precos.diesel, anpData.diesel)}
-                ${createModalPrecoCard('GNV', posto.precos.gnv, anpData.gnv)}
+            <h4><i class="fas fa-dollar-sign"></i> Preços (Editar)</h4>
+            <p class="anp-reference">Limite ANP: Gasolina R$ ${anpData.gasolinaComum?.toFixed(2) || '--'} | Etanol R$ ${anpData.etanol?.toFixed(2) || '--'}</p>
+            
+            <div class="price-edit-grid">
+                <div class="price-edit-item">
+                    <label>Gasolina Comum</label>
+                    <div class="price-input-group">
+                        <span>R$</span>
+                        <input type="number" 
+                               id="editGasolina" 
+                               value="${posto.precos.gasolina || ''}" 
+                               step="0.01" 
+                               min="0"
+                               placeholder="0.00">
+                    </div>
+                    <span class="price-status ${getPriceClass(posto.precos.gasolina, anpData.gasolinaComum)}">
+                        ${getPriceStatusText(posto.precos.gasolina, anpData.gasolinaComum)}
+                    </span>
+                </div>
+                
+                <div class="price-edit-item">
+                    <label>Etanol</label>
+                    <div class="price-input-group">
+                        <span>R$</span>
+                        <input type="number" 
+                               id="editEtanol" 
+                               value="${posto.precos.etanol || ''}" 
+                               step="0.01" 
+                               min="0"
+                               placeholder="0.00">
+                    </div>
+                    <span class="price-status ${getPriceClass(posto.precos.etanol, anpData.etanol)}">
+                        ${getPriceStatusText(posto.precos.etanol, anpData.etanol)}
+                    </span>
+                </div>
             </div>
-            <p class="modal-anp-note">
-                ⚠️ <strong>Importante:</strong> Preços acima da ANP são bloqueados pelo sistema de cartões, conforme contrato.
-            </p>
+            
+            <button class="btn-save-prices" onclick="salvarPrecos(${posto.id})">
+                <i class="fas fa-save"></i> Salvar Preços
+            </button>
         </div>
         
-        <div class="modal-section">
-            <h4 class="modal-section-title"><i class="fas fa-clock"></i> Horário de Funcionamento</h4>
-            <p style="color: var(--text-secondary);">
-                ${posto.is24h ? '🕐 Funcionamento 24 horas' : formatHorario(posto.horarioFuncionamento)}
-            </p>
-        </div>
-        
-        <div class="modal-section">
-            <h4 class="modal-section-title"><i class="fas fa-concierge-bell"></i> Serviços</h4>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                ${posto.servicos.map(s => `<span class="badge badge-info">${s}</span>`).join('')}
-            </div>
-        </div>
-        
-        <div class="modal-section modal-actions-section">
+        <div class="modal-section modal-actions">
             <button class="btn-directions" onclick="openDirections(${posto.id})">
                 <i class="fas fa-directions"></i> Como Chegar
-            </button>
-            <button class="btn-map-focus" onclick="closeModal(); focusOnMap(${posto.id})">
-                <i class="fas fa-map-marker-alt"></i> Ver no Mapa
             </button>
         </div>
     `;
 }
 
-function createModalPrecoCard(label, preco, anpPreco) {
-    if (!preco || preco <= 0) {
-        return `
-            <div class="modal-preco-card">
-                <span class="modal-preco-label">${label}</span>
-                <span class="modal-preco-valor">--</span>
-            </div>
-        `;
+function getPriceStatusText(preco, anp) {
+    if (!preco || !anp) return '';
+    const diff = ((preco - anp) / anp) * 100;
+    if (diff < -1) return `✅ ${diff.toFixed(1)}% abaixo`;
+    if (diff > 1) return `🚫 +${diff.toFixed(1)}% acima`;
+    return `⚠️ Dentro do limite`;
+}
+
+function salvarPrecos(postoId) {
+    const gasolina = parseFloat(document.getElementById('editGasolina').value);
+    const etanol = parseFloat(document.getElementById('editEtanol').value);
+    
+    let atualizado = false;
+    
+    if (!isNaN(gasolina) && gasolina > 0) {
+        atualizarPrecoPosto(postoId, 'gasolina', gasolina);
+        atualizado = true;
     }
     
-    let diffClass = '';
-    let diffText = '';
-    let statusIcon = '';
-    
-    if (anpPreco) {
-        const diff = ((preco - anpPreco) / anpPreco * 100).toFixed(1);
-        if (diff < -1) {
-            diffClass = 'abaixo';
-            diffText = `${diff}% ANP`;
-            statusIcon = '✅';
-        } else if (diff <= 1) {
-            diffClass = 'igual';
-            diffText = 'Igual ANP';
-            statusIcon = '⚠️';
-        } else {
-            diffClass = 'acima';
-            diffText = `+${diff}% ANP`;
-            statusIcon = '🚫';
-        }
+    if (!isNaN(etanol) && etanol > 0) {
+        atualizarPrecoPosto(postoId, 'etanol', etanol);
+        atualizado = true;
     }
     
-    return `
-        <div class="modal-preco-card ${diffClass}">
-            <span class="modal-preco-label">${label}</span>
-            <span class="modal-preco-valor">R$ ${preco.toFixed(2)}</span>
-            ${anpPreco ? `<span class="modal-preco-comparacao ${diffClass}">${statusIcon} ${diffText}</span>` : ''}
-            ${anpPreco ? `<span class="modal-preco-anp">ANP: R$ ${anpPreco.toFixed(2)}</span>` : ''}
-        </div>
+    if (atualizado) {
+        // Atualizar interface
+        filteredPostos = [...postosData];
+        updateStats();
+        updateMapMarkers();
+        
+        // Reabrir modal com dados atualizados
+        openModal(postoId);
+        
+        showNotification('Preços atualizados com sucesso!', 'success');
+    } else {
+        showNotification('Informe pelo menos um preço válido.', 'error');
+    }
+}
+
+function showNotification(message, type = 'info') {
+    // Criar notificação temporária
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
     `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 function openDirections(id) {
@@ -707,6 +528,83 @@ function openDirections(id) {
     
     const url = `https://www.google.com/maps/dir/?api=1&destination=${posto.coordenadas.lat},${posto.coordenadas.lng}`;
     window.open(url, '_blank');
+}
+
+// ==========================================
+// RENDERIZAÇÃO GRID/LIST
+// ==========================================
+
+function renderPostos() {
+    const container = document.getElementById('postosContainer');
+    
+    if (filteredPostos.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>Nenhum posto encontrado</h3>
+                <p>Ajuste os filtros de busca</p>
+            </div>
+        `;
+        return;
+    }
+    
+    if (currentView === 'grid') {
+        container.className = 'postos-grid';
+        container.innerHTML = filteredPostos.map(posto => createPostoCard(posto)).join('');
+    } else {
+        container.className = 'postos-list';
+        container.innerHTML = filteredPostos.map(posto => createPostoListItem(posto)).join('');
+    }
+}
+
+function createPostoCard(posto) {
+    const status = getMarkerStatus(posto);
+    
+    return `
+        <div class="posto-card ${status.class}" onclick="openModal(${posto.id})">
+            <div class="card-header">
+                <span class="card-status ${status.class}">${status.icon}</span>
+                <h3>${posto.nomeFantasia}</h3>
+                <span class="card-bandeira">${posto.bandeira}</span>
+            </div>
+            <div class="card-address">
+                <i class="fas fa-map-marker-alt"></i>
+                ${posto.endereco.bairro}
+            </div>
+            <div class="card-prices">
+                <div class="card-price ${getPriceClass(posto.precos.gasolina, anpData.gasolinaComum)}">
+                    <span>Gasolina</span>
+                    <strong>R$ ${posto.precos.gasolina?.toFixed(2) || '--'}</strong>
+                </div>
+                <div class="card-price ${getPriceClass(posto.precos.etanol, anpData.etanol)}">
+                    <span>Etanol</span>
+                    <strong>R$ ${posto.precos.etanol?.toFixed(2) || '--'}</strong>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createPostoListItem(posto) {
+    const status = getMarkerStatus(posto);
+    
+    return `
+        <div class="posto-list-item" onclick="openModal(${posto.id})">
+            <div class="list-icon ${status.class}">${status.icon}</div>
+            <div class="list-info">
+                <h3>${posto.nomeFantasia}</h3>
+                <p>${posto.endereco.bairro} - ${posto.bandeira}</p>
+            </div>
+            <div class="list-prices">
+                <span class="${getPriceClass(posto.precos.gasolina, anpData.gasolinaComum)}">
+                    Gas: R$ ${posto.precos.gasolina?.toFixed(2) || '--'}
+                </span>
+                <span class="${getPriceClass(posto.precos.etanol, anpData.etanol)}">
+                    Eta: R$ ${posto.precos.etanol?.toFixed(2) || '--'}
+                </span>
+            </div>
+        </div>
+    `;
 }
 
 // ==========================================
@@ -729,9 +627,7 @@ function toggleChat() {
 }
 
 function handleChatKeypress(event) {
-    if (event.key === 'Enter') {
-        sendMessage();
-    }
+    if (event.key === 'Enter') sendMessage();
 }
 
 async function sendMessage() {
@@ -761,313 +657,135 @@ function askQuickQuestion(question) {
 }
 
 function addChatMessage(content, type) {
-    const messagesContainer = document.getElementById('chatMessages');
+    const container = document.getElementById('chatMessages');
     
-    const messageHTML = `
+    const html = `
         <div class="message ${type}">
             <div class="message-avatar">
                 <i class="fas fa-${type === 'bot' ? 'robot' : 'user'}"></i>
             </div>
-            <div class="message-content">
-                ${formatChatMessage(content)}
-            </div>
+            <div class="message-content">${formatChatMessage(content)}</div>
         </div>
     `;
     
-    messagesContainer.insertAdjacentHTML('beforeend', messageHTML);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    container.insertAdjacentHTML('beforeend', html);
+    container.scrollTop = container.scrollHeight;
 }
 
 function formatChatMessage(content) {
     return content
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/\n/g, '<br>')
-        .replace(/• /g, '<br>• ');
+        .replace(/\n/g, '<br>');
 }
 
 function showTypingIndicator() {
-    const messagesContainer = document.getElementById('chatMessages');
-    const indicator = `
-        <div class="message bot typing-indicator" id="typingIndicator">
-            <div class="message-avatar">
-                <i class="fas fa-robot"></i>
-            </div>
-            <div class="message-content">
-                <p>Digitando<span class="dots">...</span></p>
-            </div>
+    const container = document.getElementById('chatMessages');
+    container.insertAdjacentHTML('beforeend', `
+        <div class="message bot" id="typingIndicator">
+            <div class="message-avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-content"><p>Digitando...</p></div>
         </div>
-    `;
-    messagesContainer.insertAdjacentHTML('beforeend', indicator);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    `);
+    container.scrollTop = container.scrollHeight;
 }
 
 function hideTypingIndicator() {
-    const indicator = document.getElementById('typingIndicator');
-    if (indicator) indicator.remove();
+    document.getElementById('typingIndicator')?.remove();
 }
 
-// ==========================================
-// INTEGRAÇÃO COM GEMINI AI
-// ==========================================
-
-async function getAIResponse(userMessage) {
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'SUA_API_KEY_AQUI') {
-        return getLocalResponse(userMessage);
-    }
-
-    try {
-        const postosContext = prepareFullContext();
-        
-        const prompt = `Você é um assistente virtual inteligente da Câmara Municipal de Guarulhos, especializado em:
-1. Postos de combustíveis credenciados
-2. O contrato administrativo com a empresa Prime (Contrato nº 08/2025)
-3. Regras de abastecimento da frota oficial
-
-${CONTRATO_PRIME}
-
-DADOS DOS POSTOS CREDENCIADOS:
-${postosContext}
-
-DADOS ANP ATUAIS (Média Semanal Guarulhos):
-- Gasolina Comum: R$ ${anpData?.gasolinaComum?.toFixed(2) || 'N/A'} (limite máximo do contrato)
-- Etanol: R$ ${anpData?.etanol?.toFixed(2) || 'N/A'}
-- Diesel: R$ ${anpData?.diesel?.toFixed(2) || 'N/A'}
-- GNV: R$ ${anpData?.gnv?.toFixed(2) || 'N/A'}
-
-CLASSIFICAÇÃO DE PREÇOS (usado no mapa):
-- 🟢 VERDE: Mais de 1% abaixo da ANP (recomendado)
-- 🟡 AMARELO: Entre -1% e +1% da ANP (dentro do limite)
-- 🔴 VERMELHO: Acima de 1% da ANP (bloqueado pelo sistema)
-
-INSTRUÇÕES:
-- Responda SEMPRE em português brasileiro
-- Seja claro, objetivo e amigável
-- Use emojis moderadamente
-- Cite cláusulas do contrato quando relevante
-- Para preços, indique se está verde/amarelo/vermelho
-- Formate respostas longas com quebras de linha
-
-PERGUNTA DO USUÁRIO: ${userMessage}`;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { temperature: 0.7, maxOutputTokens: 2500, topP: 0.95 }
-            })
-        });
-
-        if (!response.ok) throw new Error('API Error');
-
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui processar sua pergunta.";
-        
-    } catch (error) {
-        console.error('Gemini API error:', error);
-        return getLocalResponse(userMessage);
-    }
-}
-
-function prepareFullContext() {
-    return postosData.map(p => {
-        const distancia = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, p.coordenadas.lat, p.coordenadas.lng).toFixed(1);
-        const status = getMarkerColor(p);
-        
-        return `
-- ${p.nomeFantasia} (${p.bandeira}) [${status.label}]
-  Endereço: ${p.endereco.logradouro}, ${p.endereco.numero} - ${p.endereco.bairro}
-  Distância da sede: ${distancia} km
-  Gasolina: R$ ${p.precos.gasolina?.toFixed(2) || 'N/D'} ${status.icon}
-  Etanol: R$ ${p.precos.etanol?.toFixed(2) || 'N/D'}
-  24 horas: ${p.is24h ? 'Sim' : 'Não'}`;
-    }).join('\n');
-}
-
-function getLocalResponse(message) {
+async function getAIResponse(message) {
+    // Respostas locais inteligentes
     const msg = message.toLowerCase();
     
-    // Postos verdes (melhores preços)
-    if (msg.includes('verde') || msg.includes('melhor') || msg.includes('recomend')) {
-        const postosVerdes = postosData.filter(p => {
-            const status = getMarkerColor(p);
-            return status.class === 'verde';
+    if (msg.includes('barato') || msg.includes('menor') || msg.includes('melhor')) {
+        const stats = getEstatisticas();
+        if (stats.maisBaratoGasolina) {
+            return `🟢 **Posto mais barato (Gasolina):**\n\n` +
+                   `**${stats.maisBaratoGasolina.nomeFantasia}**\n` +
+                   `💰 R$ ${stats.maisBaratoGasolina.precos.gasolina.toFixed(2)}\n` +
+                   `📍 ${stats.maisBaratoGasolina.endereco.bairro}`;
+        }
+    }
+    
+    if (msg.includes('caro') || msg.includes('maior')) {
+        const stats = getEstatisticas();
+        if (stats.maisCaroGasolina) {
+            return `🔴 **Posto mais caro (Gasolina):**\n\n` +
+                   `**${stats.maisCaroGasolina.nomeFantasia}**\n` +
+                   `💰 R$ ${stats.maisCaroGasolina.precos.gasolina.toFixed(2)}\n` +
+                   `📍 ${stats.maisCaroGasolina.endereco.bairro}`;
+        }
+    }
+    
+    if (msg.includes('acima') || msg.includes('vermelho') || msg.includes('bloqueado')) {
+        const acima = postosData.filter(p => {
+            if (!p.precos.gasolina || !anpData.gasolinaComum) return false;
+            return ((p.precos.gasolina - anpData.gasolinaComum) / anpData.gasolinaComum) * 100 > 1;
         });
         
-        if (postosVerdes.length === 0) {
-            return "🟡 No momento, não há postos com preços significativamente abaixo da ANP. Os postos amarelos estão dentro do limite contratual.";
+        if (acima.length === 0) {
+            return '✅ Nenhum posto está com preço acima da ANP no momento!';
         }
         
-        let response = "🟢 **Postos com melhores preços (VERDE):**\n\n";
-        postosVerdes.forEach((p, i) => {
+        let response = `🔴 **Postos com preço ACIMA da ANP (${acima.length}):**\n\n`;
+        acima.forEach((p, i) => {
             const diff = ((p.precos.gasolina - anpData.gasolinaComum) / anpData.gasolinaComum * 100).toFixed(1);
-            response += `${i + 1}. **${p.nomeFantasia}**\n   💰 R$ ${p.precos.gasolina.toFixed(2)} (${diff}% ANP)\n   📍 ${formatEnderecoCard(p)}\n\n`;
+            response += `${i + 1}. **${p.nomeFantasia}**\n   R$ ${p.precos.gasolina.toFixed(2)} (+${diff}%)\n\n`;
         });
-        
         return response;
     }
     
-    // Postos vermelhos (bloqueados)
-    if (msg.includes('vermelho') || msg.includes('bloqueado') || msg.includes('acima')) {
-        const postosVermelhos = postosData.filter(p => {
-            const status = getMarkerColor(p);
-            return status.class === 'vermelho';
-        });
-        
-        if (postosVermelhos.length === 0) {
-            return "✅ Ótimo! Nenhum posto está com preços acima do limite ANP no momento.";
-        }
-        
-        let response = "🔴 **Postos com preços ACIMA da ANP (bloqueados):**\n\n";
-        postosVermelhos.forEach((p, i) => {
-            const diff = ((p.precos.gasolina - anpData.gasolinaComum) / anpData.gasolinaComum * 100).toFixed(1);
-            response += `${i + 1}. **${p.nomeFantasia}**\n   ⚠️ R$ ${p.precos.gasolina.toFixed(2)} (+${diff}% ANP)\n   📍 ${formatEnderecoCard(p)}\n\n`;
-        });
-        
-        response += "⚠️ O sistema de cartões bloqueia abastecimentos nesses postos automaticamente.";
-        return response;
-    }
-    
-    // Legenda do mapa
     if (msg.includes('legenda') || msg.includes('cores') || msg.includes('mapa')) {
-        return `🗺️ **Legenda do Mapa:**
-
-🟢 **VERDE** - Preço abaixo da ANP (>1%)
-   ✅ Melhor opção, economia garantida
-
-🟡 **AMARELO** - Preço igual à ANP (±1%)
-   ⚠️ Dentro do limite contratual
-
-🔴 **VERMELHO** - Preço acima da ANP (>1%)
-   🚫 Bloqueado pelo sistema de cartões
-
-🔵 **AZUL** - Sede da Câmara Municipal
-   📍 Av. Guarulhos, 845
-
-**Limite ANP atual (gasolina): R$ ${anpData.gasolinaComum?.toFixed(2) || '--'}**`;
+        return `🗺️ **Legenda do Mapa:**\n\n` +
+               `🟢 **Verde** - Abaixo da ANP (bom preço)\n` +
+               `🟡 **Amarelo** - Igual à ANP (±1%)\n` +
+               `🔴 **Vermelho** - Acima da ANP (bloqueado)\n` +
+               `🔵 **Azul** - Sede da Câmara\n\n` +
+               `Limite ANP Gasolina: R$ ${anpData.gasolinaComum?.toFixed(2) || '--'}`;
     }
     
-    // Contrato
-    if (msg.includes('contrato') || msg.includes('prime')) {
-        return `📋 **Contrato Administrativo nº 08/2025**
-
-🏢 **Contratada:** Prime Consultoria
-📅 **Vigência:** 30 meses (desde 23/10/2025)
-💰 **Valor total:** R$ 1.326.946,38
-📉 **Taxa de Administração:** -5,65% (DESCONTO!)
-⛽ **Limite mensal:** 12.000 litros
-
-🚗 **Frota:** 40 veículos (39 Onix + 1 Spin)
-
-Posso detalhar qualquer cláusula!`;
+    if (msg.includes('anp') || msg.includes('limite') || msg.includes('referência')) {
+        return `📊 **Preços ANP - Guarulhos:**\n\n` +
+               `⛽ Gasolina: R$ ${anpData.gasolinaComum?.toFixed(2) || '--'}\n` +
+               `🌿 Etanol: R$ ${anpData.etanol?.toFixed(2) || '--'}\n\n` +
+               `Fonte: anp-gru.vercel.app`;
     }
     
-    // Gasolina mais barata
-    if (msg.includes('gasolina') && (msg.includes('barat') || msg.includes('menor'))) {
-        const ordenados = [...postosData].filter(p => p.precos?.gasolina > 0)
-            .sort((a, b) => a.precos.gasolina - b.precos.gasolina).slice(0, 5);
-        
-        let response = "⛽ **Top 5 - Gasolina mais barata:**\n\n";
-        ordenados.forEach((p, i) => {
-            const status = getMarkerColor(p);
-            response += `${i + 1}. **${p.nomeFantasia}** ${status.icon}\n   💰 R$ ${p.precos.gasolina.toFixed(2)}\n   📍 ${formatEnderecoCard(p)}\n\n`;
-        });
-        
-        return response;
-    }
-    
-    // 24 horas
-    if (msg.includes('24') || msg.includes('madrugada')) {
-        const postos24h = postosData.filter(p => p.is24h);
-        
-        let response = `🕐 **Postos 24 horas (${postos24h.length}):**\n\n`;
-        postos24h.forEach((p, i) => {
-            const status = getMarkerColor(p);
-            const dist = calcularDistancia(SEDE_CAMARA.lat, SEDE_CAMARA.lng, p.coordenadas.lat, p.coordenadas.lng).toFixed(1);
-            response += `${i + 1}. **${p.nomeFantasia}** ${status.icon}\n   📍 ${formatEnderecoCard(p)}\n   📏 ${dist} km da sede\n\n`;
-        });
-        
-        return response;
-    }
-    
-    // Resposta padrão
-    return `🤖 **Posso ajudar com:**
-
-🗺️ **Mapa:** cores verde/amarelo/vermelho
-💰 Preços e comparação com ANP
-📋 Detalhes do contrato Prime
-🚗 Frota e limites de abastecimento
-🕐 Postos 24 horas
-📏 Distâncias entre postos
-
-Pergunte sobre os postos ou o contrato!`;
+    return `🤖 Posso ajudar com:\n\n` +
+           `💰 "Qual o posto mais barato?"\n` +
+           `🔴 "Quais postos estão acima da ANP?"\n` +
+           `🗺️ "O que significam as cores?"\n` +
+           `📊 "Qual o limite ANP?"\n\n` +
+           `Digite sua pergunta!`;
 }
 
 // ==========================================
 // FUNÇÕES AUXILIARES
 // ==========================================
 
-function formatEnderecoCard(posto) {
-    return `${posto.endereco.logradouro}, ${posto.endereco.numero} - ${posto.endereco.bairro}`;
-}
-
-function formatPreco(preco) {
-    if (!preco || preco <= 0) return '--';
-    return `R$ ${preco.toFixed(2)}`;
-}
-
-function getPrecoClass(preco, anpPreco) {
-    if (!preco || !anpPreco) return '';
-    const diff = ((preco - anpPreco) / anpPreco) * 100;
-    if (diff < -1) return 'destaque';
-    if (diff > 1) return 'alerta';
-    return '';
-}
-
-function isOpen(posto) {
-    if (posto.is24h) return true;
-    
-    const now = new Date();
-    const dias = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
-    const diaAtual = dias[now.getDay()];
-    const horario = posto.horarioFuncionamento[diaAtual];
-    
-    if (!horario) return false;
-    
-    const horaAtual = now.getHours() * 60 + now.getMinutes();
-    const [abreH, abreM] = horario.abertura.split(':').map(Number);
-    const [fechaH, fechaM] = horario.fechamento.split(':').map(Number);
-    const abertura = abreH * 60 + abreM;
-    const fechamento = fechaH * 60 + fechaM;
-    
-    return horaAtual >= abertura && horaAtual < fechamento;
-}
-
-function formatHorario(horario) {
-    const dias = { segunda: 'Seg', terca: 'Ter', quarta: 'Qua', quinta: 'Qui', sexta: 'Sex', sabado: 'Sáb', domingo: 'Dom' };
-    let result = '';
-    for (const [dia, h] of Object.entries(horario)) {
-        if (h && h.abertura && h.fechamento) {
-            result += `${dias[dia]}: ${h.abertura} - ${h.fechamento}<br>`;
-        }
-    }
-    return result || 'Horário não informado';
-}
-
 function updateLastUpdate() {
-    const now = new Date();
-    document.getElementById('lastUpdate').textContent = `Atualizado: ${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+    const ultima = getUltimaAtualizacao();
+    const texto = ultima 
+        ? `Dados: ${new Date(ultima).toLocaleDateString('pt-BR')}`
+        : `Atualizado: ${new Date().toLocaleDateString('pt-BR')}`;
+    document.getElementById('lastUpdate').textContent = texto;
 }
 
-function refreshData() {
+async function refreshData() {
     showLoading(true);
-    setTimeout(() => {
+    
+    try {
+        await carregarDadosANP();
+        updateANPDisplay();
+        updateStats();
         updateMapMarkers();
         updateLastUpdate();
-        updateStats();
+        showNotification('Dados atualizados!', 'success');
+    } catch (error) {
+        showNotification('Erro ao atualizar', 'error');
+    } finally {
         showLoading(false);
-    }, 1000);
+    }
 }
 
 function showLoading(show) {
@@ -1080,12 +798,8 @@ function showError(message) {
 
 function debounce(func, wait) {
     let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
+    return function(...args) {
         clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
+        timeout = setTimeout(() => func(...args), wait);
     };
 }
