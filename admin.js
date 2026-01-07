@@ -486,7 +486,7 @@ function processarCSVAbastecimentos(csvContent) {
         return;
     }
     
-    const headersLower = headers.map(h => h.toLowerCase().replace(/["\s]/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+    const headersLower = headers.map(h => h.toLowerCase().replace(/["\s_]/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
     console.log('Headers normalizados:', headersLower);
     
     // Mapear colunas
