@@ -1,966 +1,441 @@
-// ==========================================
-// APLICAÇÃO PRINCIPAL - CMG Postos
-// ==========================================
+// ========================================
+// CMG POSTOS - APP PRINCIPAL
+// ========================================
 
-let currentView = 'map';
+// Variáveis globais
+let postosData = [];
+let anpData = {};
 let map = null;
-let markersLayer = null;
-let filteredPostos = [];
-let chatOpen = true;
+let markers = [];
+let viewMode = 'grid'; // grid, list, map
 
-// ==========================================
+// Coordenadas da Câmara de Guarulhos
+const CAMARA_COORDS = { lat: -23.4538, lng: -46.5333 };
+
+// ========================================
 // INICIALIZAÇÃO
-// ==========================================
+// ========================================
 
-document.addEventListener('DOMContentLoaded', function() {
-    init();
+document.addEventListener('DOMContentLoaded', () => {
+    carregarDados();
+    configurarEventos();
+    atualizarDataHeader();
 });
 
-async function init() {
-    showLoading(true);
+function carregarDados() {
+    // Carregar postos
+    const postosStorage = localStorage.getItem('cmg_postos_data');
+    postosData = postosStorage ? JSON.parse(postosStorage) : [];
     
-    try {
-        console.log('🚀 Iniciando aplicação...');
-        
-        // Carregar ANP primeiro
-        await carregarDadosANP();
-        
-        // Tentar carregar postos do JSON, senão do localStorage
-        const savedPostos = localStorage.getItem('cmg_postos_data');
-        if (savedPostos) {
-            postosData = JSON.parse(savedPostos);
-            console.log(`✅ ${postosData.length} postos do localStorage`);
-        }
-        
-        // Se não tem postos salvos, carregar do JSON
-        if (postosData.length === 0) {
-            await carregarPostosDoJSON();
-        }
-        
-        // Atualizar interface
-        updateANPDisplay();
-        populateFilters();
-        updateStats();
-        updateLastUpdate();
-        
-        // Configurar eventos
-        setupEventListeners();
-        
-        // Inicializar com visão de mapa
-        filteredPostos = [...postosData];
-        initMapView();
-        
-        console.log('✅ Aplicação inicializada com sucesso');
-        
-    } catch (error) {
-        console.error('❌ Erro na inicialização:', error);
-        showError('Erro ao carregar dados. Tente novamente.');
-    } finally {
-        showLoading(false);
-    }
+    // Carregar dados ANP
+    const anpStorage = localStorage.getItem('cmg_anp_data');
+    anpData = anpStorage ? JSON.parse(anpStorage) : {};
+    
+    // Renderizar
+    atualizarResumo();
+    renderizarPostos();
+    preencherFiltroBairros();
 }
 
-// ==========================================
-// DISPLAY ANP
-// ==========================================
-
-function updateANPDisplay() {
-    const gasolinaEl = document.getElementById('anpGasolina');
-    const etanolEl = document.getElementById('anpEtanol');
-    
-    if (gasolinaEl) {
-        gasolinaEl.textContent = anpData.gasolinaComum 
-            ? `R$ ${anpData.gasolinaComum.toFixed(2)}` 
-            : 'R$ --';
-    }
-    
-    if (etanolEl) {
-        etanolEl.textContent = anpData.etanol 
-            ? `R$ ${anpData.etanol.toFixed(2)}` 
-            : 'R$ --';
-    }
-}
-
-// ==========================================
-// ESTATÍSTICAS
-// ==========================================
-
-function updateStats() {
-    const stats = getEstatisticas();
-    
-    const totalEl = document.getElementById('totalPostos');
-    if (totalEl) totalEl.textContent = stats.totalPostos;
-    
-    // Mais barato
-    const maisBaratoValorEl = document.getElementById('maisBaratoValor');
-    const maisBaratoNomeEl = document.getElementById('maisBaratoNome');
-    
-    if (stats.maisBaratoGasolina) {
-        if (maisBaratoValorEl) {
-            maisBaratoValorEl.textContent = `R$ ${stats.maisBaratoGasolina.precos.gasolina.toFixed(2)}`;
-        }
-        if (maisBaratoNomeEl) {
-            maisBaratoNomeEl.textContent = truncateText(stats.maisBaratoGasolina.nomeFantasia, 25);
-        }
-    } else {
-        if (maisBaratoValorEl) maisBaratoValorEl.textContent = 'R$ --';
-        if (maisBaratoNomeEl) maisBaratoNomeEl.textContent = 'Sem dados';
-    }
-    
-    // Mais caro
-    const maisCaroValorEl = document.getElementById('maisCaroValor');
-    const maisCaroNomeEl = document.getElementById('maisCaroNome');
-    
-    if (stats.maisCaroGasolina) {
-        if (maisCaroValorEl) {
-            maisCaroValorEl.textContent = `R$ ${stats.maisCaroGasolina.precos.gasolina.toFixed(2)}`;
-        }
-        if (maisCaroNomeEl) {
-            maisCaroNomeEl.textContent = truncateText(stats.maisCaroGasolina.nomeFantasia, 25);
-        }
-    } else {
-        if (maisCaroValorEl) maisCaroValorEl.textContent = 'R$ --';
-        if (maisCaroNomeEl) maisCaroNomeEl.textContent = 'Sem dados';
-    }
-}
-
-function truncateText(text, maxLength) {
-    if (!text) return '';
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-}
-
-// ==========================================
-// FILTROS
-// ==========================================
-
-function populateFilters() {
-    const filterNeighborhood = document.getElementById('filterNeighborhood');
-    if (!filterNeighborhood) return;
-    
-    const bairros = getBairros();
-    filterNeighborhood.innerHTML = '<option value="all">Todos</option>';
-    bairros.forEach(b => {
-        filterNeighborhood.innerHTML += `<option value="${b}">${b}</option>`;
-    });
-}
-
-function setupEventListeners() {
+function configurarEventos() {
+    // Busca
     const searchInput = document.getElementById('searchInput');
-    const filterNeighborhood = document.getElementById('filterNeighborhood');
-    const sortBy = document.getElementById('sortBy');
-    const modal = document.getElementById('postoModal');
+    searchInput.addEventListener('input', debounce(filtrarPostos, 300));
     
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(applyFilters, 300));
-    }
-    
-    if (filterNeighborhood) {
-        filterNeighborhood.addEventListener('change', applyFilters);
-    }
-    
-    if (sortBy) {
-        sortBy.addEventListener('change', applyFilters);
-    }
-    
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-    }
-    
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeModal();
-    });
-}
-
-function applyFilters() {
-    const searchInput = document.getElementById('searchInput');
-    const filterNeighborhood = document.getElementById('filterNeighborhood');
-    const sortBy = document.getElementById('sortBy');
-    
-    const filtros = {
-        busca: searchInput ? searchInput.value : '',
-        bairro: filterNeighborhood ? filterNeighborhood.value : 'all'
-    };
-    
-    filteredPostos = filterPostos(filtros);
-    
-    const sortCriteria = sortBy ? sortBy.value : 'name';
-    filteredPostos = sortPostos(filteredPostos, sortCriteria);
-    
-    updateStats();
-    
-    if (currentView === 'map') {
-        updateMapMarkers();
-    } else {
-        renderPostos();
-    }
-}
-
-function clearSearch() {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
+    const btnLimpar = document.getElementById('btnLimparBusca');
+    btnLimpar.addEventListener('click', () => {
         searchInput.value = '';
-        applyFilters();
+        btnLimpar.classList.remove('visible');
+        filtrarPostos();
+    });
+    
+    searchInput.addEventListener('input', () => {
+        btnLimpar.classList.toggle('visible', searchInput.value.length > 0);
+    });
+    
+    // Filtros
+    document.getElementById('btnFiltrar').addEventListener('click', filtrarPostos);
+    document.getElementById('ordenarPor').addEventListener('change', filtrarPostos);
+    document.getElementById('filtroBairro').addEventListener('change', filtrarPostos);
+    
+    // Visualização
+    document.getElementById('btnViewGrid').addEventListener('click', () => setViewMode('grid'));
+    document.getElementById('btnViewList').addEventListener('click', () => setViewMode('list'));
+    document.getElementById('btnViewMap').addEventListener('click', () => setViewMode('map'));
+    
+    // Atualizar
+    document.getElementById('btnAtualizar').addEventListener('click', carregarDados);
+    
+    // Fechar modal ao clicar fora
+    document.getElementById('modalDetalhes').addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            fecharModal();
+        }
+    });
+}
+
+// ========================================
+// ATUALIZAÇÃO DE DADOS
+// ========================================
+
+function atualizarDataHeader() {
+    const dadosPrecos = JSON.parse(localStorage.getItem('cmg_precos_postos') || '{}');
+    const dataEl = document.getElementById('dataAtualizacao');
+    
+    if (dataEl) {
+        const dataGas = dadosPrecos.gasolina?.dataEmissao;
+        const dataEta = dadosPrecos.etanol?.dataEmissao;
+        const data = dataGas || dataEta || '--/--/----';
+        dataEl.textContent = `Dados: ${data}`;
     }
 }
 
-// ==========================================
-// VISUALIZAÇÃO
-// ==========================================
-
-function setView(view) {
-    currentView = view;
+function atualizarResumo() {
+    // Total de postos
+    document.getElementById('totalPostos').textContent = postosData.length;
     
-    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-    if (event && event.target) {
-        event.target.closest('.view-btn').classList.add('active');
-    }
+    // Preços de gasolina
+    const precosGasolina = postosData
+        .map(p => p.precos?.gasolina)
+        .filter(p => p && p > 0);
     
-    const postosContainer = document.getElementById('postosContainer');
-    const mapContainer = document.getElementById('mapContainer');
-    
-    if (view === 'map') {
-        if (postosContainer) postosContainer.style.display = 'none';
-        if (mapContainer) mapContainer.style.display = 'block';
-        if (!map) {
-            initMap();
-        } else {
-            updateMapMarkers();
-            map.invalidateSize();
-        }
+    if (precosGasolina.length > 0) {
+        const menor = Math.min(...precosGasolina);
+        const maior = Math.max(...precosGasolina);
+        document.getElementById('menorPrecoGas').textContent = `R$ ${menor.toFixed(2)}`;
+        document.getElementById('maiorPrecoGas').textContent = `R$ ${maior.toFixed(2)}`;
     } else {
-        if (postosContainer) postosContainer.style.display = '';
-        if (mapContainer) mapContainer.style.display = 'none';
-        renderPostos();
+        document.getElementById('menorPrecoGas').textContent = 'R$ --';
+        document.getElementById('maiorPrecoGas').textContent = 'R$ --';
     }
+    
+    // ANP
+    const precoANP = anpData.gasolinaComum;
+    document.getElementById('precoANP').textContent = precoANP 
+        ? `R$ ${precoANP.toFixed(2)}` 
+        : 'R$ --';
 }
 
-function initMapView() {
-    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-    const mapBtn = document.querySelector('.view-btn[onclick*="map"]');
-    if (mapBtn) mapBtn.classList.add('active');
+function preencherFiltroBairros() {
+    const bairros = [...new Set(postosData.map(p => p.bairro).filter(b => b))].sort();
+    const select = document.getElementById('filtroBairro');
     
-    const postosContainer = document.getElementById('postosContainer');
-    const mapContainer = document.getElementById('mapContainer');
-    
-    if (postosContainer) postosContainer.style.display = 'none';
-    if (mapContainer) mapContainer.style.display = 'block';
-    
-    setTimeout(() => {
-        initMap();
-    }, 100);
+    select.innerHTML = '<option value="">Todos</option>';
+    bairros.forEach(bairro => {
+        select.innerHTML += `<option value="${bairro}">${bairro}</option>`;
+    });
 }
 
-// ==========================================
-// MAPA
-// ==========================================
+// ========================================
+// RENDERIZAÇÃO
+// ========================================
 
-function initMap() {
-    const mapElement = document.getElementById('map');
-    if (!mapElement) {
-        console.error('Elemento do mapa não encontrado');
+function renderizarPostos(postos = postosData) {
+    const container = document.getElementById('postosContainer');
+    const mensagemVazia = document.getElementById('mensagemVazia');
+    
+    if (postos.length === 0) {
+        container.innerHTML = '';
+        mensagemVazia.style.display = 'block';
         return;
     }
     
-    if (map) {
-        updateMapMarkers();
-        return;
-    }
+    mensagemVazia.style.display = 'none';
     
-    console.log('🗺️ Inicializando mapa...');
+    container.className = viewMode === 'list' ? 'postos-list' : 'postos-grid';
+    container.innerHTML = postos.map(posto => renderizarCardPosto(posto)).join('');
     
-    map = L.map('map', {
-        center: [SEDE_CAMARA.lat, SEDE_CAMARA.lng],
-        zoom: 13,
-        zoomControl: true
-    });
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 19
-    }).addTo(map);
-    
-    markersLayer = L.layerGroup().addTo(map);
-    
-    addSedeMarker();
-    addMapLegend();
-    updateMapMarkers();
-    
-    console.log('✅ Mapa inicializado');
-}
-
-function addSedeMarker() {
-    const sedeIcon = L.divIcon({
-        className: 'marker-sede',
-        html: `<div class="marker-circle sede"><i class="fas fa-landmark"></i></div>`,
-        iconSize: [44, 44],
-        iconAnchor: [22, 22],
-        popupAnchor: [0, -22]
-    });
-    
-    L.marker([SEDE_CAMARA.lat, SEDE_CAMARA.lng], { icon: sedeIcon })
-        .addTo(map)
-        .bindPopup(`
-            <div class="popup-content">
-                <h3>🏛️ Câmara Municipal de Guarulhos</h3>
-                <p>📍 ${SEDE_CAMARA.endereco}</p>
-            </div>
-        `);
-}
-
-function addMapLegend() {
-    const legend = L.control({ position: 'bottomright' });
-    
-    legend.onAdd = function() {
-        const div = L.DomUtil.create('div', 'map-legend');
-        div.innerHTML = `
-            <h4>📊 Legenda</h4>
-            <div class="legend-item"><span class="dot green"></span> Abaixo da ANP</div>
-            <div class="legend-item"><span class="dot yellow"></span> Igual à ANP</div>
-            <div class="legend-item"><span class="dot red"></span> Acima da ANP</div>
-            <div class="legend-item"><span class="dot blue"></span> Sede da Câmara</div>
-        `;
-        return div;
-    };
-    
-    legend.addTo(map);
-}
-
-function updateMapMarkers() {
-    if (!markersLayer) return;
-    
-    markersLayer.clearLayers();
-    
-    console.log(`📍 Renderizando ${filteredPostos.length} postos no mapa`);
-    
-    filteredPostos.forEach(posto => {
-        if (posto.coordenadas && posto.coordenadas.lat && posto.coordenadas.lng) {
-            const marker = createPostoMarker(posto);
-            markersLayer.addLayer(marker);
-        }
-    });
-    
-    // Ajustar bounds
-    if (filteredPostos.length > 0) {
-        const bounds = [];
-        filteredPostos.forEach(p => {
-            if (p.coordenadas && p.coordenadas.lat && p.coordenadas.lng) {
-                bounds.push([p.coordenadas.lat, p.coordenadas.lng]);
-            }
+    // Adicionar eventos de clique
+    container.querySelectorAll('.posto-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const id = card.dataset.id;
+            const posto = postosData.find(p => p.id === id);
+            if (posto) abrirModal(posto);
         });
-        bounds.push([SEDE_CAMARA.lat, SEDE_CAMARA.lng]);
-        
-        if (bounds.length > 1) {
-            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
-        }
-    }
-}
-
-function createPostoMarker(posto) {
-    const status = getMarkerStatus(posto);
-    const preco = posto.precos?.gasolina;
-    
-    const icon = L.divIcon({
-        className: 'marker-posto',
-        html: `
-            <div class="marker-circle ${status.class}" title="${posto.nomeFantasia}">
-                ${preco > 0 ? `<span class="marker-price">${preco.toFixed(2)}</span>` : '<i class="fas fa-gas-pump"></i>'}
-            </div>
-        `,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20],
-        popupAnchor: [0, -20]
     });
-    
-    const marker = L.marker([posto.coordenadas.lat, posto.coordenadas.lng], { icon: icon });
-    marker.bindPopup(createMarkerPopup(posto, status));
-    
-    return marker;
 }
 
-function getMarkerStatus(posto) {
-    const preco = posto.precos?.gasolina;
-    const anp = anpData.gasolinaComum;
+function renderizarCardPosto(posto) {
+    const precos = posto.precos || {};
+    const dataEmissao = precos.dataEmissao || '';
     
-    if (!preco || preco <= 0 || !anp) {
-        return { class: 'gray', label: 'Sem preço', icon: '❓' };
-    }
-    
-    const diff = ((preco - anp) / anp) * 100;
-    
-    if (diff < -1) {
-        return { class: 'green', label: 'Abaixo da ANP', icon: '✅', diff: diff.toFixed(1) + '%' };
-    } else if (diff <= 1) {
-        return { class: 'yellow', label: 'Igual à ANP', icon: '⚠️', diff: diff.toFixed(1) + '%' };
-    } else {
-        return { class: 'red', label: 'Acima da ANP', icon: '🚫', diff: '+' + diff.toFixed(1) + '%' };
-    }
-}
-
-function createMarkerPopup(posto, status) {
-    const dist = calcularDistancia(
-        SEDE_CAMARA.lat, SEDE_CAMARA.lng, 
-        posto.coordenadas.lat, posto.coordenadas.lng
-    ).toFixed(1);
-    
-    const endereco = posto.endereco || {};
+    // Determinar status em relação à ANP
+    const statusGasolina = getStatusPreco(precos.gasolina, anpData.gasolinaComum);
+    const statusEtanol = getStatusPreco(precos.etanol, anpData.etanol);
     
     return `
-        <div class="popup-content">
-            <h3>${posto.nomeFantasia || 'Posto'}</h3>
-            <span class="popup-badge ${status.class}">${status.icon} ${status.label}</span>
-            
-            <div class="popup-info">
-                <p>📍 ${endereco.logradouro || ''}, ${endereco.numero || 'S/N'}</p>
-                <p>🏘️ ${endereco.bairro || 'Guarulhos'}</p>
-                <p>📏 ${dist} km da sede</p>
-                <p>🏷️ ${posto.bandeira || 'Bandeira Branca'}</p>
+        <div class="posto-card" data-id="${posto.id}">
+            <div class="posto-header">
+                <h3>${posto.nomeFantasia || posto.razaoSocial || 'Sem nome'}</h3>
+                ${dataEmissao ? `<span class="posto-data">📅 ${dataEmissao}</span>` : ''}
             </div>
             
-            <div class="popup-prices">
-                <div class="popup-price ${getPriceClass(posto.precos?.gasolina, anpData.gasolinaComum)}">
-                    <span>Gasolina</span>
-                    <strong>R$ ${posto.precos?.gasolina?.toFixed(2) || '--'}</strong>
-                </div>
-                <div class="popup-price ${getPriceClass(posto.precos?.etanol, anpData.etanol)}">
-                    <span>Etanol</span>
-                    <strong>R$ ${posto.precos?.etanol?.toFixed(2) || '--'}</strong>
-                </div>
+            <div class="posto-endereco">
+                📍 ${posto.endereco || ''} ${posto.bairro ? '- ' + posto.bairro : ''} - Guarulhos
             </div>
             
-            <div class="popup-actions">
-                <button onclick="openModal(${posto.id})" class="btn-details">
-                    <i class="fas fa-edit"></i> Detalhes
-                </button>
-                <button onclick="openDirections(${posto.id})" class="btn-route">
-                    <i class="fas fa-route"></i> Rota
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-function getPriceClass(preco, anp) {
-    if (!preco || !anp || preco <= 0) return '';
-    const diff = ((preco - anp) / anp) * 100;
-    if (diff < -1) return 'price-low';
-    if (diff > 1) return 'price-high';
-    return '';
-}
-
-// ==========================================
-// MODAL
-// ==========================================
-
-function openModal(id) {
-    const posto = getPostoById(id);
-    if (!posto) {
-        console.warn('Posto não encontrado:', id);
-        return;
-    }
-    
-    const modalTitle = document.getElementById('modalTitle');
-    const modalBody = document.getElementById('modalBody');
-    const modal = document.getElementById('postoModal');
-    
-    if (modalTitle) modalTitle.textContent = posto.nomeFantasia || 'Posto';
-    if (modalBody) modalBody.innerHTML = createModalContent(posto);
-    if (modal) modal.classList.add('active');
-    
-    document.body.style.overflow = 'hidden';
-}
-
-function closeModal() {
-    const modal = document.getElementById('postoModal');
-    if (modal) modal.classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-function createModalContent(posto) {
-    const status = getMarkerStatus(posto);
-    const dist = calcularDistancia(
-        SEDE_CAMARA.lat, SEDE_CAMARA.lng, 
-        posto.coordenadas?.lat || 0, posto.coordenadas?.lng || 0
-    ).toFixed(1);
-    
-    const ultimaAtualizacao = posto.ultimaAtualizacaoPreco 
-        ? new Date(posto.ultimaAtualizacaoPreco).toLocaleString('pt-BR')
-        : 'Não informado';
-    
-    const endereco = posto.endereco || {};
-    
-    return `
-        <div class="modal-status ${status.class}">
-            ${status.icon} ${status.label} ${status.diff ? `(${status.diff})` : ''}
-        </div>
-        
-        <div class="modal-section">
-            <h4><i class="fas fa-info-circle"></i> Informações</h4>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Bandeira</span>
-                    <span class="info-value">${posto.bandeira || 'N/A'}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Distância</span>
-                    <span class="info-value">${dist} km</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Telefone</span>
-                    <span class="info-value">${posto.telefone || 'N/A'}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Horário</span>
-                    <span class="info-value">${posto.is24h ? '24 horas' : (posto.horarioFuncionamento || 'N/A')}</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="modal-section">
-            <h4><i class="fas fa-map-marker-alt"></i> Endereço</h4>
-            <p>${endereco.logradouro || ''}, ${endereco.numero || 'S/N'}<br>
-            ${endereco.bairro || ''} - ${endereco.cidade || 'Guarulhos'}/${endereco.estado || 'SP'}<br>
-            CEP: ${endereco.cep || 'N/A'}</p>
-        </div>
-        
-        <div class="modal-section">
-            <h4><i class="fas fa-dollar-sign"></i> Preços</h4>
-            <p class="anp-reference">
-                <strong>Limite ANP:</strong> Gasolina R$ ${anpData.gasolinaComum?.toFixed(2) || '--'} | Etanol R$ ${anpData.etanol?.toFixed(2) || '--'}
-            </p>
-            
-            <div class="price-edit-grid">
-                <div class="price-edit-item">
-                    <label>Gasolina Comum</label>
-                    <div class="price-input-group">
-                        <span>R$</span>
-                        <input type="number" 
-                               id="editGasolina" 
-                               value="${posto.precos?.gasolina || ''}" 
-                               step="0.01" 
-                               min="0"
-                               placeholder="0.00">
-                    </div>
-                    <span class="price-status ${getPriceClass(posto.precos?.gasolina, anpData.gasolinaComum)}">
-                        ${getPriceStatusText(posto.precos?.gasolina, anpData.gasolinaComum)}
-                    </span>
+            <div class="posto-precos">
+                <div class="preco-item ${statusGasolina}">
+                    <span class="combustivel">🔴 Gasolina</span>
+                    <span class="valor">${precos.gasolina ? 'R$ ' + precos.gasolina.toFixed(2) : 'R$ --'}</span>
+                    ${anpData.gasolinaComum ? `<span class="anp">ANP: R$ ${anpData.gasolinaComum.toFixed(2)}</span>` : ''}
                 </div>
                 
-                <div class="price-edit-item">
-                    <label>Etanol</label>
-                    <div class="price-input-group">
-                        <span>R$</span>
-                        <input type="number" 
-                               id="editEtanol" 
-                               value="${posto.precos?.etanol || ''}" 
-                               step="0.01" 
-                               min="0"
-                               placeholder="0.00">
-                    </div>
-                    <span class="price-status ${getPriceClass(posto.precos?.etanol, anpData.etanol)}">
-                        ${getPriceStatusText(posto.precos?.etanol, anpData.etanol)}
-                    </span>
+                <div class="preco-item ${statusEtanol}">
+                    <span class="combustivel">🟢 Etanol</span>
+                    <span class="valor">${precos.etanol ? 'R$ ' + precos.etanol.toFixed(2) : 'R$ --'}</span>
+                    ${anpData.etanol ? `<span class="anp">ANP: R$ ${anpData.etanol.toFixed(2)}</span>` : ''}
                 </div>
             </div>
-            
-            <p style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">
-                Última atualização: ${ultimaAtualizacao}
-            </p>
-            
-            <button class="btn-save-prices" onclick="salvarPrecos(${posto.id})">
-                <i class="fas fa-save"></i> Salvar Preços
-            </button>
-        </div>
-        
-        <div class="modal-section modal-actions">
-            <button class="btn-directions" onclick="openDirections(${posto.id})">
-                <i class="fas fa-directions"></i> Como Chegar
-            </button>
         </div>
     `;
 }
 
-function getPriceStatusText(preco, anp) {
-    if (!preco || !anp || preco <= 0) return '';
-    const diff = ((preco - anp) / anp) * 100;
-    if (diff < -1) return `✅ ${diff.toFixed(1)}% abaixo`;
-    if (diff > 1) return `🚫 +${diff.toFixed(1)}% acima`;
-    return `⚠️ Dentro do limite`;
+function getStatusPreco(precoPosto, precoANP) {
+    if (!precoPosto || !precoANP) return '';
+    if (precoPosto < precoANP) return 'preco-abaixo';
+    if (precoPosto <= precoANP * 1.02) return 'preco-igual'; // Tolerância de 2%
+    return 'preco-acima';
 }
 
-function salvarPrecos(postoId) {
-    const gasolinaInput = document.getElementById('editGasolina');
-    const etanolInput = document.getElementById('editEtanol');
+// ========================================
+// FILTROS E ORDENAÇÃO
+// ========================================
+
+function filtrarPostos() {
+    const busca = document.getElementById('searchInput').value.toLowerCase().trim();
+    const bairro = document.getElementById('filtroBairro').value;
+    const ordenar = document.getElementById('ordenarPor').value;
     
-    const gasolina = gasolinaInput ? parseFloat(gasolinaInput.value) : NaN;
-    const etanol = etanolInput ? parseFloat(etanolInput.value) : NaN;
+    let resultado = [...postosData];
     
-    let atualizado = false;
-    
-    if (!isNaN(gasolina) && gasolina > 0) {
-        atualizarPrecoPosto(postoId, 'gasolina', gasolina);
-        atualizado = true;
+    // Filtro de busca
+    if (busca) {
+        resultado = resultado.filter(p => 
+            (p.nomeFantasia || '').toLowerCase().includes(busca) ||
+            (p.razaoSocial || '').toLowerCase().includes(busca) ||
+            (p.endereco || '').toLowerCase().includes(busca) ||
+            (p.bairro || '').toLowerCase().includes(busca)
+        );
     }
     
-    if (!isNaN(etanol) && etanol > 0) {
-        atualizarPrecoPosto(postoId, 'etanol', etanol);
-        atualizado = true;
+    // Filtro de bairro
+    if (bairro) {
+        resultado = resultado.filter(p => p.bairro === bairro);
     }
     
-    if (atualizado) {
-        filteredPostos = [...postosData];
-        updateStats();
-        updateMapMarkers();
-        openModal(postoId);
-        showNotification('Preços atualizados com sucesso!', 'success');
+    // Ordenação
+    resultado.sort((a, b) => {
+        switch (ordenar) {
+            case 'gasolina':
+                const precoA = a.precos?.gasolina || 999;
+                const precoB = b.precos?.gasolina || 999;
+                return precoA - precoB;
+            case 'etanol':
+                const etanolA = a.precos?.etanol || 999;
+                const etanolB = b.precos?.etanol || 999;
+                return etanolA - etanolB;
+            case 'distancia':
+                // Se tiver geolocalização, ordenar por distância
+                if (a.lat && a.lng && b.lat && b.lng) {
+                    const distA = calcularDistancia(CAMARA_COORDS.lat, CAMARA_COORDS.lng, a.lat, a.lng);
+                    const distB = calcularDistancia(CAMARA_COORDS.lat, CAMARA_COORDS.lng, b.lat, b.lng);
+                    return distA - distB;
+                }
+                return 0;
+            default: // nome
+                return (a.nomeFantasia || '').localeCompare(b.nomeFantasia || '');
+        }
+    });
+    
+    renderizarPostos(resultado);
+    
+    if (viewMode === 'map') {
+        atualizarMapa(resultado);
+    }
+}
+
+// ========================================
+// VISUALIZAÇÃO
+// ========================================
+
+function setViewMode(mode) {
+    viewMode = mode;
+    
+    // Atualizar botões
+    document.querySelectorAll('.btn-view').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`btnView${mode.charAt(0).toUpperCase() + mode.slice(1)}`).classList.add('active');
+    
+    // Mostrar/ocultar elementos
+    const mapContainer = document.getElementById('mapContainer');
+    const postosContainer = document.getElementById('postosContainer');
+    
+    if (mode === 'map') {
+        mapContainer.style.display = 'block';
+        postosContainer.style.display = 'none';
+        inicializarMapa();
     } else {
-        showNotification('Informe pelo menos um preço válido.', 'error');
+        mapContainer.style.display = 'none';
+        postosContainer.style.display = mode === 'grid' ? 'grid' : 'flex';
+        filtrarPostos();
     }
 }
 
-function openDirections(id) {
-    const posto = getPostoById(id);
-    if (!posto || !posto.coordenadas) return;
-    
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${posto.coordenadas.lat},${posto.coordenadas.lng}`;
-    window.open(url, '_blank');
-}
+// ========================================
+// MAPA
+// ========================================
 
-// ==========================================
-// RENDERIZAÇÃO GRID/LIST
-// ==========================================
-
-function renderPostos() {
-    const container = document.getElementById('postosContainer');
-    if (!container) return;
-    
-    if (filteredPostos.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-search"></i>
-                <h3>Nenhum posto encontrado</h3>
-                <p>Ajuste os filtros de busca</p>
-            </div>
-        `;
+function inicializarMapa() {
+    if (map) {
+        atualizarMapa(postosData);
         return;
     }
     
-    if (currentView === 'grid') {
-        container.className = 'postos-grid';
-        container.innerHTML = filteredPostos.map(posto => createPostoCard(posto)).join('');
-    } else {
-        container.className = 'postos-list';
-        container.innerHTML = filteredPostos.map(posto => createPostoListItem(posto)).join('');
-    }
+    map = L.map('map').setView([CAMARA_COORDS.lat, CAMARA_COORDS.lng], 12);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+    
+    // Marcador da Câmara
+    const camaraIcon = L.divIcon({
+        className: 'marker-camara',
+        html: '<div style="background:#1a56db;color:white;padding:8px;border-radius:50%;font-size:16px;">🏛️</div>',
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+    });
+    
+    L.marker([CAMARA_COORDS.lat, CAMARA_COORDS.lng], { icon: camaraIcon })
+        .addTo(map)
+        .bindPopup('<strong>Câmara Municipal de Guarulhos</strong>');
+    
+    atualizarMapa(postosData);
 }
 
-function createPostoCard(posto) {
-    const status = getMarkerStatus(posto);
-    const endereco = posto.endereco || {};
+function atualizarMapa(postos) {
+    if (!map) return;
     
-    return `
-        <div class="posto-card ${status.class}" onclick="openModal(${posto.id})">
-            <div class="card-header">
-                <span class="card-status ${status.class}">${status.icon}</span>
-                <h3>${posto.nomeFantasia || 'Posto'}</h3>
-                <span class="card-bandeira">${posto.bandeira || 'N/A'}</span>
-            </div>
-            <div class="card-address">
-                <i class="fas fa-map-marker-alt"></i>
-                ${endereco.bairro || 'Guarulhos'}
-            </div>
-            <div class="card-prices">
-                <div class="card-price ${getPriceClass(posto.precos?.gasolina, anpData.gasolinaComum)}">
-                    <span>Gasolina</span>
-                    <strong>R$ ${posto.precos?.gasolina?.toFixed(2) || '--'}</strong>
-                </div>
-                <div class="card-price ${getPriceClass(posto.precos?.etanol, anpData.etanol)}">
-                    <span>Etanol</span>
-                    <strong>R$ ${posto.precos?.etanol?.toFixed(2) || '--'}</strong>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function createPostoListItem(posto) {
-    const status = getMarkerStatus(posto);
-    const endereco = posto.endereco || {};
+    // Remover marcadores anteriores
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
     
-    return `
-        <div class="posto-list-item" onclick="openModal(${posto.id})">
-            <div class="list-icon ${status.class}">${status.icon}</div>
-            <div class="list-info">
-                <h3>${posto.nomeFantasia || 'Posto'}</h3>
-                <p>${endereco.bairro || 'Guarulhos'} - ${posto.bandeira || 'N/A'}</p>
-            </div>
-            <div class="list-prices">
-                <span class="${getPriceClass(posto.precos?.gasolina, anpData.gasolinaComum)}">
-                    Gas: R$ ${posto.precos?.gasolina?.toFixed(2) || '--'}
-                </span>
-                <span class="${getPriceClass(posto.precos?.etanol, anpData.etanol)}">
-                    Eta: R$ ${posto.precos?.etanol?.toFixed(2) || '--'}
-                </span>
-            </div>
-        </div>
-    `;
-}
-
-// ==========================================
-// NOTIFICAÇÕES
-// ==========================================
-
-function showNotification(message, type = 'info') {
-    const existing = document.querySelector('.notification');
-    if (existing) existing.remove();
-    
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-        <span>${message}</span>
-    `;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 10);
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-// ==========================================
-// CHAT IA
-// ==========================================
-
-function toggleChat() {
-    const container = document.getElementById('chatContainer');
-    const toggleBtn = document.getElementById('chatToggleBtn');
-    
-    chatOpen = !chatOpen;
-    
-    if (chatOpen) {
-        if (container) container.classList.remove('minimized');
-        if (toggleBtn) toggleBtn.style.display = 'none';
-    } else {
-        if (container) container.classList.add('minimized');
-        if (toggleBtn) toggleBtn.style.display = 'flex';
-    }
-}
-
-function handleChatKeypress(event) {
-    if (event.key === 'Enter') sendMessage();
-}
-
-async function sendMessage() {
-    const input = document.getElementById('chatInput');
-    if (!input) return;
-    
-    const message = input.value.trim();
-    if (!message) return;
-    
-    addChatMessage(message, 'user');
-    input.value = '';
-    
-    showTypingIndicator();
-    
-    try {
-        const response = await getAIResponse(message);
-        hideTypingIndicator();
-        addChatMessage(response, 'bot');
-    } catch (error) {
-        hideTypingIndicator();
-        addChatMessage('Desculpe, ocorreu um erro. Tente novamente.', 'bot');
-    }
-}
-
-function askQuickQuestion(question) {
-    const input = document.getElementById('chatInput');
-    if (input) {
-        input.value = question;
-        sendMessage();
-    }
-}
-
-function addChatMessage(content, type) {
-    const container = document.getElementById('chatMessages');
-    if (!container) return;
-    
-    const html = `
-        <div class="message ${type}">
-            <div class="message-avatar">
-                <i class="fas fa-${type === 'bot' ? 'robot' : 'user'}"></i>
-            </div>
-            <div class="message-content">${formatChatMessage(content)}</div>
-        </div>
-    `;
-    
-    container.insertAdjacentHTML('beforeend', html);
-    container.scrollTop = container.scrollHeight;
-}
-
-function formatChatMessage(content) {
-    return content
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\n/g, '<br>');
-}
-
-function showTypingIndicator() {
-    const container = document.getElementById('chatMessages');
-    if (!container) return;
-    
-    container.insertAdjacentHTML('beforeend', `
-        <div class="message bot" id="typingIndicator">
-            <div class="message-avatar"><i class="fas fa-robot"></i></div>
-            <div class="message-content"><p>Digitando...</p></div>
-        </div>
-    `);
-    container.scrollTop = container.scrollHeight;
-}
-
-function hideTypingIndicator() {
-    const indicator = document.getElementById('typingIndicator');
-    if (indicator) indicator.remove();
-}
-
-async function getAIResponse(message) {
-    const msg = message.toLowerCase();
-    
-    if (msg.includes('barato') || msg.includes('menor') || msg.includes('melhor')) {
-        const stats = getEstatisticas();
-        if (stats.maisBaratoGasolina) {
-            return `🟢 **Posto mais barato (Gasolina):**\n\n` +
-                   `**${stats.maisBaratoGasolina.nomeFantasia}**\n` +
-                   `💰 R$ ${stats.maisBaratoGasolina.precos.gasolina.toFixed(2)}\n` +
-                   `📍 ${stats.maisBaratoGasolina.endereco?.bairro || 'Guarulhos'}`;
-        }
-        return 'Não há dados de preços disponíveis no momento.';
-    }
-    
-    if (msg.includes('caro') || msg.includes('maior')) {
-        const stats = getEstatisticas();
-        if (stats.maisCaroGasolina) {
-            return `🔴 **Posto mais caro (Gasolina):**\n\n` +
-                   `**${stats.maisCaroGasolina.nomeFantasia}**\n` +
-                   `💰 R$ ${stats.maisCaroGasolina.precos.gasolina.toFixed(2)}\n` +
-                   `📍 ${stats.maisCaroGasolina.endereco?.bairro || 'Guarulhos'}`;
-        }
-        return 'Não há dados de preços disponíveis no momento.';
-    }
-    
-    if (msg.includes('acima') || msg.includes('vermelho') || msg.includes('bloqueado')) {
-        const acima = postosData.filter(p => {
-            if (!p.precos?.gasolina || !anpData.gasolinaComum) return false;
-            return ((p.precos.gasolina - anpData.gasolinaComum) / anpData.gasolinaComum) * 100 > 1;
+    // Adicionar novos marcadores
+    postos.forEach(posto => {
+        if (!posto.lat || !posto.lng) return;
+        
+        const status = getStatusPreco(posto.precos?.gasolina, anpData.gasolinaComum);
+        let cor = '#9ca3af'; // Cinza padrão
+        
+        if (status === 'preco-abaixo') cor = '#059669';
+        else if (status === 'preco-igual') cor = '#d97706';
+        else if (status === 'preco-acima') cor = '#dc2626';
+        
+        const icon = L.divIcon({
+            className: 'marker-posto',
+            html: `<div style="background:${cor};color:white;padding:6px 8px;border-radius:20px;font-size:12px;white-space:nowrap;box-shadow:0 2px 4px rgba(0,0,0,0.2);">🏪</div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
         });
         
-        if (acima.length === 0) {
-            return '✅ Nenhum posto está com preço acima da ANP no momento!';
-        }
+        const marker = L.marker([posto.lat, posto.lng], { icon })
+            .addTo(map)
+            .bindPopup(`
+                <strong>${posto.nomeFantasia || posto.razaoSocial}</strong><br>
+                ${posto.endereco || ''}<br>
+                <hr style="margin:8px 0">
+                🔴 Gasolina: R$ ${posto.precos?.gasolina?.toFixed(2) || '--'}<br>
+                🟢 Etanol: R$ ${posto.precos?.etanol?.toFixed(2) || '--'}
+            `);
         
-        let response = `🔴 **Postos com preço ACIMA da ANP (${acima.length}):**\n\n`;
-        acima.slice(0, 5).forEach((p, i) => {
-            const diff = ((p.precos.gasolina - anpData.gasolinaComum) / anpData.gasolinaComum * 100).toFixed(1);
-            response += `${i + 1}. **${p.nomeFantasia}**\n   R$ ${p.precos.gasolina.toFixed(2)} (+${diff}%)\n\n`;
-        });
-        if (acima.length > 5) {
-            response += `... e mais ${acima.length - 5} postos.`;
-        }
-        return response;
-    }
-    
-    if (msg.includes('anp') || msg.includes('limite') || msg.includes('referência') || msg.includes('media')) {
-        return `📊 **Preços ANP - Guarulhos:**\n\n` +
-               `⛽ Gasolina: R$ ${anpData.gasolinaComum?.toFixed(2) || '--'}\n` +
-               `🌿 Etanol: R$ ${anpData.etanol?.toFixed(2) || '--'}\n\n` +
-               `Estes são os preços médios de referência.`;
-    }
-    
-    if (msg.includes('total') || msg.includes('quantos') || msg.includes('postos')) {
-        const stats = getEstatisticas();
-        return `📊 **Estatísticas:**\n\n` +
-               `🏪 Total de postos: ${stats.totalPostos}\n` +
-               `💰 Postos com preço: ${stats.postosComPreco}\n\n` +
-               `Use o mapa para visualizar todos os postos!`;
-    }
-    
-    return `🤖 Posso ajudar com:\n\n` +
-           `💰 "Qual o posto mais barato?"\n` +
-           `🔴 "Quais postos estão acima da ANP?"\n` +
-           `📊 "Qual o limite ANP?"\n` +
-           `🏪 "Quantos postos temos?"\n\n` +
-           `Digite sua pergunta!`;
+        markers.push(marker);
+    });
 }
 
-// ==========================================
-// FUNÇÕES AUXILIARES
-// ==========================================
+// ========================================
+// MODAL
+// ========================================
 
-function updateLastUpdate() {
-    const el = document.getElementById('lastUpdate');
-    if (!el) return;
+function abrirModal(posto) {
+    const modal = document.getElementById('modalDetalhes');
+    const body = document.getElementById('modalBody');
     
-    const ultima = getUltimaAtualizacao();
-    const texto = ultima 
-        ? `Dados: ${new Date(ultima).toLocaleDateString('pt-BR')}`
-        : `Atualizado: ${new Date().toLocaleDateString('pt-BR')}`;
-    el.textContent = texto;
-}
-
-async function refreshData() {
-    showLoading(true);
+    const precos = posto.precos || {};
+    const dataEmissao = precos.dataEmissao || 'Não informada';
     
-    try {
-        await carregarPostosDoJSON();
-        await carregarDadosANP();
-        
-        filteredPostos = [...postosData];
-        
-        updateANPDisplay();
-        populateFilters();
-        updateStats();
-        updateMapMarkers();
-        updateLastUpdate();
-        
-        showNotification('Dados atualizados!', 'success');
-    } catch (error) {
-        console.error('Erro ao atualizar:', error);
-        showNotification('Erro ao atualizar', 'error');
-    } finally {
-        showLoading(false);
-    }
+    body.innerHTML = `
+        <div class="modal-header">
+            <h2>${posto.nomeFantasia || posto.razaoSocial || 'Posto'}</h2>
+        </div>
+        <div class="modal-body">
+            <div class="detalhe-row">
+                <span class="detalhe-label">Terminal:</span>
+                <span class="detalhe-valor">${posto.terminal || '--'}</span>
+            </div>
+            <div class="detalhe-row">
+                <span class="detalhe-label">CNPJ:</span>
+                <span class="detalhe-valor">${posto.cnpj || '--'}</span>
+            </div>
+            <div class="detalhe-row">
+                <span class="detalhe-label">Endereço:</span>
+                <span class="detalhe-valor">${posto.endereco || '--'}</span>
+            </div>
+            <div class="detalhe-row">
+                <span class="detalhe-label">Bairro:</span>
+                <span class="detalhe-valor">${posto.bairro || '--'}</span>
+            </div>
+            <div class="detalhe-row">
+                <span class="detalhe-label">Cidade:</span>
+                <span class="detalhe-valor">${posto.cidade || 'Guarulhos'} - ${posto.uf || 'SP'}</span>
+            </div>
+            
+            <div class="modal-precos">
+                <div class="modal-preco-card ${getStatusPreco(precos.gasolina, anpData.gasolinaComum)}">
+                    <h4>🔴 Gasolina</h4>
+                    <div class="preco">${precos.gasolina ? 'R$ ' + precos.gasolina.toFixed(2) : 'R$ --'}</div>
+                    <div class="referencia">ANP: R$ ${anpData.gasolinaComum?.toFixed(2) || '--'}</div>
+                    <div class="data-preco">📅 ${dataEmissao}</div>
+                </div>
+                
+                <div class="modal-preco-card ${getStatusPreco(precos.etanol, anpData.etanol)}">
+                    <h4>🟢 Etanol</h4>
+                    <div class="preco">${precos.etanol ? 'R$ ' + precos.etanol.toFixed(2) : 'R$ --'}</div>
+                    <div class="referencia">ANP: R$ ${anpData.etanol?.toFixed(2) || '--'}</div>
+                    <div class="data-preco">📅 ${dataEmissao}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.add('active');
 }
 
-function showLoading(show) {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) {
-        overlay.classList.toggle('active', show);
-    }
+function fecharModal() {
+    document.getElementById('modalDetalhes').classList.remove('active');
 }
 
-function showError(message) {
-    showNotification(message, 'error');
-}
+// ========================================
+// UTILITÁRIOS
+// ========================================
 
 function debounce(func, wait) {
     let timeout;
-    return function(...args) {
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
         clearTimeout(timeout);
-        timeout = setTimeout(() => func(...args), wait);
+        timeout = setTimeout(later, wait);
     };
 }
 
-// Exportar funções globais
-window.setView = setView;
-window.clearSearch = clearSearch;
-window.openModal = openModal;
-window.closeModal = closeModal;
-window.salvarPrecos = salvarPrecos;
-window.openDirections = openDirections;
-window.toggleChat = toggleChat;
-window.handleChatKeypress = handleChatKeypress;
-window.sendMessage = sendMessage;
-window.askQuickQuestion = askQuickQuestion;
-window.refreshData = refreshData;
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
