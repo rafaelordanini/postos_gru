@@ -3,362 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - CMG Postos</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #f1f5f9;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
-            border-radius: 12px;
-            color: white;
-        }
-        
-        header h1 {
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .btn-voltar {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: background 0.3s;
-        }
-        
-        .btn-voltar:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        
-        .card h3 {
-            color: #1e3a5f;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .upload-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .upload-box {
-            border: 2px dashed #cbd5e1;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: #f8fafc;
-        }
-        
-        .upload-box:hover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-        }
-        
-        .upload-box.dragover {
-            border-color: #22c55e;
-            background: #dcfce7;
-            transform: scale(1.02);
-        }
-        
-        .upload-box h4 {
-            color: #334155;
-            margin-bottom: 10px;
-        }
-        
-        .upload-box p {
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-        
-        .upload-box .icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-        
-        .file-input {
-            display: none;
-        }
-        
-        .btn-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        
-        .btn {
-            padding: 15px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
-        }
-        
-        #statusInfo {
-            min-height: 100px;
-        }
-        
-        #postosTable {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        
-        .anp-card {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            padding: 20px;
-            border-radius: 12px;
-        }
-        
-        .anp-card h4 {
-            color: #92400e;
-            margin-bottom: 15px;
-        }
-        
-        .anp-precos {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .anp-preco {
-            text-align: center;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        
-        .anp-preco .label {
-            display: block;
-            font-size: 0.8rem;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .anp-preco .valor {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #059669;
-        }
-        
-        .anp-fonte {
-            font-size: 0.8rem;
-            color: #78350f;
-            text-align: center;
-        }
-        
-        .anp-fonte a {
-            color: #b45309;
-        }
-        
-        .text-muted {
-            color: #9ca3af;
-        }
-        
-        /* Loading indicator */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Responsivo */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
-            header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-            
-            .upload-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .btn-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>⚙️ Admin - CMG Postos</h1>
-            <a href="index.html" class="btn-voltar">← Voltar ao App</a>
-        </header>
-        
-        <!-- Status -->
-        <div class="card">
-            <h3>📊 Status</h3>
-            <div id="statusInfo">
-                <p>Carregando...</p>
-            </div>
-        </div>
-        
-        <!-- Preços ANP -->
-        <div class="card">
-            <h3>📈 Preços de Referência ANP</h3>
-            <div id="anp-precos">
-                <p>Carregando preços ANP...</p>
-            </div>
-        </div>
-        
-        <!-- Upload de Arquivos -->
-        <div class="card">
-            <h3>📁 Importar Dados</h3>
-            <div class="upload-grid">
-                <!-- Upload Abastecimentos -->
-                <div class="upload-box" id="dropzone-abastecimentos">
-                    <div class="icon">📊</div>
-                    <h4>Planilha de Abastecimentos</h4>
-                    <p>Arraste o arquivo CSV ou Excel aqui<br>ou clique para selecionar</p>
-                    <input type="file" id="input-abastecimentos" class="file-input" accept=".csv,.xlsx,.xls">
-                </div>
-                
-                <!-- Upload Estabelecimentos -->
-                <div class="upload-box" id="dropzone-estabelecimentos">
-                    <div class="icon">🏪</div>
-                    <h4>Planilha de Estabelecimentos</h4>
-                    <p>Arraste o arquivo Excel aqui<br>ou clique para selecionar</p>
-                    <input type="file" id="input-estabelecimentos" class="file-input" accept=".xlsx,.xls,.csv">
-                </div>
-            </div>
-        </div>
-        
-        <!-- Ações -->
-        <div class="card">
-            <h3>🔧 Ações</h3>
-            <div class="btn-grid">
-                <button class="btn btn-success" id="btn-exportar">
-                    💾 Exportar JSON
-                </button>
-                <button class="btn btn-primary" id="btn-atualizar-anp">
-                    🔄 Atualizar Preços ANP
-                </button>
-                <button class="btn btn-danger" id="btn-limpar">
-                    🗑️ Limpar Todos os Dados
-                </button>
-            </div>
-        </div>
-        
-        <!-- Postos Cadastrados -->
-        <div class="card">
-            <h3>📍 Postos Cadastrados</h3>
-            <div id="postosTable">
-                <p>Carregando postos...</p>
-            </div>
-        </div>
-    </div>
-    <!-- No arquivo admin.html -->
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - CMG Postos</title>
+    <title>Administração - CMG Postos</title>
     <link rel="stylesheet" href="css/admin.css">
-    
-    <!-- Biblioteca SheetJS para ler arquivos Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <!-- ... conteúdo do admin ... -->
-    
-    <!-- Seu script admin.js deve vir DEPOIS do SheetJS -->
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="header-left">
+                <a href="index.html" class="btn-voltar">← Voltar</a>
+                <h1>⚙️ Administração</h1>
+            </div>
+            <div class="header-right">
+                <span class="admin-badge">Painel Administrativo</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-main">
+        <div class="container">
+            
+            <!-- Seção: Importar Estabelecimentos -->
+            <section class="admin-section">
+                <div class="section-header">
+                    <h2>🏪 Planilha de Estabelecimentos</h2>
+                    <span class="section-badge">XLSX</span>
+                </div>
+                <p class="section-description">
+                    Importe a planilha com os dados cadastrais dos postos credenciados (nome, endereço, CNPJ, terminal).
+                </p>
+                
+                <div class="upload-area" id="uploadEstabelecimentos">
+                    <div class="upload-icon">📄</div>
+                    <p>Arraste o arquivo XLSX aqui ou clique para selecionar</p>
+                    <input type="file" id="fileEstabelecimentos" accept=".xlsx,.xls" onchange="processarEstabelecimentos(this)">
+                </div>
+                
+                <div id="statusEstabelecimentos" class="status-message"></div>
+                <div id="progressEstabelecimentos" class="progress-container" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFillEstab"></div>
+                    </div>
+                    <span class="progress-text" id="progressTextEstab">0%</span>
+                </div>
+            </section>
+
+            <!-- Seção: Importar Preços dos Postos -->
+            <section class="admin-section">
+                <div class="section-header">
+                    <h2>⛽ Preço dos Postos (ANP)</h2>
+                    <span class="section-badge">XLSX</span>
+                </div>
+                <p class="section-description">
+                    Importe as planilhas de preços da plataforma ANP. São 2 arquivos: um para Gasolina e outro para Etanol.
+                </p>
+                
+                <div class="upload-grid">
+                    <!-- Gasolina -->
+                    <div class="upload-item">
+                        <div class="upload-item-header">
+                            <span class="upload-icon-small">🔴</span>
+                            <strong>Gasolina</strong>
+                        </div>
+                        <div class="upload-area-small" id="uploadGasolina">
+                            <p>Clique ou arraste o arquivo</p>
+                            <input type="file" id="fileGasolina" accept=".xlsx,.xls" onchange="processarPrecoPostos(this, 'gasolina')">
+                        </div>
+                        <div id="statusGasolina" class="status-message"></div>
+                    </div>
+                    
+                    <!-- Etanol -->
+                    <div class="upload-item">
+                        <div class="upload-item-header">
+                            <span class="upload-icon-small">🟢</span>
+                            <strong>Etanol / Álcool</strong>
+                        </div>
+                        <div class="upload-area-small" id="uploadEtanol">
+                            <p>Clique ou arraste o arquivo</p>
+                            <input type="file" id="fileEtanol" accept=".xlsx,.xls" onchange="processarPrecoPostos(this, 'etanol')">
+                        </div>
+                        <div id="statusEtanol" class="status-message"></div>
+                    </div>
+                </div>
+                
+                <div id="resumoPrecos" class="resumo-importacao"></div>
+            </section>
+
+            <!-- Seção: Dados Atuais -->
+            <section class="admin-section">
+                <div class="section-header">
+                    <h2>📊 Dados Atuais</h2>
+                    <button class="btn-secondary" onclick="atualizarEstatisticas()">🔄 Atualizar</button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🏪</div>
+                        <div class="stat-info">
+                            <span id="statTotalPostos" class="stat-valor">0</span>
+                            <span class="stat-label">Postos Cadastrados</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">🔴</div>
+                        <div class="stat-info">
+                            <span id="statPostosGasolina" class="stat-valor">0</span>
+                            <span class="stat-label">Com Preço Gasolina</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">🟢</div>
+                        <div class="stat-info">
+                            <span id="statPostosEtanol" class="stat-valor">0</span>
+                            <span class="stat-label">Com Preço Etanol</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-info">
+                            <span id="statPostosGeo" class="stat-valor">0</span>
+                            <span class="stat-label">Com Geolocalização</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção: Gerenciar Dados -->
+            <section class="admin-section">
+                <div class="section-header">
+                    <h2>🗂️ Gerenciar Dados</h2>
+                </div>
+                
+                <div class="actions-grid">
+                    <button class="btn-action" onclick="exportarDados()">
+                        <span class="btn-icon">📥</span>
+                        <span class="btn-text">Exportar Dados</span>
+                        <span class="btn-desc">Baixar backup em JSON</span>
+                    </button>
+                    
+                    <button class="btn-action" onclick="document.getElementById('fileImportBackup').click()">
+                        <span class="btn-icon">📤</span>
+                        <span class="btn-text">Importar Backup</span>
+                        <span class="btn-desc">Restaurar dados de backup</span>
+                        <input type="file" id="fileImportBackup" accept=".json" style="display:none" onchange="importarBackup(this)">
+                    </button>
+                    
+                    <button class="btn-action warning" onclick="confirmarLimpeza()">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Limpar Dados</span>
+                        <span class="btn-desc">Remover todos os dados</span>
+                    </button>
+                    
+                    <button class="btn-action" onclick="geocodificarTodos()">
+                        <span class="btn-icon">🌍</span>
+                        <span class="btn-text">Geocodificar</span>
+                        <span class="btn-desc">Obter coordenadas GPS</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Seção: Lista de Postos -->
+            <section class="admin-section">
+                <div class="section-header">
+                    <h2>📋 Postos Cadastrados</h2>
+                    <div class="section-actions">
+                        <input type="text" id="buscaPosto" placeholder="Buscar posto..." class="input-busca">
+                    </div>
+                </div>
+                
+                <div id="tabelaPostos" class="tabela-container">
+                    <table class="tabela-postos">
+                        <thead>
+                            <tr>
+                                <th>Terminal</th>
+                                <th>Nome</th>
+                                <th>Endereço</th>
+                                <th>Gasolina</th>
+                                <th>Etanol</th>
+                                <th>GPS</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyPostos">
+                            <!-- Linhas inseridas via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Modal de Confirmação -->
+    <div id="modalConfirm" class="modal">
+        <div class="modal-content modal-small">
+            <h3 id="modalConfirmTitle">Confirmar</h3>
+            <p id="modalConfirmText">Tem certeza?</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="fecharModalConfirm()">Cancelar</button>
+                <button class="btn-danger" id="btnConfirmAction">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="modalEditar" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModalEditar()">×</button>
+            <h3>✏️ Editar Posto</h3>
+            <form id="formEditarPosto">
+                <input type="hidden" id="editId">
+                
+                <div class="form-group">
+                    <label for="editNome">Nome Fantasia:</label>
+                    <input type="text" id="editNome" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editEndereco">Endereço:</label>
+                    <input type="text" id="editEndereco">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editLat">Latitude:</label>
+                        <input type="number" id="editLat" step="any">
+                    </div>
+                    <div class="form-group">
+                        <label for="editLng">Longitude:</label>
+                        <input type="number" id="editLng" step="any">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="fecharModalEditar()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="js/admin.js"></script>
-</body>
-</html>
-    <!-- Scripts -->
-    <script src="data.js"></script>
-    <script src="admin.js"></script>
 </body>
 </html>
